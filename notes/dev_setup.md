@@ -16,6 +16,11 @@
     - azure plugin -> workspace -> deploy to azure
         - select correct function app
 
+## secrets
+- by default, permission is missing from managed identity to access secrets
+- Azure portal
+    - vault -> Access (IAM)
+    - Add role -> Secrets Officer (read+write) or KeyVaultReader (only read)
 
 ### to test
 - secret management
