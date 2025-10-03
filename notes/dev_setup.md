@@ -23,4 +23,4 @@
     - Add role -> Secrets Officer (read+write) or KeyVaultReader (only read)
 
 ### to test
-- secret management
+- setup event grid topics
