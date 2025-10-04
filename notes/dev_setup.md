@@ -26,6 +26,3 @@
 - topics are independet of resource groups
 - subscriptions are what ties the activation to a certain resource
 - for now, re-use the existing topics to slowly migrate to the new project
-
-### to test
-- setup event grid topics

@@ -1,0 +1,12 @@
+{
+    "chats": {
+        "testi": {
+            "id": 1
+        }
+    },
+    "tokens": {
+        "name": {
+            "token": "asdf"
+        }
+    }
+}
