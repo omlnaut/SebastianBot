@@ -1,2 +1,4 @@
 azure-functions
 python-telegram-bot
+azure-identity
+azure-keyvault-secrets

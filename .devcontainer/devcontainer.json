@@ -18,11 +18,13 @@
 				"ms-python.python",
 				"ms-vscode.vscode-node-azure-pack",
 				"ms-toolsai.jupyter",
-				"Azurite.azurite"
+				"Azurite.azurite",
+				"donjayamanne.vscode-default-python-kernel"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
-				"python.pythonPath": "/usr/local/bin/python"
+				"python.pythonPath": "/usr/local/bin/python",
+				"jupyter.useDefaultConfigForJupyter": true
 			}
 		}
 	}
