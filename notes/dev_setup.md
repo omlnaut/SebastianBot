@@ -22,5 +22,10 @@
     - vault -> Access (IAM)
     - Add role -> Secrets Officer (read+write) or KeyVaultReader (only read)
 
+### event grid
+- topics are independet of resource groups
+- subscriptions are what ties the activation to a certain resource
+- for now, re-use the existing topics to slowly migrate to the new project
+
 ### to test
 - setup event grid topics
