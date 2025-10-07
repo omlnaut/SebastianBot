@@ -1,7 +1,7 @@
 # Next
 
 ## continue with
-- cleanup telegram setup
+- enable vault access for deployed functions
 
 ## future ideas
 - auto-test all secret models against

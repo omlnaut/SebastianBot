@@ -3,6 +3,11 @@ import logging
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
+from infrastructure.telegram.TelegramFunction import (
+    send_telegram_message,
+    test_send_telegram_message,
+)
+
 
 @app.route(route="HttpTesti")
 def HttpTesti(req: func.HttpRequest) -> func.HttpResponse:
