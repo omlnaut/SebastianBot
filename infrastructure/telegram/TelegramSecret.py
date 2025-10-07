@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Dict
 
 from pydantic import BaseModel
@@ -14,3 +15,11 @@ class Token(BaseModel):
 class TelegramConfig(BaseModel):
     chats: Dict[str, Chat]
     tokens: Dict[str, Token]
+
+
+class TelegramToken:
+    Sebastian = "Sebastian"
+
+
+class TelegramChat:
+    MainChat = "mainChat"
