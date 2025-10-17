@@ -3,6 +3,7 @@ import logging
 from function_app import app
 import azure.functions as func
 
+from infrastructure.telegram import TelegramService
 from infrastructure.telegram.AzureHelper import (
     create_telegram_output_event,
     telegram_output_binding,
@@ -37,6 +38,6 @@ async def send_telegram_message(azeventgrid: func.EventGridEvent):
     token = config.tokens[TelegramToken.Sebastian].token
     chat_id = config.chats[TelegramChat.MainChat].id
 
-    await send_telegram_message(token, chat_id, msg)
+    await TelegramService.send_telegram_message(token, chat_id, msg)
 
     logging.info(f"Telegram Message sent: {msg}")
