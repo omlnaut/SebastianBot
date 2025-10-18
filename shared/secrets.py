@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 class SecretKeys(Enum):
     TelegramSebastianToken = "SebastianTelegramToken"
+    GoogleCredentials = "GoogleCredentials"
 
     def __str__(self):
         return self.value
