@@ -2,6 +2,7 @@
 
 ## continue with
 - google task
+    - create instruction for new eventgrid topic
 - move manga stuff
 
 ## future ideas
