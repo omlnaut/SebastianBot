@@ -31,13 +31,17 @@ def test_send_telegram_message(
 async def send_telegram_message(azeventgrid: func.EventGridEvent):
     logging.info("Start to send telegram message")
 
-    msg = "from new: " + azeventgrid.get_json()["message"]
-    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
+    msg = azeventgrid.get_json()["message"]
 
-    # hardcode for now
-    token = config.tokens[TelegramToken.Sebastian].token
-    chat_id = config.chats[TelegramChat.MainChat].id
+    token, chat_id = _load_token_and_chat_id()
 
     await TelegramService.send_telegram_message(token, chat_id, msg)
 
     logging.info(f"Telegram Message sent: {msg}")
+
+
+def _load_token_and_chat_id():
+    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
+    token = config.tokens[TelegramToken.Sebastian].token
+    chat_id = config.chats[TelegramChat.MainChat].id
+    return token, chat_id
