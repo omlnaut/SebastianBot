@@ -2,8 +2,8 @@
 
 ## continue with
 - google task
-    - create instruction for new eventgrid topic
     - send telegram msg on task creation
+    - support tasklists
 - move manga stuff
 
 ## future ideas

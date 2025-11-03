@@ -10,6 +10,10 @@ from infrastructure.google.task.TaskAzureHelper import (
 )
 from infrastructure.google.task.TaskSchemas import CreateTaskEvent
 from infrastructure.google.GoogleSecret import GoogleSecret
+from infrastructure.telegram.AzureHelper import (
+    create_telegram_output_event,
+    telegram_output_binding,
+)
 from shared.secrets import get_secret, SecretKeys
 from google.oauth2.credentials import Credentials
 
@@ -28,7 +32,11 @@ def test_create_task(
 
 
 @app.event_grid_trigger(arg_name="azeventgrid")
-def create_task(azeventgrid: func.EventGridEvent):
+@telegram_output_binding()
+def create_task(
+    azeventgrid: func.EventGridEvent,
+    telegramOutput: func.Out[func.EventGridOutputEvent],
+):
     logging.info("EventGrid create task triggered")
     payload = azeventgrid.get_json()
 
@@ -44,8 +52,13 @@ def create_task(azeventgrid: func.EventGridEvent):
     )
 
     service = TaskService(creds)
-    service.create_task_with_notes(
+    created_task = service.create_task_with_notes(
         TaskListIds.Default, event.title, event.notes or "", event.due
     )
+    telegramOutput.set(
+        create_telegram_output_event(
+            f"TASK created: {created_task.title} ({created_task.due.date()})"
+        )
+    )
 
-    logging.info(f"Created task: {event.title}")
+    logging.info(f"Created task: {created_task.title}")
