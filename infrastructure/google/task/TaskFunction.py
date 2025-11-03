@@ -3,6 +3,7 @@ import logging
 from function_app import app
 import azure.functions as func
 
+from infrastructure.google.GoogleAzureHelper import load_google_credentials
 from infrastructure.google.task.TaskService import TaskService, TaskListIds
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
@@ -15,7 +16,6 @@ from infrastructure.telegram.AzureHelper import (
     telegram_output_binding,
 )
 from shared.secrets import get_secret, SecretKeys
-from google.oauth2.credentials import Credentials
 
 
 @app.route(route="test_create_task")
@@ -46,12 +46,9 @@ def create_task(
         logging.error(f"Failed to parse event payload: {e}")
         return
 
-    credentials_model = get_secret(SecretKeys.GoogleCredentials, GoogleSecret)
-    creds = Credentials.from_authorized_user_info(
-        credentials_model.credentials.model_dump()
-    )
-
+    creds = load_google_credentials()
     service = TaskService(creds)
+
     created_task = service.create_task_with_notes(
         TaskListIds.Default, event.title, event.notes or "", event.due
     )
