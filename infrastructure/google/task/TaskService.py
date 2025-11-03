@@ -1,15 +1,15 @@
-from enum import Enum
 from typing import List, Optional
 from datetime import datetime
 
 from googleapiclient.discovery import build
 
-from infrastructure.google.task.TaskModels import TaskList, Task
+from infrastructure.google.task.TaskModels import (
+    TaskList,
+    TaskResponse,
+    CreatedTask,
+    TaskListIds,
+)
 from shared.dates import get_end_of_day
-
-
-class TaskListIds(Enum):
-    Default = "MDY0Mzc2NjgyMDc4MTc0Nzg3Mjk6MDow"
 
 
 class TaskService:
@@ -30,7 +30,7 @@ class TaskService:
         title: str,
         notes: str,
         due_date: Optional[datetime] = None,
-    ) -> Task:
+    ) -> CreatedTask:
         due_date = due_date or get_end_of_day()
         task_body = self._create_task_body(title, notes, due_date)
         created = (
@@ -38,7 +38,13 @@ class TaskService:
             .insert(tasklist=tasklist_id.value, body=task_body)
             .execute()
         )
-        return Task(**created)
+        parsed = TaskResponse(**created)
+        return CreatedTask(
+            title=parsed.title,
+            due=parsed.due,
+            notes=parsed.notes,
+            tasklist=tasklist_id,
+        )
 
     def _create_task_body(self, title: str, notes: str, due_date: datetime) -> dict:
         return {"title": title, "notes": notes, "due": due_date.isoformat()}

@@ -11,7 +11,7 @@ When producing code or wiring components in this repository, follow these rules 
 - Naming: use clear, domain-specific names (e.g. `TaskService.py`, `TaskModels.py`, `TaskSchemas.py`).
 - Tests: do not run tests or create test artifacts unless the user asks for them. Create tests only when requested.
 - Edits: prefer minimal, targeted edits. Avoid reformatting unrelated files.
-- Verification: after edits, perform quick static checks (importing modules) only when explicitly requested.
+- Verification: do not perform checks like importing modules.
 - Security: do not exfiltrate secrets. Use existing secret helpers (`shared.secrets`) and Key Vault. When adding code that accesses secrets, rely on `DefaultAzureCredential` and `SecretClient` patterns already in the repo.
 - Azure patterns: when creating Azure Functions, mirror the repository patterns (see `infrastructure/telegram` for examples): use `function_app.app` decorators, event grid output bindings in helper modules, and register functions by importing them in `function_app.py`.
 - when given feedback about code style or architecture, add to this list in a concise manner.
