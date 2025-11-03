@@ -13,7 +13,10 @@ Deliverables (per service)
 Process
 1) Extract the service from the notebook
 - Move pure data shapes into a models file (dataclasses for API responses).
+   - check service implementation in notebook if it makes sense to create more models
 - Move API-calling logic into a thin service wrapper with clear methods used by the function.
+- if the notebook does not contain a ready service, but rather a collection of methods, collect them into a service class. extract the methods that are necessary for the task
+- if it' a google service, check /workspaces/SebastianBot/infrastructure/google for shared helpers and example implementations
 
 2) Define strict event schemas with pydantic
 - Create pydantic models for Event Grid payloads. Example shape:
@@ -27,9 +30,13 @@ Process
 - Provide `create_..._output_event(event: <PydanticModel>, subject: str = "...") -> func.EventGridOutputEvent` that uses `event.model_dump()` for the `data` field.
 
 4) Implement the Azure Functions
-- HTTP test route: construct a pydantic event model from simple request data and set it on the output binding to emit an Event Grid event.
-- Event Grid trigger: call `get_json()` on the event, parse strictly with the pydantic model (`model_validate`), then call the service using parsed fields.
-- On validation errors, log and return early.
+- for event grid triggered functions:
+   - HTTP test route: construct a pydantic event model from simple request data and set it on the output binding to emit an Event Grid event.
+   - Event Grid trigger: call `get_json()` on the event, parse strictly with the pydantic model (`model_validate`), then call the service using parsed fields.
+   - On validation errors, log and return early.
+- for timer based functions:
+   - one timer triggered function, choose any cronstring. the user will change that later
+   - HTTP test route: the logic in the timer function should be completly encapsulated in a private method. the test route invokes the same logic
 
 5) Wire functions for discovery
 - Import the new functions in `function_app.py` so the `FunctionApp` registers them at startup.
