@@ -17,6 +17,7 @@ class TaskList:
 
 class TaskListIds(Enum):
     Default = "MDY0Mzc2NjgyMDc4MTc0Nzg3Mjk6MDow"
+    Mangas = "WFRzM0JfdkdTXzl4WHVHNw"
 
 
 class TaskResponse(BaseModel):

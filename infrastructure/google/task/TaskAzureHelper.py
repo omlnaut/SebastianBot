@@ -25,7 +25,8 @@ def create_task_output_event(
     Accepts a pydantic `CreateTaskEvent` and uses its dict as the `data` payload so
     pydantic handles datetime parsing/serialization.
     """
-    data = event.model_dump()
+    data = event.model_dump(exclude=set("task_list_id"))
+    data["task_list_id"] = event.task_list_id.value
 
     return func.EventGridOutputEvent(
         id=str(uuid.uuid4()),
