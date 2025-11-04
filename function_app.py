@@ -8,3 +8,6 @@ from infrastructure.telegram.TelegramFunction import (
     test_send_telegram_message,
 )
 from usecases.manga.manga_update.MangaUpdateFunction import check_manga_update
+from usecases.manga.skeleton_soldier.SkeletonSoldierFunction import (
+    check_skeleton_soldier_updates,
+)
