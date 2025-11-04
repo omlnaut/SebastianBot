@@ -54,18 +54,26 @@ def check_manga_update(
 
         service = MangaUpdateService()
 
-        tasks = _check_all_manga(service)
+        tasks, messages = _check_all_manga(service)
 
         if tasks:
             taskOutput.set(tasks)  # type: ignore
+
+        if messages:
+            telegramOutput.set(messages)  # type: ignore
+
     except Exception as e:
         error_msg = f"Error in manga_update: {str(e)}"
         logging.error(error_msg)
         telegramOutput.set(create_telegram_output_event(message=error_msg))
 
 
-def _check_all_manga(service) -> list[EventGridOutputEvent]:
+def _check_all_manga(
+    service,
+) -> tuple[list[EventGridOutputEvent], list[EventGridOutputEvent]]:
     tasks: list[EventGridOutputEvent] = []
+    messages: list[EventGridOutputEvent] = []
+
     for manga in mangas:
         try:
             latest_chapter = service.get_latest_chapter(manga)
@@ -91,5 +99,5 @@ def _check_all_manga(service) -> list[EventGridOutputEvent]:
         except Exception as e:
             error_msg = f"Failed to process manga {manga.title}: {str(e)}"
             logging.error(error_msg)
-            tasks.append(create_telegram_output_event(message=error_msg))
-    return tasks
+            messages.append(create_telegram_output_event(message=error_msg))
+    return tasks, messages
