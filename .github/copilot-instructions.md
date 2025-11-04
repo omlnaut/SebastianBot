@@ -144,7 +144,7 @@ func host start
 ### Configuration Files
 
 **Azure Functions Configuration**:
-- `host.json`: Runtime version 2.0, extension bundle version range [4.*, 5.0.0) (any 4.x, excluding 5.0.0)
+- `host.json`: Runtime version 2.0, extension bundle version range [4.*, 5.0.0) (any version starting with 4., up to but excluding 5.0.0)
 - `.vscode/settings.json`: Python runtime v4, language model 2, scmDoBuildDuringDeployment enabled
 - `.vscode/launch.json`: Debugger attaches to port 9091
 - `.vscode/tasks.json`: "func: host start" task
@@ -273,5 +273,5 @@ func host start
 - Pydantic models for data validation and JSON parsing
 - Azure Functions decorators for function registration
 - Event Grid for async communication between functions
-- Dependency injection of services (e.g., `TaskService`, `MangaUpdateService`)
+- Service layer pattern: Services (e.g., `TaskService`, `MangaUpdateService`) are instantiated within functions
 - Separation of concerns: Functions (entry points) → Services (logic) → Models (data)
