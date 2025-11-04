@@ -1,10 +1,9 @@
-from function_app import app
 import datetime
 import uuid
-from typing import Optional
 
 import azure.functions as func
 
+from function_app import app
 from infrastructure.google.task.TaskSchemas import CreateTaskEvent
 
 
