@@ -7,4 +7,4 @@ from infrastructure.telegram.TelegramFunction import (
     send_telegram_message,
     test_send_telegram_message,
 )
-from usecases.manga_update.MangaUpdateFunction import check_manga_update
+from usecases.manga.manga_update.MangaUpdateFunction import check_manga_update

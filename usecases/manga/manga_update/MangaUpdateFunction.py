@@ -14,8 +14,8 @@ from infrastructure.telegram.AzureHelper import (
     telegram_output_binding,
 )
 from shared.dates import is_at_most_one_day_old
-from usecases.manga_update.MangaModels import MangaPublisher, MangaUpdateManga
-from usecases.manga_update.MangaUpdateService import MangaUpdateService
+from usecases.manga.manga_update.MangaModels import MangaPublisher, MangaUpdateManga
+from usecases.manga.manga_update.MangaUpdateService import MangaUpdateService
 
 mangas = [
     MangaUpdateManga(

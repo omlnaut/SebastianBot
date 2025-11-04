@@ -6,7 +6,7 @@ import requests
 from pydantic import BaseModel
 
 from shared.secrets import SecretKeys, get_secret
-from usecases.manga_update.MangaModels import (
+from usecases.manga.manga_update.MangaModels import (
     MangaChapter,
     MangaPublisher,
     MangaUpdateManga,
