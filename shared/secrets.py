@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Type, TypeVar
+
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import BaseModel
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 class SecretKeys(Enum):
     TelegramSebastianToken = "SebastianTelegramToken"
     GoogleCredentials = "GoogleCredentials"
+    MangaUpdateCredentials = "MangaUpdateCredentials"
 
     def __str__(self):
         return self.value
