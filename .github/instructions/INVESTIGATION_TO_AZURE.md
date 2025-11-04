@@ -37,6 +37,7 @@ Process
 - for timer based functions:
    - one timer triggered function, choose any cronstring. the user will change that later
    - HTTP test route: the logic in the timer function should be completly encapsulated in a private method. the test route invokes the same logic
+   - see /workspaces/SebastianBot/usecases/manga_update/MangaUpdateFunction.py for example implementation
 
 5) Wire functions for discovery
 - Import the new functions in `function_app.py` so the `FunctionApp` registers them at startup.
