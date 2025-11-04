@@ -4,10 +4,10 @@
 
 **What it does**: SebastianBot is an Azure Functions-based Python bot that monitors manga updates, creates Google Tasks, and sends Telegram notifications. It runs scheduled checks for manga releases and integrates with external APIs.
 
-**Project Type**: Azure Functions v4 Python application (~728 lines of code)
+**Project Type**: Azure Functions v4 Python application (small to medium-sized)
 - **Language**: Python 3.12
 - **Runtime**: Azure Functions Runtime v4
-- **Frameworks**: azure-functions, python-telegram-bot, google-api-python-client, pydantic
+- **Key Dependencies**: azure-functions, python-telegram-bot, google-api-python-client, pydantic
 - **Cloud Services**: Azure Functions, Azure Key Vault, Azure Event Grid, Google Tasks API
 
 ## Building and Testing
@@ -20,9 +20,9 @@
    ```bash
    pip install -r requirements_local.txt
    ```
-   - This installs both production (`requirements.txt`) and development dependencies (`requirements_local.txt`)
+   - This includes production dependencies (via `-r requirements.txt`) plus development tools (pytest, pytest-cov, ipykernel)
    - Takes approximately 30-60 seconds
-   - Includes: pytest, pytest-cov, ipykernel, azure-functions, python-telegram-bot, azure-identity, azure-keyvault-secrets, pydantic, google-auth-oauthlib, google-api-python-client
+   - Production dependencies: azure-functions, python-telegram-bot, azure-identity, azure-keyvault-secrets, pydantic, google-auth-oauthlib, google-api-python-client
 
 2. **Validate installation**:
    ```bash
@@ -114,7 +114,7 @@ func host start
 
 **Shared Utilities** (`shared/`):
 - `secrets.py`: Azure Key Vault integration using DefaultAzureCredential
-  - `SecretKeys` enum: TelegramSebastianToken, GoogleCredentials, MangaUpdateCredentials
+  - `SecretKeys` enum members: TelegramSebastianToken, GoogleCredentials, MangaUpdateCredentials
   - `get_secret()`: Retrieves secrets and parses into Pydantic models
   - Key Vault URL: `https://omlnaut-sebastian.vault.azure.net/`
 - `dates.py`: Date utilities with Berlin timezone
@@ -144,7 +144,7 @@ func host start
 ### Configuration Files
 
 **Azure Functions Configuration**:
-- `host.json`: Runtime version 2.0, extension bundle v4
+- `host.json`: Runtime version 2.0, extension bundle version range [4.*, 5.0.0) (any 4.x, excluding 5.0.0)
 - `.vscode/settings.json`: Python runtime v4, language model 2, scmDoBuildDuringDeployment enabled
 - `.vscode/launch.json`: Debugger attaches to port 9091
 - `.vscode/tasks.json`: "func: host start" task
@@ -158,9 +158,9 @@ func host start
 
 **Not obvious from structure**:
 - All functions require Azure Key Vault access via Managed Identity (configured in Azure portal)
-- Google functions need OAuth credentials stored in Key Vault as "GoogleCredentials"
-- Telegram functions need bot token stored in Key Vault as "SebastianTelegramToken"
-- Manga updates need MangaUpdates API credentials as "MangaUpdateCredentials"
+- Google functions need OAuth credentials stored in Key Vault (use `SecretKeys.GoogleCredentials` enum)
+- Telegram functions need bot token stored in Key Vault (use `SecretKeys.TelegramSebastianToken` enum)
+- Manga updates need MangaUpdates API credentials (use `SecretKeys.MangaUpdateCredentials` enum)
 - Event Grid topics are used for inter-function communication (tasks trigger Telegram notifications)
 
 ### Testing Infrastructure
