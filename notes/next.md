@@ -1,9 +1,6 @@
 # Next
 
 ## continue with
-- google task
-    - send telegram msg on task creation
-    - support tasklists
 - move manga stuff
 
 ## future ideas
@@ -11,3 +8,4 @@
     - secrets in vault
     - local examples?
 - ci/cd (test+deploy)
+- library
