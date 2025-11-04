@@ -10,6 +10,7 @@ class SecretKeys(Enum):
     TelegramSebastianToken = "SebastianTelegramToken"
     GoogleCredentials = "GoogleCredentials"
     MangaUpdateCredentials = "MangaUpdateCredentials"
+    RedditCredentials = "RedditCredentials"
 
     def __str__(self):
         return self.value
