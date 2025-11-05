@@ -1,5 +1,5 @@
 from cloud.helper import SecretKeys, get_secret
-from sebastian.clients.MangaUpate import MangaUpdateClient, MangaUpdateSecret
+from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
 from sebastian.clients.reddit import RedditClient, RedditCredentials
 
 

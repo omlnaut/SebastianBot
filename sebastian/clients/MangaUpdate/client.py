@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 from pydantic import BaseModel
 
-from sebastian.usecases.MangaUpdate import MangaChapter, MangaUpdateManga
+from sebastian.usecases.MangaUpdate.models import MangaChapter, MangaUpdateManga
 
 
 class MangaUpdateSecret(BaseModel):

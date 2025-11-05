@@ -1,5 +1,5 @@
 from sebastian.clients import MangaUpdateClient, RedditClient
-from sebastian.usecases.MangaUpdate import MangaUpdateService
+from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
 
 from .clients import resolve_mangaupdate_client, resolve_reddit_client
