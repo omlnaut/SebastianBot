@@ -9,7 +9,7 @@ from cloud.functions.infrastructure.google.task.helper import (
 from cloud.functions.infrastructure.telegram import telegram_output_binding
 from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from function_app import app
-from infrastructure.google.task.TaskModels import TaskListIds
+from sebastian.infrastructure.google.task.models import TaskListIds
 from shared.dates import is_at_most_one_day_old
 from usecases.manga.manga_update.MangaModels import MangaPublisher, MangaUpdateManga
 from usecases.manga.manga_update.MangaUpdateService import MangaUpdateService

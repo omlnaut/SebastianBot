@@ -1,16 +1,12 @@
-from typing import List, Optional
-from google.oauth2.credentials import Credentials
 from datetime import datetime
+from typing import List, Optional
 
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from infrastructure.google.task.TaskModels import (
-    TaskList,
-    TaskResponse,
-    CreatedTask,
-    TaskListIds,
-)
 from shared.dates import get_end_of_day
+
+from .models import CreatedTask, TaskList, TaskListIds, TaskResponse
 
 
 class TaskService:
