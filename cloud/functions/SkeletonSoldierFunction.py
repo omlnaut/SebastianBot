@@ -2,17 +2,19 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.dependencies import RedditClientFromSecret
-from cloud.functions.infrastructure.google.task.helper import (
+from cloud.dependencies.services import resolve_skeleton_soldier_service
+from cloud.functions.infrastructure.google.task import (
     CreateTaskEvent,
     task_output_binding,
 )
-from cloud.functions.infrastructure.telegram import telegram_output_binding
-from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
+from cloud.functions.infrastructure.telegram import (
+    SendTelegramMessageEvent,
+    telegram_output_binding,
+)
 from function_app import app
 from sebastian.clients.reddit import RedditPost
 from sebastian.infrastructure.google.task.models import TaskListIds
-from usecases.manga.skeleton_soldier.SkeletonSolderService import is_new_chapter_post
+from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
 
 
 @app.timer_trigger(
@@ -28,13 +30,11 @@ def check_skeleton_soldier_updates(
     try:
         logging.info("Skeleton Soldier timer function started.")
 
-        reddit_client = RedditClientFromSecret()
-        posts = reddit_client.get_posts("SkeletonSoldier")
-
-        new_chapter_posts = [post for post in posts if is_new_chapter_post(post)]
+        service = resolve_skeleton_soldier_service()
+        new_chapter_posts = service.get_new_chapter_posts()
 
         create_task_events = [
-            _toCreateTaskEvent(post).to_output() for post in new_chapter_posts
+            _to_create_task_event(post).to_output() for post in new_chapter_posts
         ]
 
         logging.info(f"Found new chapters: {new_chapter_posts}")
@@ -48,7 +48,7 @@ def check_skeleton_soldier_updates(
         telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
 
 
-def _toCreateTaskEvent(post: RedditPost) -> CreateTaskEvent:
+def _to_create_task_event(post: RedditPost) -> CreateTaskEvent:
     return CreateTaskEvent(
         title=f"Skeleton Soldier {post.title}",
         notes=post.destination_url,
