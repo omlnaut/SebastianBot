@@ -2,7 +2,7 @@
 
 ## continue with
 - separate azure stuff from logic
-    - google task
+    - use cases to sebastian
 ## future ideas
 - auto-test all secret models against
     - secrets in vault

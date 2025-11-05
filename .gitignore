@@ -1,5 +1,5 @@
 #start custom
-google_token/*.json
+*/google_token/*.json
 
 # end custom
 # Byte-compiled / optimized / DLL files
