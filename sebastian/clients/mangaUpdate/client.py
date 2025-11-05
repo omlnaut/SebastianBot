@@ -1,4 +1,3 @@
-import sys
 from datetime import datetime
 
 import requests
@@ -13,7 +12,7 @@ class MangaUpdateSecret(BaseModel):
     password: str
 
 
-class MangaUpdateService:
+class MangaUpdateClient:
     def __init__(self):
         self.api_url = "https://api.mangaupdates.com/v1"
         self.session_token = None
