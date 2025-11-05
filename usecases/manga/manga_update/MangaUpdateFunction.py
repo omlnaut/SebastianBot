@@ -2,6 +2,10 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
+from cloud.functions.infrastructure.telegram import (
+    create_telegram_output_event,
+    telegram_output_binding,
+)
 from function_app import app
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
@@ -9,10 +13,6 @@ from infrastructure.google.task.TaskAzureHelper import (
 )
 from infrastructure.google.task.TaskModels import TaskListIds
 from infrastructure.google.task.TaskSchemas import CreateTaskEvent
-from infrastructure.telegram.AzureHelper import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
 from shared.dates import is_at_most_one_day_old
 from usecases.manga.manga_update.MangaModels import MangaPublisher, MangaUpdateManga
 from usecases.manga.manga_update.MangaUpdateService import MangaUpdateService

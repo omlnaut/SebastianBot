@@ -1,19 +1,13 @@
 import logging
 
-from function_app import app
 import azure.functions as func
 
-from infrastructure.telegram import TelegramService
-from infrastructure.telegram.AzureHelper import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
-from infrastructure.telegram.TelegramSecret import (
-    TelegramChat,
-    TelegramConfig,
-    TelegramToken,
-)
-from shared.secrets import SecretKeys, get_secret
+from cloud.helper import SecretKeys, get_secret
+from function_app import app
+from sebastian.infrastructure.telegram import send_telegram_message
+
+from .config import TelegramChat, TelegramConfig, TelegramToken
+from .helper import create_telegram_output_event, telegram_output_binding
 
 
 @app.route(route="test_send_telegram_message")
@@ -31,11 +25,12 @@ def test_send_telegram_message(
 async def send_telegram_message(azeventgrid: func.EventGridEvent):
     logging.info("Start to send telegram message")
 
+    # todo proper parsing
     msg = azeventgrid.get_json()["message"]
 
     token, chat_id = _load_token_and_chat_id()
 
-    await TelegramService.send_telegram_message(token, chat_id, msg)
+    await send_telegram_message(token, chat_id, msg)
 
     logging.info(f"Telegram Message sent: {msg}")
 

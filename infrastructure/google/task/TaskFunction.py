@@ -1,20 +1,20 @@
 import logging
 
-from function_app import app
 import azure.functions as func
 
+from cloud.functions.infrastructure.telegram import (
+    create_telegram_output_event,
+    telegram_output_binding,
+)
+from cloud.helper import parse_payload
+from function_app import app
 from infrastructure.google.GoogleAzureHelper import load_google_credentials
-from infrastructure.google.task.TaskService import TaskService, TaskListIds
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
     task_output_binding,
 )
 from infrastructure.google.task.TaskSchemas import CreateTaskEvent
-from infrastructure.telegram.AzureHelper import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
-from shared.azure_helper import parse_payload
+from infrastructure.google.task.TaskService import TaskListIds, TaskService
 
 
 @app.route(route="test_create_task")

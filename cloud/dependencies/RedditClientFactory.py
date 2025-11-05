@@ -1,5 +1,5 @@
+from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.reddit import RedditClient, RedditCredentials
-from shared.secrets import SecretKeys, get_secret
 
 
 def RedditClientFromSecret() -> RedditClient:

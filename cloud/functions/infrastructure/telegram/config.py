@@ -1,6 +1,3 @@
-from enum import Enum
-from typing import Dict
-
 from pydantic import BaseModel
 
 
@@ -13,8 +10,8 @@ class Token(BaseModel):
 
 
 class TelegramConfig(BaseModel):
-    chats: Dict[str, Chat]
-    tokens: Dict[str, Token]
+    chats: dict[str, Chat]
+    tokens: dict[str, Token]
 
 
 class TelegramToken:

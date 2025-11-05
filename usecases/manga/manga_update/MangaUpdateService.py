@@ -1,19 +1,11 @@
 import sys
 from datetime import datetime
-from pathlib import Path
 
 import requests
 from pydantic import BaseModel
 
-from shared.secrets import SecretKeys, get_secret
-from usecases.manga.manga_update.MangaModels import (
-    MangaChapter,
-    MangaPublisher,
-    MangaUpdateManga,
-)
-
-# Add the manga_update directory to the Python path
-sys.path.append(str(Path(__file__).resolve().parent))
+from cloud.helper import SecretKeys, get_secret
+from usecases.manga.manga_update.MangaModels import MangaChapter, MangaUpdateManga
 
 
 class MangaUpdateSecret(BaseModel):
