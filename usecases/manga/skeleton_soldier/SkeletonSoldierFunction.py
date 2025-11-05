@@ -2,10 +2,7 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from external.reddit.RedditClient import RedditClient
-from external.reddit.RedditClientFactory import RedditClientFromSecret
-from external.reddit.RedditCredentials import RedditCredentials
-from external.reddit.RedditPost import RedditPost
+from cloud.dependencies import RedditClientFromSecret
 from function_app import app
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
@@ -17,12 +14,12 @@ from infrastructure.telegram.AzureHelper import (
     create_telegram_output_event,
     telegram_output_binding,
 )
-from shared.dates import is_at_most_one_day_old
+from sebastian.clients.reddit import RedditPost
 from usecases.manga.skeleton_soldier.SkeletonSolderService import is_new_chapter_post
 
 
 @app.timer_trigger(
-    schedule="4 3 * * *", arg_name="mytimer", run_on_startup=False, use_monitor=False
+    schedule="4 3 * * *", arg_name="mytimer", run_on_startup=True, use_monitor=False
 )
 @task_output_binding()
 @telegram_output_binding()

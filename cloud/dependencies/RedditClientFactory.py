@@ -1,5 +1,4 @@
-from external.reddit.RedditClient import RedditClient
-from external.reddit.RedditCredentials import RedditCredentials
+from sebastian.clients.reddit import RedditClient, RedditCredentials
 from shared.secrets import SecretKeys, get_secret
 
 

@@ -1,4 +1,4 @@
-from external.reddit.RedditPost import RedditPost
+from sebastian.clients.reddit import RedditPost
 from shared.dates import is_at_most_one_day_old
 
 

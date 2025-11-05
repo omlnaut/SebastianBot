@@ -2,8 +2,8 @@ import logging
 
 import requests
 
-from external.reddit.RedditCredentials import RedditCredentials
-from external.reddit.RedditPost import RedditPost
+from sebastian.clients.reddit.credentials import RedditCredentials
+from sebastian.clients.reddit.post import RedditPost
 
 
 class RedditClient:
