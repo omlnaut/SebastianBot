@@ -2,17 +2,16 @@ import logging
 
 import azure.functions as func
 
-from cloud.functions.infrastructure.telegram import telegram_output_binding
-from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
+from cloud.functions.infrastructure.google.helper import load_google_credentials
+from cloud.functions.infrastructure.telegram import (
+    SendTelegramMessageEvent,
+    telegram_output_binding,
+)
 from cloud.helper import parse_payload
 from function_app import app
-from infrastructure.google.GoogleAzureHelper import load_google_credentials
-from infrastructure.google.task.TaskAzureHelper import (
-    create_task_output_event,
-    task_output_binding,
-)
-from infrastructure.google.task.TaskSchemas import CreateTaskEvent
 from infrastructure.google.task.TaskService import TaskListIds, TaskService
+
+from .helper import CreateTaskEvent, task_output_binding
 
 
 @app.route(route="test_create_task")
@@ -25,7 +24,7 @@ def test_create_task(
     event_model = CreateTaskEvent(
         title="Sample Task", notes="Sample notes", task_list_id=TaskListIds.Mangas
     )
-    taskOutput.set(create_task_output_event(event_model))
+    taskOutput.set(event_model.to_output())
 
     return func.HttpResponse("emitted")
 

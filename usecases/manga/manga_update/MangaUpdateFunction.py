@@ -2,15 +2,14 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
+from cloud.functions.infrastructure.google.task.helper import (
+    CreateTaskEvent,
+    task_output_binding,
+)
 from cloud.functions.infrastructure.telegram import telegram_output_binding
 from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from function_app import app
-from infrastructure.google.task.TaskAzureHelper import (
-    create_task_output_event,
-    task_output_binding,
-)
 from infrastructure.google.task.TaskModels import TaskListIds
-from infrastructure.google.task.TaskSchemas import CreateTaskEvent
 from shared.dates import is_at_most_one_day_old
 from usecases.manga.manga_update.MangaModels import MangaPublisher, MangaUpdateManga
 from usecases.manga.manga_update.MangaUpdateService import MangaUpdateService
@@ -81,13 +80,11 @@ def _check_all_manga(
 
             if is_at_most_one_day_old(latest_chapter.release_date):
                 tasks.append(
-                    create_task_output_event(
-                        event=CreateTaskEvent(
-                            title=f"{manga.title} Chapter {latest_chapter.chapter}",
-                            notes=manga.url,
-                            task_list_id=TaskListIds.Mangas,
-                        )
-                    )
+                    CreateTaskEvent(
+                        title=f"{manga.title} Chapter {latest_chapter.chapter}",
+                        notes=manga.url,
+                        task_list_id=TaskListIds.Mangas,
+                    ).to_output()
                 )
 
                 logging.info(

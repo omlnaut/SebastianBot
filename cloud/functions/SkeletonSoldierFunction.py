@@ -3,15 +3,14 @@ import logging
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies import RedditClientFromSecret
+from cloud.functions.infrastructure.google.task.helper import (
+    CreateTaskEvent,
+    task_output_binding,
+)
 from cloud.functions.infrastructure.telegram import telegram_output_binding
 from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from function_app import app
-from infrastructure.google.task.TaskAzureHelper import (
-    create_task_output_event,
-    task_output_binding,
-)
 from infrastructure.google.task.TaskModels import TaskListIds
-from infrastructure.google.task.TaskSchemas import CreateTaskEvent
 from sebastian.clients.reddit import RedditPost
 from usecases.manga.skeleton_soldier.SkeletonSolderService import is_new_chapter_post
 
@@ -34,13 +33,14 @@ def check_skeleton_soldier_updates(
 
         new_chapter_posts = [post for post in posts if is_new_chapter_post(post)]
 
-        create_task_events = [_toCreateTaskEvent(post) for post in new_chapter_posts]
-        task_outputs = [create_task_output_event(event) for event in create_task_events]
+        create_task_events = [
+            _toCreateTaskEvent(post).to_output() for post in new_chapter_posts
+        ]
 
         logging.info(f"Found new chapters: {new_chapter_posts}")
 
-        if task_outputs:
-            taskOutput.set(task_outputs)  # type: ignore
+        if create_task_events:
+            taskOutput.set(create_task_events)  # type: ignore
 
     except Exception as e:
         error_msg = f"Error in Skeleton Soldier function: {str(e)}"
