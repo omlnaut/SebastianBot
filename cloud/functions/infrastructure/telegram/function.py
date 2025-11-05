@@ -2,12 +2,12 @@ import logging
 
 import azure.functions as func
 
-from cloud.helper import SecretKeys, get_secret
+from cloud.helper import SecretKeys, get_secret, parse_payload
 from function_app import app
-from sebastian.infrastructure.telegram import send_telegram_message
+from sebastian.infrastructure.telegram import service
 
 from .config import TelegramChat, TelegramConfig, TelegramToken
-from .helper import create_telegram_output_event, telegram_output_binding
+from .helper import SendTelegramMessageEvent, telegram_output_binding
 
 
 @app.route(route="test_send_telegram_message")
@@ -16,7 +16,9 @@ def test_send_telegram_message(
     req: func.HttpRequest, telegramOutput: func.Out[func.EventGridOutputEvent]
 ) -> func.HttpResponse:
     logging.info("Python event trigger function processed a request.")
-    telegramOutput.set(create_telegram_output_event(message="hello there testi"))
+    telegramOutput.set(
+        SendTelegramMessageEvent(message="hello there testi").to_output()
+    )
 
     return func.HttpResponse("yay")
 
@@ -25,14 +27,13 @@ def test_send_telegram_message(
 async def send_telegram_message(azeventgrid: func.EventGridEvent):
     logging.info("Start to send telegram message")
 
-    # todo proper parsing
-    msg = azeventgrid.get_json()["message"]
+    input_event = parse_payload(azeventgrid, SendTelegramMessageEvent)
 
     token, chat_id = _load_token_and_chat_id()
 
-    await send_telegram_message(token, chat_id, msg)
+    await service.send_telegram_message(token, chat_id, input_event.message)
 
-    logging.info(f"Telegram Message sent: {msg}")
+    logging.info(f"Telegram Message sent: {input_event.message}")
 
 
 def _load_token_and_chat_id():

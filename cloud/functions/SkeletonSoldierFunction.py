@@ -3,10 +3,8 @@ import logging
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies import RedditClientFromSecret
-from cloud.functions.infrastructure.telegram import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
+from cloud.functions.infrastructure.telegram import telegram_output_binding
+from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from function_app import app
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
@@ -19,7 +17,7 @@ from usecases.manga.skeleton_soldier.SkeletonSolderService import is_new_chapter
 
 
 @app.timer_trigger(
-    schedule="4 3 * * *", arg_name="mytimer", run_on_startup=True, use_monitor=False
+    schedule="4 3 * * *", arg_name="mytimer", run_on_startup=False, use_monitor=False
 )
 @task_output_binding()
 @telegram_output_binding()
@@ -47,7 +45,7 @@ def check_skeleton_soldier_updates(
     except Exception as e:
         error_msg = f"Error in Skeleton Soldier function: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(create_telegram_output_event(message=error_msg))
+        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
 
 
 def _toCreateTaskEvent(post: RedditPost) -> CreateTaskEvent:

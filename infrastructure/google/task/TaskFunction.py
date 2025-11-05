@@ -2,10 +2,8 @@ import logging
 
 import azure.functions as func
 
-from cloud.functions.infrastructure.telegram import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
+from cloud.functions.infrastructure.telegram import telegram_output_binding
+from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from cloud.helper import parse_payload
 from function_app import app
 from infrastructure.google.GoogleAzureHelper import load_google_credentials
@@ -48,9 +46,9 @@ def create_task(
         event.task_list_id, event.title, event.notes or "", event.due
     )
     telegramOutput.set(
-        create_telegram_output_event(
-            f"TASK created: {created_task.title} in {created_task.tasklist.name} ({created_task.due.date()})"
-        )
+        SendTelegramMessageEvent(
+            message=f"TASK created: {created_task.title} in {created_task.tasklist.name} ({created_task.due.date()})"
+        ).to_output()
     )
 
     logging.info(f"Created task: {created_task.title}")

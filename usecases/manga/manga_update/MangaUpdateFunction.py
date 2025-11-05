@@ -2,10 +2,8 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.functions.infrastructure.telegram import (
-    create_telegram_output_event,
-    telegram_output_binding,
-)
+from cloud.functions.infrastructure.telegram import telegram_output_binding
+from cloud.functions.infrastructure.telegram.helper import SendTelegramMessageEvent
 from function_app import app
 from infrastructure.google.task.TaskAzureHelper import (
     create_task_output_event,
@@ -65,7 +63,7 @@ def check_manga_update(
     except Exception as e:
         error_msg = f"Error in manga_update: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(create_telegram_output_event(message=error_msg))
+        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
 
 
 def _check_all_manga(
@@ -99,5 +97,5 @@ def _check_all_manga(
         except Exception as e:
             error_msg = f"Failed to process manga {manga.title}: {str(e)}"
             logging.error(error_msg)
-            messages.append(create_telegram_output_event(message=error_msg))
+            messages.append(SendTelegramMessageEvent(message=error_msg).to_output())
     return tasks, messages
