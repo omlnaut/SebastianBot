@@ -23,3 +23,4 @@ class MangaChapter:
     chapter: str
     release_date: datetime
     title: str
+    url: str

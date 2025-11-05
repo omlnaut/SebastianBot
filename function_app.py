@@ -8,4 +8,4 @@ from cloud.functions.infrastructure.telegram import (
     send_telegram_message,
     test_send_telegram_message,
 )
-from usecases.manga.manga_update.MangaUpdateFunction import check_manga_update
+from cloud.functions.MangaUpdateFunction import check_manga_update

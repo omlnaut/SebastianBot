@@ -3,8 +3,7 @@ from datetime import datetime
 import requests
 from pydantic import BaseModel
 
-from cloud.helper import SecretKeys, get_secret
-from usecases.manga.manga_update.MangaModels import MangaChapter, MangaUpdateManga
+from sebastian.usecases.MangaUpdate import MangaChapter, MangaUpdateManga
 
 
 class MangaUpdateSecret(BaseModel):
@@ -13,15 +12,10 @@ class MangaUpdateSecret(BaseModel):
 
 
 class MangaUpdateClient:
-    def __init__(self):
+    def __init__(self, credentials: MangaUpdateSecret):
         self.api_url = "https://api.mangaupdates.com/v1"
         self.session_token = None
-        self._load_and_login()
-
-    def _load_and_login(self):
-        """Load credentials from Azure Key Vault and perform login"""
-        secret = get_secret(SecretKeys.MangaUpdateCredentials, MangaUpdateSecret)
-        self._login(secret.username, secret.password)
+        self._login(credentials.username, credentials.password)
 
     def _login(self, username: str, password: str):
         """Perform login to MangaUpdate API and store session token"""
@@ -74,6 +68,7 @@ class MangaUpdateClient:
                 chapter=latest["chapter"],
                 release_date=datetime.strptime(latest["release_date"], "%Y-%m-%d"),
                 title=latest["title"],
+                url=manga.url,
             )
         except requests.exceptions.RequestException as e:
             raise Exception(f"Failed to get latest chapter: {str(e)}")
