@@ -1,10 +1,7 @@
 # Next
 
 ## continue with
-- test refactored mangaupdate + skeletonsoldier
-- move manga stuff
-    - disable old manga stuff after first successful update notification
-
+- separate azure stuff from logic
 ## future ideas
 - auto-test all secret models against
     - secrets in vault
