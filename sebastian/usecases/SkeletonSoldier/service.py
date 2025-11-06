@@ -1,6 +1,6 @@
 from sebastian.clients.reddit import RedditPost
 from sebastian.clients.reddit.client import RedditClient
-from shared.dates import is_at_most_one_day_old
+from sebastian.shared.dates import is_at_most_one_day_old
 
 
 def _is_new_chapter_post(post: RedditPost) -> bool:

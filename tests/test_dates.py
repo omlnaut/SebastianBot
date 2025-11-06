@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from shared.dates import get_end_of_day, is_at_most_one_day_old
+from sebastian.shared.dates import get_end_of_day, is_at_most_one_day_old
 
 
 def test_get_end_of_day_specific_day():
