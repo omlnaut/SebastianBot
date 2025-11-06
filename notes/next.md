@@ -4,7 +4,8 @@
 - onepunchman
     - disable legacy after first success
 - delivery tracker
-    - gmail service
+    - create service
+- move telegram/googleTask to sebastian/clients
 ## future ideas
 - auto-test all secret models against
     - secrets in vault
