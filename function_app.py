@@ -2,7 +2,7 @@ import azure.functions as func
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-from cloud.functions import check_skeleton_soldier_updates
+from cloud.functions import check_one_punch_man_updates, check_skeleton_soldier_updates
 from cloud.functions.infrastructure.google.task import create_task, test_create_task
 from cloud.functions.infrastructure.telegram import (
     send_telegram_message,
