@@ -14,3 +14,4 @@
 - Follow clean architecture principles: separate concerns between different layers (cloud vs sebastian)
     - sebastian (application layer) should not depend on cloud (infrastructure layer)
 - when naming files, use simple names (i.e. client.py instead of RedditClient.py)
+- use __init__.py
