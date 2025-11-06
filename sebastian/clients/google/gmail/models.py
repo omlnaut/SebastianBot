@@ -50,4 +50,3 @@ class FullMailResponse(BaseModel):
             payload=_extract_email_body(response["payload"]),
             sizeEstimate=response["sizeEstimate"],
         )
-        )
