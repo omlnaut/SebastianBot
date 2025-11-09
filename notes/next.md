@@ -1,8 +1,6 @@
 # Next
 
 ## continue with
-- onepunchman
-    - disable legacy after first success
 - delivery tracker
     - create service
 - move telegram/googleTask to sebastian/clients
