@@ -2,11 +2,11 @@ import logging
 
 import azure.functions as func
 
-from cloud.helper import SecretKeys, get_secret, parse_payload
+from cloud.dependencies.clients import resolve_telegram_client
+from cloud.helper import parse_payload
 from function_app import app
 from sebastian.infrastructure.telegram import service
 
-from .config import TelegramChat, TelegramConfig, TelegramToken
 from .helper import SendTelegramMessageEvent, telegram_output_binding
 
 
@@ -29,15 +29,8 @@ async def send_telegram_message(azeventgrid: func.EventGridEvent):
 
     input_event = parse_payload(azeventgrid, SendTelegramMessageEvent)
 
-    token, chat_id = _load_token_and_chat_id()
+    client = resolve_telegram_client()
 
-    await service.send_telegram_message(token, chat_id, input_event.message)
+    await service.send_telegram_message(client, input_event.message)
 
     logging.info(f"Telegram Message sent: {input_event.message}")
-
-
-def _load_token_and_chat_id():
-    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
-    token = config.tokens[TelegramToken.Sebastian].token
-    chat_id = config.chats[TelegramChat.MainChat].id
-    return token, chat_id
