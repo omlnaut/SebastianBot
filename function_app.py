@@ -4,7 +4,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 from cloud.functions.DeliveryReadyFunction import check_delivery_ready
 from cloud.functions.infrastructure.google.task import create_task, test_create_task
-from cloud.functions.infrastructure.telegram import (
+from cloud.functions.infrastructure.telegram.function import (
     send_telegram_message,
     test_send_telegram_message,
 )

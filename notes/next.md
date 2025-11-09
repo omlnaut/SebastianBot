@@ -1,9 +1,9 @@
 # Next
 
 ## continue with
+- move telegram/googleTask to sebastian/clients
 - delivery tracker
     - remove legacy on first successful run
-- move telegram/googleTask to sebastian/clients
 ## future ideas
 - auto-test all secret models against
     - secrets in vault

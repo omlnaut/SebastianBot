@@ -85,7 +85,7 @@ def _find_adress(soup: BeautifulSoup) -> str:
     Returns formatted address like "Packstation 158, Südhöhe 38"
     """
     # Find the span containing "ABHOLORT"
-    abholort_span = soup.find("span", string=re.compile(r"ABHOLORT"))
+    abholort_span = soup.find("span", string=re.compile(r"ABHOLORT"))  # type: ignore
     if not abholort_span:
         return "Address not found"
 

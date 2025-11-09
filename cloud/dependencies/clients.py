@@ -4,7 +4,7 @@ from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
 from sebastian.clients.reddit import RedditClient, RedditCredentials
-from sebastian.clients.telegram import TelegramClient
+from sebastian.clients.telegram.client import TelegramClient
 
 
 def resolve_gmail_client() -> GmailClient:
