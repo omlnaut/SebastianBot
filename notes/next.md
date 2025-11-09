@@ -1,7 +1,7 @@
 # Next
 
 ## continue with
-- move telegram/googleTask to sebastian/clients
+- move googleTask to sebastian/clients
 - delivery tracker
     - remove legacy on first successful run
 ## future ideas
