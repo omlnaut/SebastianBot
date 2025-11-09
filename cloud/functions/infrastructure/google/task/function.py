@@ -9,7 +9,7 @@ from cloud.functions.infrastructure.telegram import (
 )
 from cloud.helper import parse_payload
 from function_app import app
-from sebastian.infrastructure.google.task.models import TaskListIds
+from sebastian.infrastructure.google.task.models import CreatedTask, TaskListIds
 from sebastian.infrastructure.google.task.service import TaskService
 
 from .helper import CreateTaskEvent, task_output_binding
@@ -45,10 +45,17 @@ def create_task(
     created_task = service.create_task_with_notes(
         event.task_list_id, event.title, event.notes or "", event.due
     )
-    telegramOutput.set(
-        SendTelegramMessageEvent(
-            message=f"TASK created: {created_task.title} in {created_task.tasklist.name} ({created_task.due.date()})"
-        ).to_output()
-    )
+    message = _build_message(created_task)
+
+    telegramOutput.set(SendTelegramMessageEvent(message=message).to_output())
 
     logging.info(f"Created task: {created_task.title}")
+
+
+def _build_message(created_task: CreatedTask) -> str:
+    message = f"TASK created: {created_task.title}"
+    if created_task.tasklist.name != TaskListIds.Default:
+        message += f" in {created_task.tasklist.name}"
+    if created_task.due:
+        message += f" ({created_task.due.date()})"
+    return message
