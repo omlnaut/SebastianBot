@@ -14,9 +14,14 @@ from cloud.functions.infrastructure.telegram import (
 from function_app import app
 from sebastian.infrastructure.google.task.models import TaskListIds
 
+from .TriggerTimes import TriggerTimes
+
 
 @app.timer_trigger(
-    schedule="7 3 * * *", arg_name="mytimer", run_on_startup=False, use_monitor=False
+    schedule=TriggerTimes.MangaUpdate,
+    arg_name="mytimer",
+    run_on_startup=False,
+    use_monitor=False,
 )
 @task_output_binding()
 @telegram_output_binding()

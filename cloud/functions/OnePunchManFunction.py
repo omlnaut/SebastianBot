@@ -15,9 +15,14 @@ from function_app import app
 from sebastian.clients.reddit import RedditPost
 from sebastian.infrastructure.google.task.models import TaskListIds
 
+from .TriggerTimes import TriggerTimes
+
 
 @app.timer_trigger(
-    schedule="7 6 * * *", arg_name="mytimer", run_on_startup=True, use_monitor=False
+    schedule=TriggerTimes.OnePunchMan,
+    arg_name="mytimer",
+    run_on_startup=False,
+    use_monitor=False,
 )
 @task_output_binding()
 @telegram_output_binding()
