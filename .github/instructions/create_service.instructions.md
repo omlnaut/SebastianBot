@@ -11,3 +11,4 @@
 - services must not depend on cloud/infrastructure layer (Azure functions, etc.)
 - follow naming convention: {UseCase}Service (e.g., DeliveryReadyService, MangaUpdateService)
 - when creating from a notebook: add a section that showcases the usage of the service
+- add service resolver in cloud/dependencies/services.py (injecting required clients)

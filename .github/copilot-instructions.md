@@ -15,3 +15,4 @@
     - sebastian (application layer) should not depend on cloud (infrastructure layer)
 - when naming files, use simple names (i.e. client.py instead of RedditClient.py)
 - use __init__.py
+- use type hints everywhere. if not possible because external packages don't support it, use type: ignore comments
