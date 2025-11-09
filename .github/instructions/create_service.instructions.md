@@ -1,0 +1,13 @@
+# When creating a new service (usecase), follow these instructions:
+- put into usecases dir, each usecase in its own folder
+- create a service.py file containing the service class
+- services orchestrate clients and business logic
+- services should:
+    - accept clients via dependency injection in __init__
+    - return Result[T] for operations that can fail
+    - return plain types (list, objects) for operations that always succeed
+    - extract domain models in a models.py (pydantic models if parsing is involved, dataclasses otherwise)
+    - extract parsing/transformation/logic into separate files if complex
+- services must not depend on cloud/infrastructure layer (Azure functions, etc.)
+- follow naming convention: {UseCase}Service (e.g., DeliveryReadyService, MangaUpdateService)
+- when creating from a notebook: add a section that showcases the usage of the service
