@@ -1,19 +1,11 @@
 import re
-from dataclasses import dataclass
 from datetime import datetime
 
 from bs4 import BeautifulSoup
 
+from .models import PickupData
 
-@dataclass
-class EmailData:
-    tracking_number: str | None
-    pickup_location: str
-    due_date: str | None
-    preview: str | None
-
-
-GERMAN_MONTHS: dict[str, int] = {
+_GERMAN_MONTHS: dict[str, int] = {
     "Januar": 1,
     "Februar": 2,
     "März": 3,
@@ -29,8 +21,7 @@ GERMAN_MONTHS: dict[str, int] = {
 }
 
 
-def parse_dhl_pickup_email_html(html: str) -> EmailData:
-    # Parse HTML content
+def parse_dhl_pickup_email_html(html: str) -> PickupData:
     soup = BeautifulSoup(html, "html.parser")
     text_content = soup.get_text()
 
@@ -39,7 +30,7 @@ def parse_dhl_pickup_email_html(html: str) -> EmailData:
     due_date = _find_due_date(text_content)
     preview = _find_preview(soup)
 
-    return EmailData(
+    return PickupData(
         tracking_number=tracking_number,
         pickup_location=location_text,
         due_date=due_date,
@@ -61,7 +52,7 @@ def _find_due_date(text_content):
             month_name = (
                 re.search(r"\d+\.\s*(\w+)", day_str).group(1).strip()  # type: ignore
             )
-            month = GERMAN_MONTHS.get(month_name)
+            month = _GERMAN_MONTHS.get(month_name)
 
             if month:
                 # Set the year (assuming next occurrence if month is in the past)
