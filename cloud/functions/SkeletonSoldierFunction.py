@@ -16,9 +16,14 @@ from sebastian.clients.reddit import RedditPost
 from sebastian.infrastructure.google.task.models import TaskListIds
 from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
 
+from .TriggerTimes import TriggerTimes
+
 
 @app.timer_trigger(
-    schedule="4 3 * * *", arg_name="mytimer", run_on_startup=False, use_monitor=False
+    schedule=TriggerTimes.SkeletonSoldier,
+    arg_name="mytimer",
+    run_on_startup=False,
+    use_monitor=False,
 )
 @task_output_binding()
 @telegram_output_binding()
