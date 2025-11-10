@@ -2,8 +2,7 @@
 
 ## continue with
 - move googleTask to sebastian/clients
-- delivery tracker
-    - remove legacy on first successful run
+    - deploy
 ## future ideas
 - auto-test all secret models against
     - secrets in vault
