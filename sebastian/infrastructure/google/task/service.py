@@ -1,23 +1,15 @@
 from datetime import datetime
-from typing import List, Optional
-
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
+from typing import Optional
 
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.shared.dates import get_end_of_day
 
-from .models import CreatedTask, TaskList, TaskListIds
+from .models import CreatedTask, TaskListIds
 
 
 class TaskService:
     def __init__(self, client: GoogleTaskClient):
         self.client = client
-
-    # def fetch_tasklists(self) -> List[TaskList]:
-    #     tasklists_response = self.service.tasklists().list().execute()
-    #     items = tasklists_response.get("items", [])
-    #     return [TaskList(**item) for item in items]
 
     def create_task_with_notes(
         self,
