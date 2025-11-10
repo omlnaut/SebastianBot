@@ -2,6 +2,7 @@ import logging
 
 import azure.functions as func
 
+from cloud.dependencies.services import resolve_google_task_service
 from cloud.functions.infrastructure.google.helper import load_google_credentials
 from cloud.functions.infrastructure.telegram.helper import (
     SendTelegramMessageEvent,
@@ -39,8 +40,7 @@ def create_task(
     logging.info("EventGrid create task triggered")
     event = parse_payload(azeventgrid, CreateTaskEvent)
 
-    creds = load_google_credentials()
-    service = TaskService(creds)
+    service = resolve_google_task_service()
 
     created_task = service.create_task_with_notes(
         event.task_list_id, event.title, event.notes or "", event.due

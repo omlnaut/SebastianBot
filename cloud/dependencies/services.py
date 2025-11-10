@@ -1,5 +1,7 @@
 from sebastian.clients import MangaUpdateClient, RedditClient
 from sebastian.clients.google.gmail.client import GmailClient
+from sebastian.clients.google.task.client import GoogleTaskClient
+from sebastian.infrastructure.google.task.service import TaskService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.OnePunchMan.service import OnePunchManService
@@ -7,6 +9,7 @@ from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
 
 from .clients import (
     resolve_gmail_client,
+    resolve_google_task_client,
     resolve_mangaupdate_client,
     resolve_reddit_client,
 )
@@ -41,4 +44,12 @@ def resolve_delivery_ready_service(
 ) -> DeliveryReadyService:
     return DeliveryReadyService(
         gmail_client=gmail_client,
+    )
+
+
+def resolve_google_task_service(
+    task_client: GoogleTaskClient = resolve_google_task_client(),
+) -> TaskService:
+    return TaskService(
+        client=task_client,
     )

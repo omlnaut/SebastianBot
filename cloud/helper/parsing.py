@@ -1,6 +1,7 @@
+from typing import Type, TypeVar
+
 import azure.functions as func
 from pydantic import BaseModel
-from typing import Type, TypeVar
 
 T = TypeVar("T", bound=BaseModel)
 
