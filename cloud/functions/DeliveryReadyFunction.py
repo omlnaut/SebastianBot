@@ -35,7 +35,7 @@ def check_delivery_ready(
         logging.info("DeliveryReady timer function processed a request.")
 
         service = resolve_delivery_ready_service()
-        result = service.get_recent_dhl_pickups(hours_back=72)
+        result = service.get_recent_dhl_pickups(hours_back=1)
 
         if result.item:
             tasks = [_map_to_task_event(pickup).to_output() for pickup in result.item]
