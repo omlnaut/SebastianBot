@@ -1,8 +1,8 @@
 # Next
 
 ## continue with
-- GoogleDrive client
-- mietplan stuff
+- winsim
+
 ## future ideas
 - auto-test all secret models against
     - secrets in vault
