@@ -35,7 +35,12 @@ def check_delivery_ready(
         logging.info("DeliveryReady timer function processed a request.")
 
         service = resolve_delivery_ready_service()
+        logging.info("Checking for recent DHL pickups")
         result = service.get_recent_dhl_pickups(hours_back=1)
+
+        logging.info(
+            f"Found {len(result.item) if result.item else 0} recent DHL pickups"
+        )
 
         if result.item:
             tasks = [_map_to_task_event(pickup).to_output() for pickup in result.item]
@@ -53,7 +58,7 @@ def check_delivery_ready(
 
 
 def _map_to_task_event(pickup: PickupData) -> CreateTaskEvent:
-    title = f"Paket abholen"
+    title = f"Paket abholen: {pickup.preview}"
 
     notes = ""
     if pickup.preview:
