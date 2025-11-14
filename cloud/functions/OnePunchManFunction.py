@@ -35,16 +35,18 @@ def check_one_punch_man_updates(
         logging.info("One Punch Man timer function started.")
 
         service = resolve_one_punch_man_service()
+        logging.info("Checking for new One Punch Man chapters")
         new_chapter_posts = service.get_new_chapter_posts()
+
+        logging.info(f"Found {len(new_chapter_posts)} new chapter(s)")
 
         create_task_events = [
             _to_create_task_event(post).to_output() for post in new_chapter_posts
         ]
 
-        logging.info(f"Found new chapters: {new_chapter_posts}")
-
         if create_task_events:
             taskOutput.set(create_task_events)  # type: ignore
+            logging.info(f"Created {len(create_task_events)} task(s) for new chapters")
 
     except Exception as e:
         error_msg = f"Error in One Punch Man function: {str(e)}"

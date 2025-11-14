@@ -45,8 +45,10 @@ def check_delivery_ready(
         if result.item:
             tasks = [_map_to_task_event(pickup).to_output() for pickup in result.item]
             taskOutput.set(tasks)  # type: ignore
+            logging.info(f"Created {len(tasks)} task(s) for DHL pickups")
 
         if result.errors:
+            logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
                 SendTelegramMessageEvent(message=result.errors_string).to_output()
             )

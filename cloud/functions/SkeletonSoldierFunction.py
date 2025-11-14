@@ -36,16 +36,18 @@ def check_skeleton_soldier_updates(
         logging.info("Skeleton Soldier timer function started.")
 
         service = resolve_skeleton_soldier_service()
+        logging.info("Checking for new Skeleton Soldier chapters")
         new_chapter_posts = service.get_new_chapter_posts()
+
+        logging.info(f"Found {len(new_chapter_posts)} new chapter(s)")
 
         create_task_events = [
             _to_create_task_event(post).to_output() for post in new_chapter_posts
         ]
 
-        logging.info(f"Found new chapters: {new_chapter_posts}")
-
         if create_task_events:
             taskOutput.set(create_task_events)  # type: ignore
+            logging.info(f"Created {len(create_task_events)} task(s) for new chapters")
 
     except Exception as e:
         error_msg = f"Error in Skeleton Soldier function: {str(e)}"

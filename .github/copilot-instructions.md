@@ -2,6 +2,7 @@
 - root dir is always /workspaces/SebastianBot
 - cloud/ contains azure related code:
     - functions/ for defining azure functions. One function per file.
+        - functions might be nested into subdirectories for better organization
     - dependencies/ for constructing services and clients from the application layer
     - helper/ for azure related helpers
 - sebastian/ contains core logic for the bot (application layer):

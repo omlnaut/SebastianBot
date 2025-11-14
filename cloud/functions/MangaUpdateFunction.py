@@ -34,13 +34,20 @@ def check_manga_update(
         logging.info("MangaUpdate timer function processed a request.")
 
         service = resolve_mangaupdate_service()
+        logging.info("Checking for latest manga chapters")
         result = service.get_latest_chapters()
+
+        logging.info(
+            f"Found {len(result.item) if result.item else 0} new manga chapters"
+        )
 
         if result.item:
             tasks = [_map_to_task_event(manga).to_output() for manga in result.item]
             taskOutput.set(tasks)  # type: ignore
+            logging.info(f"Created {len(tasks)} task(s) for new manga chapters")
 
         if result.errors:
+            logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
                 SendTelegramMessageEvent(message=result.errors_string).to_output()
             )

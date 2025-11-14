@@ -37,19 +37,26 @@ def create_task(
     azeventgrid: func.EventGridEvent,
     telegramOutput: func.Out[func.EventGridOutputEvent],
 ):
-    logging.info("EventGrid create task triggered")
-    event = parse_payload(azeventgrid, CreateTaskEvent)
+    try:
+        logging.info("EventGrid create task triggered")
+        event = parse_payload(azeventgrid, CreateTaskEvent)
 
-    service = resolve_google_task_service()
+        logging.info(f"Creating task: {event.title}")
 
-    created_task = service.create_task_with_notes(
-        event.task_list_id, event.title, event.notes or "", event.due
-    )
-    message = _build_message(created_task)
+        service = resolve_google_task_service()
 
-    telegramOutput.set(SendTelegramMessageEvent(message=message).to_output())
+        created_task = service.create_task_with_notes(
+            event.task_list_id, event.title, event.notes or "", event.due
+        )
+        message = _build_message(created_task)
 
-    logging.info(f"Created task: {created_task.title}")
+        telegramOutput.set(SendTelegramMessageEvent(message=message).to_output())
+
+        logging.info(f"Created task: {created_task.title}")
+    except Exception as e:
+        error_msg = f"Error creating task: {str(e)}"
+        logging.error(error_msg)
+        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
 
 
 def _build_message(created_task: CreatedTask) -> str:

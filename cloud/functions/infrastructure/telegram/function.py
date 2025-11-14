@@ -25,12 +25,16 @@ def test_send_telegram_message(
 
 @app.event_grid_trigger(arg_name="azeventgrid")
 async def send_telegram_message(azeventgrid: func.EventGridEvent):
-    logging.info("Start to send telegram message")
+    try:
+        logging.info("Start to send telegram message")
 
-    input_event = parse_payload(azeventgrid, SendTelegramMessageEvent)
+        input_event = parse_payload(azeventgrid, SendTelegramMessageEvent)
 
-    client = resolve_telegram_client()
+        client = resolve_telegram_client()
 
-    await service.send_telegram_message(client, input_event.message)
+        await service.send_telegram_message(client, input_event.message)
 
-    logging.info(f"Telegram Message sent: {input_event.message}")
+        logging.info(f"Telegram Message sent: {input_event.message}")
+    except Exception as e:
+        error_msg = f"Error sending telegram message: {str(e)}"
+        logging.error(error_msg)
