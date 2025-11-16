@@ -4,3 +4,11 @@
     - extract models in a models.py
 - create a resolver in cloud/dependencies/clients.py
 - when creating client from an investigation, add cells showing the usage of the client
+- check if it makes sense to extract private helper methods to make public methods more readable
+- if a public method uses private helper methods, extract those helpers to a separate file named after the public method
+    - name the file after the public method
+    - create a client dir that contains the client.py and the helper files
+        - "export" the client in the __init__.py
+    - keeps the main client file clean and readable
+    - example: `GoogleTaskClient.create_task_with_notes()` uses helpers extracted to `create_task_with_notes.py`
+    - bad example: private methods that are (or could be) used by multiple public methods should stay in the main client file. i.e. authentication, token fetching, etc.

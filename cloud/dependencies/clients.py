@@ -5,7 +5,8 @@ from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
-from sebastian.clients.reddit import RedditClient, RedditCredentials
+from sebastian.clients.reddit.client import RedditClient
+from sebastian.clients.reddit.credentials import RedditCredentials
 from sebastian.clients.telegram.client import TelegramClient
 
 
