@@ -2,6 +2,7 @@
 
 ## continue with
 - winsim
+    - pdf attachment download
 
 ## future ideas
 - auto-test all secret models against
