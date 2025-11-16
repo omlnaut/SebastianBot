@@ -1,6 +1,7 @@
-from sebastian.clients import MangaUpdateClient, RedditClient
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
+from sebastian.clients.MangaUpdate.client import MangaUpdateClient
+from sebastian.clients.reddit.client import RedditClient
 from sebastian.infrastructure.google.task.service import TaskService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
