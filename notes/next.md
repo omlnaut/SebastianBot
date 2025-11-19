@@ -2,7 +2,7 @@
 
 ## continue with
 - winsim
-    - pdf attachment download
+- restructure to put investigations to clients/usecases
 
 ## future ideas
 - auto-test all secret models against
