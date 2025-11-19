@@ -1,6 +1,16 @@
 import base64
+from dataclasses import dataclass
+from io import BytesIO
 
 from pydantic import BaseModel
+
+
+@dataclass
+class PdfAttachment:
+    """Represents a PDF attachment with filename and data"""
+
+    filename: str
+    data: BytesIO
 
 
 class MessageId(BaseModel):
@@ -33,10 +43,14 @@ class FullMailResponse(BaseModel):
     threadId: str
     labelIds: list[str]
     snippet: str
-    payload: str
+    raw_payload: dict
     sizeEstimate: int
     historyId: str
     internalDate: str
+
+    @property
+    def payload(self) -> str:
+        return _extract_email_body(self.raw_payload)
 
     @staticmethod
     def from_response(response: dict) -> "FullMailResponse":
@@ -47,6 +61,6 @@ class FullMailResponse(BaseModel):
             snippet=response["snippet"],
             historyId=response["historyId"],
             internalDate=response["internalDate"],
-            payload=_extract_email_body(response["payload"]),
+            raw_payload=response["payload"],
             sizeEstimate=response["sizeEstimate"],
         )
