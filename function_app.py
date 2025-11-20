@@ -11,3 +11,4 @@ from cloud.functions.infrastructure.telegram.function import (
 from cloud.functions.MangaUpdateFunction import check_manga_update
 from cloud.functions.OnePunchManFunction import check_one_punch_man_updates
 from cloud.functions.SkeletonSoldierFunction import check_skeleton_soldier_updates
+from cloud.functions.WinSimFunction import check_winsim_invoices
