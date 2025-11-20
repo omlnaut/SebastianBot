@@ -10,6 +10,13 @@
     - usecases/ for defining use cases, usually defined as services that orchestrate clients + some logic
     - infrastructure/ same as usecases, but focused on interaction with external services that are triggered by events (i.e. sending telegram messages, creating tasks in google calendar, etc)
     - shared/ common code used in application layer
+    - clients and usecases might include "investigation.iypnb" notebooks, showcasing or testing the usage
+        - always include as first cell: 
+                %load_ext autoreload
+                %autoreload 2
+
+                import sys
+                sys.path.append("/workspaces/SebastianBot")
 
 ## General guidelines
 - Follow clean architecture principles: separate concerns between different layers (cloud vs sebastian)
