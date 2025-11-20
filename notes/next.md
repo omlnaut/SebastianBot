@@ -1,8 +1,7 @@
 # Next
 
 ## continue with
-- winsim
-- restructure to put investigations to clients/usecases
+- check old DeliveryTracker for next usecase to migrate
 
 ## future ideas
 - auto-test all secret models against
