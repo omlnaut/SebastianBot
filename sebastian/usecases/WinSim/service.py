@@ -31,42 +31,50 @@ class WinSimService:
             Result containing list of uploaded file IDs and any errors encountered
         """
         try:
-            time_threshold = datetime.now(timezone.utc) - timedelta(hours=hours_back)
+            pdfs = self._download_pdf_attachments(hours_back)
 
-            query = (
-                GmailQueryBuilder()
-                .from_email("no-reply@winsim.de")
-                .has_attachment("pdf")
-                .after_date(time_threshold)
-                .build()
-            )
-
-            pdfs = self.gmail_client.download_pdf_attachments(query)
-
-            uploaded_file_ids: list[str] = []
-            errors: list[str] = []
-
-            for pdf in pdfs:
-                try:
-                    # Generate filename in format: yyyy-mm_winsim.pdf
-                    filename = self._generate_filename()
-
-                    upload_request = UploadFileRequest(
-                        content=pdf.data,
-                        filename=filename,
-                        folder_id=self.winsim_folder_id,
-                        mime_type="application/pdf",
-                    )
-
-                    response = self.drive_client.upload_file(upload_request)
-                    uploaded_file_ids.append(response.file_id)
-                except Exception as e:
-                    errors.append(f"Error uploading {pdf.filename}: {str(e)}")
+            uploaded_file_ids, errors = self._try_upload_files(pdfs)
 
             return Result.from_item(item=uploaded_file_ids, errors=errors)
 
         except Exception as e:
             raise Exception(f"Failed to process WinSim invoices: {str(e)}")
+
+    def _try_upload_files(self, pdfs):
+        uploaded_file_ids: list[str] = []
+        errors: list[str] = []
+
+        for pdf in pdfs:
+            try:
+                # Generate filename in format: yyyy-mm_winsim.pdf
+                filename = self._generate_filename()
+
+                upload_request = UploadFileRequest(
+                    content=pdf.data,
+                    filename=filename,
+                    folder_id=self.winsim_folder_id,
+                    mime_type="application/pdf",
+                )
+
+                response = self.drive_client.upload_file(upload_request)
+                uploaded_file_ids.append(response.file_id)
+            except Exception as e:
+                errors.append(f"Error uploading {pdf.filename}: {str(e)}")
+        return uploaded_file_ids, errors
+
+    def _download_pdf_attachments(self, hours_back: int):
+        time_threshold = datetime.now(timezone.utc) - timedelta(hours=hours_back)
+
+        query = (
+            GmailQueryBuilder()
+            .from_email("no-reply@winsim.de")
+            .has_attachment("pdf")
+            .after_date(time_threshold)
+            .build()
+        )
+
+        pdfs = self.gmail_client.download_pdf_attachments(query)
+        return pdfs
 
     def _generate_filename(self) -> str:
         """
