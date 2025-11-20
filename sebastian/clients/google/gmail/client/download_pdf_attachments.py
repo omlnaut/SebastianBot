@@ -31,7 +31,7 @@ def _extract_pdf_parts(message: FullMailResponse) -> list[PdfMessagePart]:
     return [PdfMessagePart.model_validate(part) for part in pdf_parts]
 
 
-def _download_pdf_attachment(service, message_id: str, attachment_id: str) -> BytesIO:
+def _download_pdf_attachment(service, message_id: str, attachment_id: str) -> bytes:
     """Download a single PDF attachment and return as BytesIO"""
     attachment = (
         service.users()  # type: ignore
@@ -49,7 +49,7 @@ def _download_pdf_attachment(service, message_id: str, attachment_id: str) -> By
         raise ValueError("Attachment not found")
 
     pdf_bytes = base64.urlsafe_b64decode(attachment["data"])
-    return BytesIO(pdf_bytes)
+    return pdf_bytes
 
 
 def download_pdf_attachments_from_messages(
@@ -61,11 +61,11 @@ def download_pdf_attachments_from_messages(
     for message in messages:
         pdf_parts = _extract_pdf_parts(message)
         for pdf_part in pdf_parts:
-            pdf_io = _download_pdf_attachment(
+            pdf_bytes = _download_pdf_attachment(
                 service, message.id, pdf_part.body.attachment_id
             )
             pdf_attachments.append(
-                PdfAttachment(filename=pdf_part.filename, data=pdf_io)
+                PdfAttachment(filename=pdf_part.filename, data=pdf_bytes)
             )
 
     return pdf_attachments

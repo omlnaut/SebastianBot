@@ -10,7 +10,7 @@ class PdfAttachment:
     """Represents a PDF attachment with filename and data"""
 
     filename: str
-    data: BytesIO
+    data: bytes
 
 
 class MessageId(BaseModel):
