@@ -17,3 +17,9 @@ class Result(Generic[T]):
     @property
     def errors_string(self) -> str:
         return "\n-------------\n".join(self.errors)
+
+    def __str__(self) -> str:
+        return f"Result(item={self.item}, errors={self.errors})"
+
+    def __repr__(self) -> str:
+        return self.__str__()

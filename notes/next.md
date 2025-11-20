@@ -10,3 +10,5 @@
     - local examples?
 - ci/cd (test+deploy)
 - library
+- read winsim invoices to get actual invoice date
+- auto-rename existing invoices
