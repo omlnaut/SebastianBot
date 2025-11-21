@@ -8,7 +8,9 @@
 - if a public method uses private helper methods, extract those helpers to a separate file named after the public method
     - name the file after the public method
     - create a client dir that contains the client.py and the helper files
-        - "export" the client in the __init__.py
+        - "export" the client in the __init__.py, so no import adjustments should be needed elsewhere
+        - client.py should use relative imports to import the helpers
+        - "main" method in the helper file should contain barely any logic, just call other private methods in the helper file to improve readability
     - keeps the main client file clean and readable
     - example: `GoogleTaskClient.create_task_with_notes()` uses helpers extracted to `create_task_with_notes.py`
     - bad example: private methods that are (or could be) used by multiple public methods should stay in the main client file. i.e. authentication, token fetching, etc.
