@@ -5,6 +5,8 @@ from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
+from sebastian.clients.mietplan.client import MietplanClient
+from sebastian.clients.mietplan.credentials import MietplanCredentials
 from sebastian.clients.reddit.client import RedditClient
 from sebastian.clients.reddit.credentials import RedditCredentials
 from sebastian.clients.telegram.client import TelegramClient
@@ -38,3 +40,8 @@ def resolve_google_task_client() -> GoogleTaskClient:
 def resolve_google_drive_client() -> GoogleDriveClient:
     credentials = load_google_credentials()
     return GoogleDriveClient(credentials)
+
+
+def resolve_mietplan_client() -> MietplanClient:
+    credentials = get_secret(SecretKeys.MietplanCredentials, MietplanCredentials)
+    return MietplanClient(credentials)

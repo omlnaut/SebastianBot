@@ -3,6 +3,7 @@
 - data that is read from an external source should always be parsed into a pydantic basemodel
     - extract models that are part of the public interface of the client in a models.py
 - create a resolver in cloud/dependencies/clients.py
+- use dependency injection for things like credentials (usually fetched via pydantic model from azure key vault)
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable
 - if a public method uses private helper methods, extract those helpers to a separate file named after the public method

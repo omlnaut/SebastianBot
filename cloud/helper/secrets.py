@@ -11,6 +11,7 @@ class SecretKeys(Enum):
     GoogleCredentials = "GoogleCredentials"
     MangaUpdateCredentials = "MangaUpdateCredentials"
     RedditCredentials = "RedditCredentials"
+    MietplanCredentials = "MietplanCredentials"
 
     def __str__(self):
         return self.value
