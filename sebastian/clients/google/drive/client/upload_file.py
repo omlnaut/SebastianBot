@@ -61,6 +61,57 @@ def ensure_folder_path(service, path: str, base_folder_id: str) -> str:
     return current_parent_id
 
 
+def _get_or_create_parent_folder_id(
+    service, filename_with_path: str, base_folder_id: str
+) -> str:
+    """Determine the parent folder ID for the file upload.
+
+    If a path is included in the filename, this function ensures the folder
+    structure exists and returns the ID of the immediate parent folder. Otherwise,
+    it returns the base_folder_id.
+
+    Args:
+        service: Google Drive API service instance
+        filename_with_path: The full path of the file, including directories
+        base_folder_id: The ID of the base folder to start from
+
+    Returns:
+        The ID of the parent folder for the file upload
+    """
+    dir_path = os.path.dirname(filename_with_path)
+    if dir_path:
+        return ensure_folder_path(service, dir_path, base_folder_id)
+    return base_folder_id
+
+
+def _perform_upload(
+    service, filename: str, content: bytes, parent_folder_id: str, mime_type: str
+) -> str:
+    """Upload the file content to the specified parent folder.
+
+    Args:
+        service: Google Drive API service instance
+        filename: The name of the file to be created
+        content: The file content as bytes
+        parent_folder_id: The ID of the folder where the file will be uploaded
+        mime_type: The MIME type of the file
+
+    Returns:
+        The ID of the uploaded file
+    """
+    bytes_content = BytesIO(content)
+    file_metadata = {"name": filename, "parents": [parent_folder_id]}
+    media = MediaIoBaseUpload(bytes_content, mimetype=mime_type, resumable=True)
+
+    uploaded_file = (
+        service.files()  # type: ignore
+        .create(body=file_metadata, media_body=media, fields="id")
+        .execute()
+    )
+
+    return uploaded_file["id"]
+
+
 def upload_file_with_path(
     service,
     filename_with_path: str,
@@ -80,25 +131,10 @@ def upload_file_with_path(
     Returns:
         The ID of the uploaded file
     """
-    # Split the path into directory and filename
-    dir_path = os.path.dirname(filename_with_path)
-    filename = os.path.basename(filename_with_path)
-
-    # Navigate/create the folder structure if path is provided
-    if dir_path:
-        parent_folder_id = ensure_folder_path(service, dir_path, base_folder_id)
-    else:
-        parent_folder_id = base_folder_id
-
-    # Upload the file to the final folder
-    bytes_content = BytesIO(content)
-    file_metadata = {"name": filename, "parents": [parent_folder_id]}
-    media = MediaIoBaseUpload(bytes_content, mimetype=mime_type, resumable=True)
-
-    uploaded_file = (
-        service.files()  # type: ignore
-        .create(body=file_metadata, media_body=media, fields="id")
-        .execute()
+    parent_folder_id = _get_or_create_parent_folder_id(
+        service, filename_with_path, base_folder_id
     )
 
-    return uploaded_file["id"]
+    filename = os.path.basename(filename_with_path)
+
+    return _perform_upload(service, filename, content, parent_folder_id, mime_type)
