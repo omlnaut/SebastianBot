@@ -11,12 +11,11 @@ class MietplanClient:
     _MAIN_FOLDER_ID = "ac4do35ktgfi79j8ids35om8udm"
 
     def __init__(self, credentials: MietplanCredentials):
-        self.credentials = credentials
-        self.session = requests.Session()
-        _login.login(self.session, self.credentials.username, self.credentials.password)
+        self._session = requests.Session()
+        _login.login(self._session, credentials.username, credentials.password)
 
     def walk_from_top_folder(self) -> Generator[Folder, None, None]:
-        yield from _walk.walk_from_top_folder(self.session, self._MAIN_FOLDER_ID)
+        yield from _walk.walk_from_top_folder(self._session, self._MAIN_FOLDER_ID)
 
-    def download_file(self, download_path: str) -> BytesIO:
-        return _download.download_file_to_ram(self.session, download_path)
+    def download_file(self, download_path: str) -> bytes:
+        return _download.download_file_to_ram(self._session, download_path)
