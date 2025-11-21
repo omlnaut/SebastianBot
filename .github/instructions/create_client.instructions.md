@@ -16,3 +16,4 @@
     - keeps the main client file clean and readable
     - example: `GoogleTaskClient.create_task_with_notes()` uses helpers extracted to `create_task_with_notes.py`
     - bad example: private methods that are (or could be) used by multiple public methods should stay in the main client file. i.e. authentication, token fetching, etc.
+    - good example: complex logic in `__init__` (i.e. for authentication) can be extracted to a `_login.py` helper file.
