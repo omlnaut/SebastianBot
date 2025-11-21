@@ -1,7 +1,9 @@
 # Next
 
 ## continue with
-- check old DeliveryTracker for next usecase to migrate
+- mietplan
+    - done: drive nested upload
+    - next: mietplan client
 
 ## future ideas
 - auto-test all secret models against
