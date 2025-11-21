@@ -18,7 +18,8 @@
 				"ms-python.python",
 				"ms-vscode.vscode-node-azure-pack",
 				"ms-toolsai.jupyter",
-				"Azurite.azurite"
+				"Azurite.azurite",
+				"mathematic.vscode-pdf"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
