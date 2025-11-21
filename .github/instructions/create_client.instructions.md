@@ -2,6 +2,7 @@
 - put into clients dir, each client own folder
 - data that is read from an external source should always be parsed into a pydantic basemodel
     - extract models that are part of the public interface of the client in a models.py
+        - models.py should be at the "root" of the client dir, not in the sub-client-dir mentioned below
 - create a resolver in cloud/dependencies/clients.py
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable

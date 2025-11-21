@@ -1,8 +1,8 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from sebastian.clients.google.drive.models import UploadFileRequest, UploadFileResponse
-from sebastian.clients.google.drive.upload_file import upload_file_with_path
+from .upload_file import upload_file_with_path
+from ..models import UploadFileRequest, UploadFileResponse
 
 
 class GoogleDriveClient:
