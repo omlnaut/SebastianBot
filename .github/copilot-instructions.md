@@ -17,6 +17,9 @@
 
                 import sys
                 sys.path.append("/workspaces/SebastianBot")
+- .github/ contains instruction files (.md, also nested)
+    - copilot-instructions.md: general instructions, like coding style and architecture principles
+    - instructions/: specific instructions for different tasks (e.g., creating a new service)
 
 ## General guidelines
 - Follow clean architecture principles: separate concerns between different layers (cloud vs sebastian)
@@ -25,3 +28,6 @@
 - use __init__.py, but leave it empty (except explicitly instructed otherwise)
 - use type hints everywhere. if not possible because external packages don't support it, use type: ignore comments
 - make sure classes only "expose" their public methods and attributes. use leading underscore for private methods/attributes
+- public methods should orchestrate calls to private methods to clearly show the logical flow. private methods should not call other private methods
+- use list comprehensions and early returns/continue to write more concise code
+- include relevant information, like IDs, in log messages

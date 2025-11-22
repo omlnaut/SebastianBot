@@ -13,3 +13,4 @@
 - when creating from a notebook: add a section that showcases the usage of the service
 - add service resolver in cloud/dependencies/services.py (injecting required clients)
 - when creating a new service, also create a notebook showcasing the usage. if a notebook alreaddy exists for the service, add to that one instead
+- make configuration values, such as time-based thresholds, parameters to the public methods
