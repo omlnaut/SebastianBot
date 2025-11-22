@@ -14,12 +14,13 @@ from .TriggerTimes import TriggerTimes
 
 @app.timer_trigger(
     schedule=TriggerTimes.Mietplan,
-    arg_name="mietplan_timer",
+    arg_name="mytimer",
     run_on_startup=False,
+    use_monitor=False,
 )
 @telegram_output_binding()
 def check_mietplan(
-    mietplan_timer: TimerRequest,
+    mytimer: TimerRequest,
     telegramOutput: Out[EventGridOutputEvent],
 ) -> None:
     try:

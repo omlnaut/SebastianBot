@@ -6,14 +6,17 @@
     2. if using a client, use resolver from cloud/dependencies/clients.py
     3. if using a service, use resolver from cloud/dependencies/services.py
     4. create {Name}Function.py with:
-        - @app.timer_trigger decorator with schedule from TriggerTimes
+        - @app.timer_trigger decorator with schedule from TriggerTimes, arg_name="mytimer", run_on_startup=False, use_monitor=False
         - service resolution via resolve_{name}_service()
         - error handling with try/except
         - output bindings (@task_output_binding, @telegram_output_binding) for infrastructure actions
-        - private helper functions (e.g., _map_to_task_event) for mapping domain models to events
+        - function signature: def check_{usecase_name}(mytimer: TimerRequest, {outputs}) -> None
+        - private helper functions (e.g., _map_to_*, _create_*, _to_*) for mapping domain models to events/messages
     5. import function in function_app.py
 - functions should:
+    - return None (no return value)
     - use logging for info/errors
-    - handle exceptions and send error messages via telegram
+    - handle exceptions and send error messages via telegram using telegramOutput.set()
+    - check for errors using result.has_errors() and send result.errors_string via telegram
     - map service results to infrastructure events (tasks, telegram messages)
 - follow naming: check_{usecase_name} for the function name
