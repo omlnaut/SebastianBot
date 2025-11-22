@@ -4,6 +4,8 @@
 - mietplan
     - done: drive nested upload
     - next: mietplan client
+- cleanup instruction files
+- plan test concept
 
 ## future ideas
 - auto-test all secret models against
