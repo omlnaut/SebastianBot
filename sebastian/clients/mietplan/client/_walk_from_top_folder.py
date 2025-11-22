@@ -50,7 +50,7 @@ def walk_from_top_folder(
     session: requests.Session, top_folder_id: str
 ) -> Generator[Folder, None, None]:
     def _walk(folder_id: str, path: list[str]) -> Generator[Folder, None, None]:
-        logging.info(f"Walking folder: {folder_id}, path: {'/'.join(path)}")
+        logging.debug(f"Walking folder: {folder_id}, path: {'/'.join(path)}")
 
         # First, yield the current folder with its files
         files = [
@@ -61,14 +61,14 @@ def walk_from_top_folder(
             )
             for f in _get_files(session, folder_id)
         ]
-        logging.info(f"Found {len(files)} files in folder: {folder_id}")
+        logging.debug(f"Found {len(files)} files in folder: {folder_id}")
         yield Folder(id=folder_id, path=path, files=files)
 
         # Then, recurse into subfolders
         subfolders = _get_folders(session, folder_id)
-        logging.info(f"Found {len(subfolders)} subfolders in folder: {folder_id}")
+        logging.debug(f"Found {len(subfolders)} subfolders in folder: {folder_id}")
         for subfolder in subfolders:
-            logging.info(
+            logging.debug(
                 f"Processing subfolder: {subfolder.name} (ID: {subfolder.folder_id})"
             )
             yield from _walk(subfolder.folder_id, path + [subfolder.name])

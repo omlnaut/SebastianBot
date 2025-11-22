@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
@@ -26,7 +27,7 @@ def check_mietplan(
     try:
         logging.info("Checking for new mietplan files")
         service = resolve_mietplan_service()
-        result = service.process_new_files()
+        result = service.process_new_files(max_file_age=timedelta(days=1))
 
         if result.has_errors():
             error_message = f"Mietplan check failed:\n{result.errors_string}"
