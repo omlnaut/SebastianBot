@@ -6,6 +6,7 @@
     - next: mietplan client
 - cleanup instruction files
 - plan test concept
+- formalize error result pattern
 
 ## future ideas
 - auto-test all secret models against

@@ -22,5 +22,6 @@
 - Follow clean architecture principles: separate concerns between different layers (cloud vs sebastian)
     - sebastian (application layer) should not depend on cloud (infrastructure layer)
 - when naming files, use simple names (i.e. client.py instead of RedditClient.py)
-- use __init__.py
+- use __init__.py, but leave it empty (except explicitly instructed otherwise)
 - use type hints everywhere. if not possible because external packages don't support it, use type: ignore comments
+- make sure classes only "expose" their public methods and attributes. use leading underscore for private methods/attributes
