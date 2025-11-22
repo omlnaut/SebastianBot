@@ -14,6 +14,9 @@ class Result(Generic[T]):
     ) -> "Result[T]":
         return Result(item=item, errors=errors)
 
+    def has_errors(self) -> bool:
+        return len(self.errors) > 0
+
     @property
     def errors_string(self) -> str:
         return "\n-------------\n".join(self.errors)
