@@ -13,3 +13,4 @@ from cloud.functions.MietplanFunction import check_mietplan
 from cloud.functions.OnePunchManFunction import check_one_punch_man_updates
 from cloud.functions.SkeletonSoldierFunction import check_skeleton_soldier_updates
 from cloud.functions.WinSimFunction import check_winsim_invoices
+from cloud.functions.ReturnTrackerFunction import check_return_tracker
