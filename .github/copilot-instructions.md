@@ -31,3 +31,4 @@
 - public methods should orchestrate calls to private methods to clearly show the logical flow. private methods should not call other private methods
 - use list comprehensions and early returns/continue to write more concise code
 - include relevant information, like IDs, in log messages
+- represent time spans passed into methods as `timedelta` (e.g. prefer `time_back: timedelta` over `hours_back: int`). Convert to absolute timestamps within the method body.

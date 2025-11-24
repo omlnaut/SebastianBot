@@ -19,4 +19,5 @@
     - handle exceptions and send error messages via telegram using telegramOutput.set()
     - check for errors using result.has_errors() and send result.errors_string via telegram
     - map service results to infrastructure events (tasks, telegram messages)
+    - pass time span parameters to services as `timedelta` objects (construct with `timedelta(hours=1)` etc.) rather than raw ints
 - follow naming: check_{usecase_name} for the function name
