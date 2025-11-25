@@ -135,12 +135,10 @@ jobs:
           python-version: '3.12'
       
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+        run: pip install -r requirements_local.txt
       
       - name: Run tests
-        run: PYTHONPATH=. pytest --cov=sebastian --cov-report=xml
+        run: pytest --cov=sebastian --cov-report=xml
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
