@@ -1,9 +1,7 @@
 # Next
 
 ## continue with
-- mietplan
-    - done: drive nested upload
-    - next: mietplan client
+- fix telegram cloud import
 - cleanup instruction files
 - plan test concept
 - formalize error result pattern
