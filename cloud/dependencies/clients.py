@@ -1,5 +1,9 @@
 from cloud.functions.infrastructure.google.helper import load_google_credentials
-from cloud.functions.infrastructure.telegram.config import TelegramConfig
+from cloud.functions.infrastructure.telegram.config import (
+    TelegramChat,
+    TelegramConfig as CloudTelegramConfig,
+    TelegramToken,
+)
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gmail.client import GmailClient
@@ -10,6 +14,7 @@ from sebastian.clients.mietplan.credentials import MietplanCredentials
 from sebastian.clients.reddit.client import RedditClient
 from sebastian.clients.reddit.credentials import RedditCredentials
 from sebastian.clients.telegram.client import TelegramClient
+from sebastian.clients.telegram.config import TelegramConfig
 
 
 def resolve_gmail_client() -> GmailClient:
@@ -28,7 +33,11 @@ def resolve_mangaupdate_client() -> MangaUpdateClient:
 
 
 def resolve_telegram_client() -> TelegramClient:
-    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
+    cloud_config = get_secret(SecretKeys.TelegramSebastianToken, CloudTelegramConfig)
+    config = TelegramConfig(
+        token=cloud_config.tokens[TelegramToken.Sebastian].token,
+        chat_id=cloud_config.chats[TelegramChat.MainChat].id,
+    )
     return TelegramClient(config)
 
 
