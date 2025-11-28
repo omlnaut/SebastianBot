@@ -9,6 +9,7 @@ The devcontainer automatically installs Poetry and all dependencies when built. 
 - Poetry and the `poetry-plugin-export` plugin (for generating `requirements.txt`)
 - Virtual environments are disabled (`virtualenvs.create false`) since we're inside a container
 - All dependencies (including dev dependencies) are installed via `poetry install`
+- Pre-commit hooks are installed automatically via `postCreateCommand`
 
 No additional setup is needed when using the devcontainer.
 
@@ -44,16 +45,23 @@ Dependencies use caret (`^`) version constraints:
 
 ## Deploying to Azure
 
-Azure Functions requires a `requirements.txt` file for deployment. Before deploying:
+Azure Functions requires a `requirements.txt` file for deployment.
 
-1. **Export dependencies to requirements.txt:**
-   ```bash
-   poetry export -f requirements.txt --output requirements.txt --without-hashes
-   ```
+### Automatic Export (Pre-commit Hook)
 
-2. **Commit the updated `requirements.txt`**
+A pre-commit hook automatically exports `requirements.txt` whenever `pyproject.toml` or `poetry.lock` changes. This ensures the requirements file is always in sync when you commit dependency changes.
 
-3. **Deploy to Azure** via the Azure Functions extension
+The hook runs:
+```bash
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+```
+
+### Manual Export
+
+If needed, you can manually export:
+```bash
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+```
 
 > **Note:** Only production dependencies are exported. Dev dependencies (pytest, ipykernel, etc.) are not included in the deployment.
 
@@ -64,6 +72,7 @@ Azure Functions requires a `requirements.txt` file for deployment. Before deploy
 | `pyproject.toml` | Poetry configuration and dependency definitions |
 | `poetry.lock` | Locked versions for reproducible builds |
 | `requirements.txt` | Generated file for Azure Functions deployment |
+| `.pre-commit-config.yaml` | Pre-commit hook configuration |
 
 ## Useful Commands
 
@@ -79,4 +88,7 @@ poetry update
 
 # Show outdated packages
 poetry show --outdated
+
+# Run pre-commit hooks manually
+pre-commit run --all-files
 ```
