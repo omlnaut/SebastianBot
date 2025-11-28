@@ -19,7 +19,9 @@
 				"ms-vscode.vscode-node-azure-pack",
 				"ms-toolsai.jupyter",
 				"Azurite.azurite",
-				"mathematic.vscode-pdf"
+				"mathematic.vscode-pdf",
+				"GitHub.vscode-pull-request-github",
+				"github.vscode-github-actions"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
