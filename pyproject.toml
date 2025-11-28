@@ -16,7 +16,6 @@ google-auth-oauthlib = "^1.2"
 google-api-python-client = "^2.187"
 beautifulsoup4 = "^4.14"
 requests = "^2.32.5"
-moqpy = "^0.0.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^7.1"
