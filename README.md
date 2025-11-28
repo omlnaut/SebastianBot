@@ -85,12 +85,9 @@ Development is done via **Dev Containers**, which automatically sets up the comp
 
 1. Open the project in VS Code
 2. When prompted, click "Reopen in Container" (or run `Dev Containers: Reopen in Container` from command palette)
-3. The container installs all dependencies from `requirements_local.txt` automatically
+3. `Start Azure Blob Service` (bottom right in vscode)
+4. In Azure extension, start debugging locally
 
-```bash
-# Run functions locally (inside the devcontainer)
-func start
-```
 
 The devcontainer includes:
 - Python 3.12
