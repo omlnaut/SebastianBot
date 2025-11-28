@@ -75,16 +75,25 @@ These instruction files ensure consistent code generation that follows the proje
 
 ### Prerequisites
 
-- Python 3.x
-- Azure Functions Core Tools
+- Docker
+- VS Code with Dev Containers extension
 - Required credentials in Azure Key Vault (Reddit, Telegram, Google, etc.)
 
 ### Local Development
 
-```bash
-# Install dependencies
-pip install -r requirements_local.txt
+Development is done via **Dev Containers**, which automatically sets up the complete environment:
 
-# Run functions locally
+1. Open the project in VS Code
+2. When prompted, click "Reopen in Container" (or run `Dev Containers: Reopen in Container` from command palette)
+3. The container installs all dependencies from `requirements_local.txt` automatically
+
+```bash
+# Run functions locally (inside the devcontainer)
 func start
 ```
+
+The devcontainer includes:
+- Python 3.12
+- Azure Functions Core Tools
+- Azure CLI
+- All Python dependencies pre-installed
