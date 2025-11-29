@@ -10,7 +10,7 @@ from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.OnePunchMan.service import OnePunchManService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
-from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
+from sebastian.usecases.SkeletonSoldier.service import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
 
 from .clients import (
