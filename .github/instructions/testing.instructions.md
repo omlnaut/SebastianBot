@@ -82,37 +82,34 @@ def test_{function_name}_{edge_case}():
 ### Local Development
 
 ```bash
-# Install test dependencies
-pip install -r requirements_local.txt
+# Install test dependencies (using Poetry)
+poetry install --with test
 
 # Run all tests
-PYTHONPATH=. pytest
+poetry run pytest
 
 # Run tests with coverage
-PYTHONPATH=. pytest --cov=sebastian --cov-report=html
+poetry run pytest --cov=sebastian --cov-report=html
 
 # Run specific test file
-PYTHONPATH=. pytest tests/test_dates.py
+poetry run pytest tests/test_dates.py
 
 # Run tests matching a pattern
-PYTHONPATH=. pytest -k "test_parsing"
+poetry run pytest -k "test_parsing"
 ```
 
 ### Configuration
 
-Add `pytest.ini` or `pyproject.toml` for consistent test configuration:
+Test configuration is in `pyproject.toml`:
 
-```ini
-# pytest.ini
-[pytest]
-pythonpath = .
-testpaths = tests
-addopts = -v --tb=short
+```toml
+[tool.pytest.ini_options]
+pythonpath = ["."]
 ```
 
 ## GitHub Actions Workflow
 
-Tests run automatically on pull requests and pushes to main. Create `.github/workflows/tests.yml`:
+Tests run automatically on pull requests and pushes to main. The workflow is configured in `.github/workflows/tests.yml`:
 
 ```yaml
 name: Tests
@@ -136,11 +133,18 @@ jobs:
         with:
           python-version: '3.12'
       
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
       - name: Install dependencies
-        run: pip install -r requirements_local.txt
+        run: poetry install --only main,test
       
       - name: Run tests
-        run: pytest --cov=sebastian --cov-report=xml
+        run: poetry run pytest --cov=sebastian --cov-report=xml
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -153,7 +157,7 @@ jobs:
 
 ### Local Coverage Report
 ```bash
-PYTHONPATH=. pytest --cov=sebastian --cov-report=html
+poetry run pytest --cov=sebastian --cov-report=html
 open htmlcov/index.html
 ```
 
@@ -173,8 +177,8 @@ The project is already reasonably testable due to:
 ### Recommended Improvements
 
 1. **Add pytest configuration**
-   - Create `pytest.ini` or use `pyproject.toml` section
-   - Set `pythonpath = .` to avoid PYTHONPATH environment variable
+   - Use `[tool.pytest.ini_options]` section in `pyproject.toml`
+   - Set `pythonpath = ["."]` to avoid PYTHONPATH environment variable
 
 2. **Create test fixtures module**
    - For commonly used test data (e.g., mock Result objects)
@@ -226,12 +230,12 @@ When developing new features, follow these steps:
 
 ### Test Checklist for PRs
 - [ ] Tests added for new functionality
-- [ ] All tests pass locally (`PYTHONPATH=. pytest`)
+- [ ] All tests pass locally (`poetry run pytest`)
 - [ ] Test names follow naming conventions
 - [ ] Edge cases considered
 
 ## Dependencies
 
-Test dependencies are in `requirements_local.txt`:
+Test dependencies are in `pyproject.toml` under `[tool.poetry.group.test.dependencies]`:
 - `pytest` - Test framework
 - `pytest-cov` - Coverage reporting
