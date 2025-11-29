@@ -1,6 +1,9 @@
 FROM python:3.12-bullseye
 
-COPY ../requirements.txt /tmp/requirements.txt
-COPY ../requirements_local.txt /tmp/requirements_local.txt
+# Install Poetry
+RUN pip install poetry poetry-plugin-export
 
-RUN pip install -r /tmp/requirements_local.txt
+COPY pyproject.toml poetry.lock /tmp/
+
+# Install dependencies with Poetry
+RUN cd /tmp && poetry config virtualenvs.create false && poetry install

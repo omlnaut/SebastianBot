@@ -11,6 +11,7 @@ from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.OnePunchMan.service import OnePunchManService
 from sebastian.usecases.SkeletonSoldier import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
+from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 
 from .clients import (
     resolve_gmail_client,
@@ -84,3 +85,9 @@ def resolve_winsim_service(
         drive_client=drive_client,
         winsim_folder_id=winsim_folder_id,
     )
+
+
+def resolve_return_tracker_service(
+    gmail_client: GmailClient = resolve_gmail_client(),
+) -> ReturnTrackerService:
+    return ReturnTrackerService(gmail_client=gmail_client)
