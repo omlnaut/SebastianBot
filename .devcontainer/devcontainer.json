@@ -18,7 +18,8 @@
 				"Azurite.azurite",
 				"mathematic.vscode-pdf",
 				"GitHub.vscode-pull-request-github",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"tamasfe.even-better-toml"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",

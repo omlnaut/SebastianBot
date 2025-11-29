@@ -35,6 +35,16 @@ Example:
 poetry add --group dev black
 ```
 
+### Test dependencies
+```bash
+poetry add --group test <package-name>
+```
+
+Example:
+```bash
+poetry add --group test pytest-mock
+```
+
 After adding dependencies, both `pyproject.toml` and `poetry.lock` will be updated automatically.
 
 ## Version Constraints
@@ -63,7 +73,7 @@ If needed, you can manually export:
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
 
-> **Note:** Only production dependencies are exported. Dev dependencies (pytest, ipykernel, etc.) are not included in the deployment.
+> **Note:** Only production dependencies are exported. Dev and test dependencies (pytest, ipykernel, etc.) are not included in the deployment.
 
 ## Key Files
 

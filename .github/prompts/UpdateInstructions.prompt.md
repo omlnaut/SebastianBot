@@ -5,6 +5,6 @@ Compare the code changes between the current git branch and the given branch. if
 Check if any instructions were violated. If so, fix the violations. Also check the code changes to spot any patterns that are not yet part of the instructions, if so, add to the respective instructions file.
 Also check the chat history for any new requirements that are not yet part of the instructions, if so, add to the respective instructions file.
 
-Additionally, check if changes affect project documentation (README.md). If the code changes introduce new features, automations, or architectural changes that should be reflected in the README, update it accordingly.
+Additionally, check if changes affect project documentation (README.md) or any of the notes in notes/dev_setup. If the code changes introduce new features, automations, or architectural changes that should be reflected in the README, update it accordingly.
 
 Make sure to only suggest changes that are relevant to the instructions and avoid unnecessary modifications. Also make sure that the changes go to the right instruction files.

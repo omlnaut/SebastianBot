@@ -96,6 +96,25 @@ The devcontainer includes:
 - Poetry for dependency management
 - All Python dependencies pre-installed
 
+### Testing
+
+The project uses **pytest** for testing with a focus on the application layer (`sebastian/`).
+
+**Run all tests:**
+```bash
+poetry run pytest
+```
+
+**Run with coverage:**
+```bash
+poetry run pytest --cov=sebastian --cov-report=html
+```
+
+**CI/CD:**
+- Tests run automatically on pull requests and pushes to main via GitHub Actions
+- Coverage reports are uploaded to Codecov for PR annotations
+- See [`.github/instructions/testing.instructions.md`](.github/instructions/testing.instructions.md) for detailed testing guidelines
+
 ### Dependency Management
 
 This project uses **Poetry** for dependency management while maintaining compatibility with Azure Functions deployment via `requirements.txt`.
@@ -110,6 +129,11 @@ poetry add <package-name>
 **Development dependencies:**
 ```bash
 poetry add --group dev <package-name>
+```
+
+**Test dependencies:**
+```bash
+poetry add --group test <package-name>
 ```
 
 Both `pyproject.toml` and `poetry.lock` will be updated automatically.
@@ -129,6 +153,6 @@ Manual export (if needed):
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
 
-Only production dependencies are included in deployments—dev dependencies (pytest, ipykernel, etc.) are excluded.
+Only production dependencies are included in deployments—dev and test dependencies (pytest, ipykernel, etc.) are excluded.
 
 For more details, see [`notes/dev_setup/dependencies.md`](notes/dev_setup/dependencies.md).
