@@ -93,4 +93,42 @@ The devcontainer includes:
 - Python 3.12
 - Azure Functions Core Tools
 - Azure CLI
+- Poetry for dependency management
 - All Python dependencies pre-installed
+
+### Dependency Management
+
+This project uses **Poetry** for dependency management while maintaining compatibility with Azure Functions deployment via `requirements.txt`.
+
+#### Adding Dependencies
+
+**Production dependencies:**
+```bash
+poetry add <package-name>
+```
+
+**Development dependencies:**
+```bash
+poetry add --group dev <package-name>
+```
+
+Both `pyproject.toml` and `poetry.lock` will be updated automatically.
+
+#### Removing Dependencies
+
+```bash
+poetry remove <package-name>
+```
+
+#### Deployment to Azure
+
+Azure Functions requires a `requirements.txt` file. A **pre-commit hook** automatically exports this file whenever `pyproject.toml` or `poetry.lock` changes, ensuring it stays in sync.
+
+Manual export (if needed):
+```bash
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+```
+
+Only production dependencies are included in deployments—dev dependencies (pytest, ipykernel, etc.) are excluded.
+
+For more details, see [`notes/dev_setup/dependencies.md`](notes/dev_setup/dependencies.md).
