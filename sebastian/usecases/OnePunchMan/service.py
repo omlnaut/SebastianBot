@@ -1,5 +1,5 @@
-from sebastian.clients.reddit.client.client import RedditClient
 from sebastian.clients.reddit.models import RedditPost
+from sebastian.protocols.reddit import RedditClientProtocol
 from sebastian.shared.dates import is_at_most_one_day_old
 
 
@@ -12,7 +12,7 @@ def _is_new_chapter_post(post: RedditPost) -> bool:
 
 
 class OnePunchManService:
-    def __init__(self, reddit_client: RedditClient):
+    def __init__(self, reddit_client: RedditClientProtocol):
         self.reddit_client = reddit_client
 
     def get_new_chapter_posts(self) -> list[RedditPost]:

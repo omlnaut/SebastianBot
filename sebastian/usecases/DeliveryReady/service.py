@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.gmail.query_builder import GmailQueryBuilder
+from sebastian.protocols.gmail import GmailClientProtocol
 from sebastian.shared import Result
 
 from .models import PickupData
@@ -9,7 +9,7 @@ from .parsing import parse_dhl_pickup_email_html
 
 
 class DeliveryReadyService:
-    def __init__(self, gmail_client: GmailClient):
+    def __init__(self, gmail_client: GmailClientProtocol):
         self.gmail_client = gmail_client
 
     def get_recent_dhl_pickups(self, hours_back: int = 720) -> Result[list[PickupData]]:
