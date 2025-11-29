@@ -31,3 +31,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["sebastian/infrastructure", "sebastian/shared", "sebastian/usecases"]
