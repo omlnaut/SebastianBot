@@ -155,11 +155,25 @@ jobs:
 
 ## Coverage Reporting
 
+### Coverage Scope
+Coverage is measured only for these directories (configured in `pyproject.toml`):
+- `sebastian/infrastructure/`
+- `sebastian/shared/`
+- `sebastian/usecases/`
+
+Clients are excluded since they primarily interact with external services.
+
 ### Local Coverage Report
 ```bash
 poetry run pytest --cov=sebastian --cov-report=html
 open htmlcov/index.html
 ```
+
+### Codecov Integration
+- Coverage reports are uploaded to Codecov via GitHub Actions
+- The **Codecov GitHub App** must be installed on the repository for tokenless uploads
+- PR annotations show line-by-line coverage for changed files
+- Install the app at: https://github.com/apps/codecov
 
 ### Coverage Targets
 - Focus on increasing coverage for `sebastian/shared/` and parsing logic
@@ -228,11 +242,51 @@ When developing new features, follow these steps:
 - Use investigation notebooks for manual testing
 - If client has complex transformation logic, extract to testable modules
 
+### Test Best Practices
+
+**Path Resolution in Tests:**
+- **Never hardcode absolute paths** (e.g., `/workspaces/SebastianBot`)
+- Use dynamic path resolution: `Path(__file__).resolve().parents[N]`
+- This ensures tests work in both local dev containers and CI environments
+- Example:
+  ```python
+  # ✅ Good - dynamic
+  ROOT_DIR = Path(__file__).resolve().parents[1]  # test file is at <repo>/tests/
+  
+  # ❌ Bad - hardcoded
+  ROOT_DIR = Path("/workspaces/SebastianBot")
+  ```
+
+**Parametrized Tests:**
+- Precompute parameter lists to avoid "empty parameter set" skips
+- Add guard tests to ensure parameter lists are not empty
+- Example:
+  ```python
+  # Precompute list
+  _FILES = [str(p) for p in some_dir.rglob("*.py")]
+  
+  # Guard test
+  def test_files_found():
+      assert len(_FILES) > 0, "No files found"
+  
+  # Use precomputed list
+  @pytest.mark.parametrize("file", _FILES)
+  def test_something(file):
+      ...
+  ```
+
+**CI Reliability:**
+- Tests that fail locally must also fail in CI (no silent skips)
+- Check CI logs if tests show as "skipped" unexpectedly
+- Common causes: hardcoded paths, missing environment setup
+
 ### Test Checklist for PRs
 - [ ] Tests added for new functionality
 - [ ] All tests pass locally (`poetry run pytest`)
 - [ ] Test names follow naming conventions
 - [ ] Edge cases considered
+- [ ] No hardcoded paths in test files
+- [ ] Parametrized tests have guard tests
 
 ## Dependencies
 
