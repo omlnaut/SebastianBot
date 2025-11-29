@@ -3,7 +3,7 @@
 - create a service.py file containing the service class
 - services orchestrate clients and business logic
 - services should:
-    - accept clients via dependency injection in __init__
+    - accept clients via dependency injection in __init__, using protocol types from sebastian/protocols/
     - return Result[T] for operations that can fail
     - return plain types (list, objects) for operations that always succeed
     - extract domain models in a models.py (pydantic models if parsing is involved, dataclasses otherwise)

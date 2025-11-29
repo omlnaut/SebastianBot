@@ -1,14 +1,14 @@
 from datetime import datetime
 from typing import Optional
 
-from sebastian.clients.google.task.client import GoogleTaskClient
+from sebastian.protocols.google_task import GoogleTaskClientProtocol
 from sebastian.shared.dates import get_end_of_day
 
 from .models import CreatedTask, TaskListIds
 
 
 class TaskService:
-    def __init__(self, client: GoogleTaskClient):
+    def __init__(self, client: GoogleTaskClientProtocol):
         self.client = client
 
     def create_task_with_notes(
