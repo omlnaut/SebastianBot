@@ -1,35 +1,17 @@
-import requests
+from typing import Any, Iterator
 
 from sebastian.clients.reddit.models import RedditPost
 
 
-def build_subreddit_url(subreddit: str) -> str:
-    post_base_url = "https://oauth.reddit.com/r/{subreddit}/new.json?limit=100"
-    url = post_base_url.format(subreddit=subreddit)
-    return url
-
-
-def get_raw_post_response(url: str, access_token: str, user_agent: str) -> dict:
-    """Get raw post response from Reddit."""
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "User-Agent": user_agent,
-    }
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    return response.json()
-
-
-def parse_posts(subreddit: str, raw_posts: dict) -> list[RedditPost]:
-    """Parse raw post data into RedditPost objects."""
-    posts_data = raw_posts.get("data", {}).get("children", [])
+def _parse_posts(submissions: Iterator[Any]) -> list[RedditPost]:
+    """Parse Reddit submissions into RedditPost objects."""
     return [
         RedditPost(
-            subreddit=subreddit,
-            created_at_timestamp=post["data"]["created_utc"],
-            title=post["data"]["title"],
-            flair=post["data"].get("link_flair_text"),
-            destination_url=post["data"].get("url", None),
+            subreddit=getattr(submission, "subreddit", "error fetching subreddit"),
+            created_at_timestamp=int(submission.created_utc),
+            title=submission.title,
+            flair=getattr(submission, "link_flair_text", None),
+            destination_url=getattr(submission, "url", None),
         )
-        for post in posts_data
+        for submission in submissions
     ]
