@@ -22,4 +22,4 @@ class RedditClient:
         """Fetch posts from a subreddit."""
         logging.info(f"Fetching posts from subreddit: {subreddit}")
         subreddit_obj = self._reddit.subreddit(subreddit)
-        return _parse_posts(subreddit, subreddit_obj.new(limit=100))
+        return _parse_posts(subreddit_obj.new(limit=100))
