@@ -2,6 +2,7 @@ import logging
 
 import praw  # type: ignore
 
+from .get_posts import _parse_posts
 from sebastian.clients.reddit.credentials import RedditCredentials
 from sebastian.clients.reddit.models import RedditPost
 
@@ -21,19 +22,4 @@ class RedditClient:
         """Fetch posts from a subreddit."""
         logging.info(f"Fetching posts from subreddit: {subreddit}")
         subreddit_obj = self._reddit.subreddit(subreddit)
-        return self._parse_posts(subreddit, subreddit_obj.new(limit=100))
-
-    def _parse_posts(
-        self, subreddit: str, submissions: praw.models.ListingGenerator
-    ) -> list[RedditPost]:
-        """Parse Reddit submissions into RedditPost objects."""
-        return [
-            RedditPost(
-                subreddit=subreddit,
-                created_at_timestamp=int(submission.created_utc),
-                title=submission.title,
-                flair=getattr(submission, "link_flair_text", None),
-                destination_url=getattr(submission, "url", None),
-            )
-            for submission in submissions
-        ]
+        return _parse_posts(subreddit, subreddit_obj.new(limit=100))
