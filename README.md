@@ -148,7 +148,10 @@ poetry remove <package-name>
 
 Azure Functions requires a `requirements.txt` file. A **pre-commit hook** automatically exports this file whenever `pyproject.toml` or `poetry.lock` changes, ensuring it stays in sync.
 
-Manual export (if needed):
+**CI Validation:**
+The pull request pipeline automatically checks that `requirements.txt` is up-to-date. If the check fails, either:
+- Commit your changes (the pre-commit hook will update it automatically), or
+- Run the export command manually:
 ```bash
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
