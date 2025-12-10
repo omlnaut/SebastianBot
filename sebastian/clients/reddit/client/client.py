@@ -32,8 +32,8 @@ class RedditClient:
                 subreddit=subreddit,
                 created_at_timestamp=int(submission.created_utc),
                 title=submission.title,
-                flair=submission.link_flair_text,
-                destination_url=submission.url,
+                flair=getattr(submission, "link_flair_text", None),
+                destination_url=getattr(submission, "url", None),
             )
             for submission in submissions
         ]
