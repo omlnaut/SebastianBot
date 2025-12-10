@@ -199,7 +199,8 @@ The project is already reasonably testable due to:
    - Place in `tests/conftest.py` for shared fixtures
 
 3. **Mock external services in service tests**
-   - Use `unittest.mock` or `pytest-mock` to mock client dependencies
+   - Services use protocols (from `sebastian/protocols/`) for dependency injection
+   - Use `unittest.mock` or `pytest-mock` to create mock implementations of protocols
    - Focus on testing service logic, not client implementations
 
 4. **Example refactoring for service testing**:
@@ -211,11 +212,11 @@ The project is already reasonably testable due to:
    def test_service_returns_ready_deliveries():
        # Arrange
        mock_client = Mock()
-       mock_client.get_emails.return_value = [...]
-       service = DeliveryReadyService(client=mock_client)
+       mock_client.fetch_mails.return_value = [...]
+       service = DeliveryReadyService(gmail_client=mock_client)
        
        # Act
-       result = service.get_ready_deliveries()
+       result = service.get_recent_dhl_pickups()
        
        # Assert
        assert result.item is not None

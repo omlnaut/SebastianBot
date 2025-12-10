@@ -7,6 +7,7 @@
     - helper/ for azure related helpers
 - sebastian/ contains core logic for the bot (application layer):
     - clients/ for defining clients to interact with external services
+    - protocols/ for defining interfaces (Python Protocols) for clients, enabling dependency injection and testability
     - usecases/ for defining use cases, usually defined as services that orchestrate clients + some logic
     - infrastructure/ same as usecases, but focused on interaction with external services that are triggered by events (i.e. sending telegram messages, creating tasks in google calendar, etc)
     - shared/ common code used in application layer

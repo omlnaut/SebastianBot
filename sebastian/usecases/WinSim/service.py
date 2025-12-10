@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
-from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.drive.models import UploadFileRequest
-from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.gmail.query_builder import GmailQueryBuilder
+from sebastian.protocols.gmail import IGmailClient
+from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.shared import Result
 
 
@@ -12,8 +12,8 @@ class WinSimService:
 
     def __init__(
         self,
-        gmail_client: GmailClient,
-        drive_client: GoogleDriveClient,
+        gmail_client: IGmailClient,
+        drive_client: IGoogleDriveClient,
         winsim_folder_id: str,
     ):
         self.gmail_client = gmail_client

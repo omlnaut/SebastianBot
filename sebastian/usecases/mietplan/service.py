@@ -1,18 +1,18 @@
 import logging
 from datetime import datetime, timedelta
 
-from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.drive.models import UploadFileRequest
-from sebastian.clients.mietplan.client.client import MietplanClient
 from sebastian.clients.mietplan.models import File, Folder
+from sebastian.protocols.google_drive import IGoogleDriveClient
+from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.shared.Result import Result
 
 
 class MietplanService:
     def __init__(
         self,
-        mietplan_client: MietplanClient,
-        google_drive_client: GoogleDriveClient,
+        mietplan_client: IMietplanClient,
+        google_drive_client: IGoogleDriveClient,
         gdrive_folder_id: str,
     ):
         self.mietplan_client = mietplan_client
