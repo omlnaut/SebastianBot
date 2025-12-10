@@ -3,7 +3,7 @@ from typing import Protocol
 from sebastian.usecases.MangaUpdate.models import MangaChapter, MangaUpdateManga
 
 
-class MangaUpdateClientProtocol(Protocol):
+class IMangaUpdateClient(Protocol):
     """Protocol for MangaUpdate client operations."""
 
     def get_latest_chapter(self, manga: MangaUpdateManga) -> MangaChapter:

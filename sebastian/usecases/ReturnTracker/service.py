@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from sebastian.clients.google.gmail.query_builder import GmailQueryBuilder
-from sebastian.protocols.gmail import GmailClientProtocol
+from sebastian.protocols.gmail import IGmailClient
 from sebastian.shared import Result
 
 from .models import ReturnData
@@ -9,7 +9,7 @@ from .parsing import parse_return_email_html
 
 
 class ReturnTrackerService:
-    def __init__(self, gmail_client: GmailClientProtocol):
+    def __init__(self, gmail_client: IGmailClient):
         self.gmail_client = gmail_client
 
     def get_recent_returns(

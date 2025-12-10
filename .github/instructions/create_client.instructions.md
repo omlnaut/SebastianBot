@@ -5,7 +5,7 @@
 - create a resolver in cloud/dependencies/clients.py
 - create a protocol in sebastian/protocols/ defining the client's public interface
     - protocol file should be named after the client (e.g., `reddit.py` for RedditClient)
-    - protocol class should be named {ClientName}Protocol (e.g., RedditClientProtocol)
+    - protocol class should be named I{ClientName} (e.g., IRedditClient)
     - include all public methods from the client
 - use dependency injection for things like credentials (usually fetched via pydantic model from azure key vault)
 - when creating client from an investigation, add cells showing the usage of the client

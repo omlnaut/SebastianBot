@@ -3,7 +3,7 @@ from typing import Protocol
 from sebastian.clients.google.gmail.models import FullMailResponse, PdfAttachment
 
 
-class GmailClientProtocol(Protocol):
+class IGmailClient(Protocol):
     """Protocol for Gmail client operations."""
 
     def fetch_mails(self, query: str) -> list[FullMailResponse]:

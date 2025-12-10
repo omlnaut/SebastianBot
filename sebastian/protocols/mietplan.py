@@ -3,7 +3,7 @@ from typing import Generator, Protocol
 from sebastian.clients.mietplan.models import Folder
 
 
-class MietplanClientProtocol(Protocol):
+class IMietplanClient(Protocol):
     """Protocol for Mietplan client operations."""
 
     def walk_from_top_folder(self) -> Generator[Folder, None, None]:

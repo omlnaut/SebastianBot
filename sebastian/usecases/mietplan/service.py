@@ -3,16 +3,16 @@ from datetime import datetime, timedelta
 
 from sebastian.clients.google.drive.models import UploadFileRequest
 from sebastian.clients.mietplan.models import File, Folder
-from sebastian.protocols.google_drive import GoogleDriveClientProtocol
-from sebastian.protocols.mietplan import MietplanClientProtocol
+from sebastian.protocols.google_drive import IGoogleDriveClient
+from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.shared.Result import Result
 
 
 class MietplanService:
     def __init__(
         self,
-        mietplan_client: MietplanClientProtocol,
-        google_drive_client: GoogleDriveClientProtocol,
+        mietplan_client: IMietplanClient,
+        google_drive_client: IGoogleDriveClient,
         gdrive_folder_id: str,
     ):
         self.mietplan_client = mietplan_client

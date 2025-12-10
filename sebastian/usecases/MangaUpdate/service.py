@@ -1,4 +1,4 @@
-from sebastian.protocols.manga_update import MangaUpdateClientProtocol
+from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.shared import Result
 from sebastian.shared.dates import is_at_most_one_day_old
 
@@ -27,7 +27,7 @@ mangas = [
 
 
 class MangaUpdateService:
-    def __init__(self, client: MangaUpdateClientProtocol):
+    def __init__(self, client: IMangaUpdateClient):
         self.client = client
 
     def get_latest_chapters(self) -> Result[list[MangaChapter]]:

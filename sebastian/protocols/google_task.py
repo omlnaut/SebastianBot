@@ -8,7 +8,7 @@ from sebastian.infrastructure.google.task.models import (
 )
 
 
-class GoogleTaskClientProtocol(Protocol):
+class IGoogleTaskClient(Protocol):
     """Protocol for Google Task client operations."""
 
     def fetch_tasklists(self) -> list[TaskList]:
