@@ -71,7 +71,7 @@ poetry export -f requirements.txt --output requirements.txt --without-hashes
 The GitHub Actions workflow includes a check that validates `requirements.txt` is up-to-date with `pyproject.toml`. If the check fails, it means the `requirements.txt` file needs to be regenerated.
 
 **To fix a failing check:**
-1. **Recommended:** Simply commit your changes. The pre-commit hook will automatically update `requirements.txt` for you.
+1. **Recommended:** Simply commit your changes to `poetry.lock` or `pyproject.toml`. The pre-commit hook will automatically update `requirements.txt` for you.
 2. **Alternative:** Manually run the export command (see below).
 
 ### Manual Export

@@ -152,6 +152,7 @@ Azure Functions requires a `requirements.txt` file. A **pre-commit hook** automa
 The pull request pipeline automatically checks that `requirements.txt` is up-to-date. If the check fails, either:
 - Commit your changes (the pre-commit hook will update it automatically), or
 - Run the export command manually:
+Committing your changes will only work if there are changes to `poetry.lock` or `pyproject.toml`
 ```bash
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
