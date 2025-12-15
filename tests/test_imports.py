@@ -1,3 +1,12 @@
+"""
+Architecture tests to enforce import boundaries and separation of concerns.
+
+Uses AST parsing to validate import statements instead of external libraries like
+pytest-archon or import-linter, as this approach is:
+- Lightweight (no additional dependencies)
+- Clear and maintainable
+- Well-suited for this project's needs
+"""
 import ast
 from pathlib import Path
 
