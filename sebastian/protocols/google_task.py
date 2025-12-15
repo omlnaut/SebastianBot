@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Protocol
 
-from sebastian.infrastructure.google.task.models import (
+from sebastian.protocols.google_task.models import (
     CreatedTask,
     TaskList,
     TaskListIds,

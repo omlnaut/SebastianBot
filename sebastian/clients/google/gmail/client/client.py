@@ -1,7 +1,8 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from ..models import FullMailResponse, PdfAttachment
+from sebastian.protocols.gmail.models import FullMailResponse, PdfAttachment
+
 from .download_pdf_attachments import download_pdf_attachments_from_messages
 from .fetch_mails import fetch_full_mail, fetch_message_ids
 

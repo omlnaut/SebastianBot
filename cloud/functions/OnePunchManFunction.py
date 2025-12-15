@@ -12,8 +12,8 @@ from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
 from function_app import app
-from sebastian.clients.reddit.models import RedditPost
-from sebastian.infrastructure.google.task.models import TaskListIds
+from sebastian.protocols.reddit.models import RedditPost
+from sebastian.protocols.google_task.models import TaskListIds
 
 from .TriggerTimes import TriggerTimes
 

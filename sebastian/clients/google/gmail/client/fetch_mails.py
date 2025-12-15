@@ -1,4 +1,4 @@
-from sebastian.clients.google.gmail.models import FullMailResponse, MessageId
+from sebastian.protocols.gmail.models import FullMailResponse, MessageId
 
 
 def fetch_message_ids(service, query: str) -> list[MessageId]:

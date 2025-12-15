@@ -5,7 +5,7 @@ import azure.functions as func
 from pydantic import BaseModel
 
 from function_app import app
-from sebastian.infrastructure.google.task.models import TaskListIds
+from sebastian.protocols.google.task.models import TaskListIds
 
 
 class CreateTaskEvent(BaseModel):
