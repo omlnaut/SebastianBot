@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --only main,test
 
+      - name: Install Poetry export plugin
+        run: poetry self add poetry-plugin-export
+
       - name: Check requirements.txt is up-to-date
         run: |
           TEMP_FILE=$(mktemp)
