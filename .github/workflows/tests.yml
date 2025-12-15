@@ -29,6 +29,22 @@ jobs:
       - name: Install dependencies
         run: poetry install --only main,test
 
+      - name: Install Poetry export plugin
+        run: poetry self add poetry-plugin-export
+
+      - name: Check requirements.txt is up-to-date
+        run: |
+          TEMP_FILE=$(mktemp)
+          trap "rm -f $TEMP_FILE" EXIT
+          poetry export -f requirements.txt --without-hashes > "$TEMP_FILE"
+          if ! diff -u requirements.txt "$TEMP_FILE"; then
+            echo "❌ requirements.txt is out of date!"
+            echo "Run 'poetry export -f requirements.txt --output requirements.txt --without-hashes' to update it."
+            echo "Or commit and the pre-commit hook will update it automatically."
+            exit 1
+          fi
+          echo "✅ requirements.txt is up-to-date"
+
       - name: Run tests
         run: poetry run pytest --cov=sebastian --cov-report=xml
 

@@ -1,7 +1,7 @@
 FROM python:3.12-bullseye
 
 # Install Poetry
-RUN pip install poetry poetry-plugin-export
+RUN pip install poetry && poetry add poetry-plugin-export
 
 COPY pyproject.toml poetry.lock /tmp/
 
