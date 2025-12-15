@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from sebastian.clients.google.gmail.models import FullMailResponse, PdfAttachment
+from .models import FullMailResponse, PdfAttachment
 
 
 class IGmailClient(Protocol):

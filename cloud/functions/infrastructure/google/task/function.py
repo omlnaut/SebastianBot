@@ -10,7 +10,7 @@ from cloud.functions.infrastructure.telegram.helper import (
 )
 from cloud.helper import parse_payload
 from function_app import app
-from sebastian.infrastructure.google.task.models import CreatedTask, TaskListIds
+from sebastian.protocols.google_task import CreatedTask, TaskListIds
 from sebastian.infrastructure.google.task.service import TaskService
 
 from .helper import CreateTaskEvent, task_output_binding

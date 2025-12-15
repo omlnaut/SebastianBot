@@ -1,8 +1,12 @@
-from sebastian.protocols.manga_update import IMangaUpdateClient
+from sebastian.protocols.manga_update import (
+    IMangaUpdateClient,
+    MangaUpdateManga,
+    MangaPublisher,
+    MangaChapter,
+)
 from sebastian.shared import Result
 from sebastian.shared.dates import is_at_most_one_day_old
 
-from .models import MangaChapter, MangaPublisher, MangaUpdateManga
 
 mangas = [
     MangaUpdateManga(

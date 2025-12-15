@@ -12,7 +12,7 @@ from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
 from function_app import app
-from sebastian.infrastructure.google.task.models import TaskListIds
+from sebastian.protocols.google_task import TaskListIds
 from sebastian.usecases.DeliveryReady.models import PickupData
 
 from .TriggerTimes import TriggerTimes

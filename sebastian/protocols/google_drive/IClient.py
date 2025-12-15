@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from sebastian.clients.google.drive.models import UploadFileRequest, UploadFileResponse
+from .models import UploadFileRequest, UploadFileResponse
 
 
 class IGoogleDriveClient(Protocol):

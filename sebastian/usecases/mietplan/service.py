@@ -1,10 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 
-from sebastian.clients.google.drive.models import UploadFileRequest
-from sebastian.clients.mietplan.models import File, Folder
-from sebastian.protocols.google_drive import IGoogleDriveClient
-from sebastian.protocols.mietplan import IMietplanClient
+from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
+from sebastian.protocols.mietplan import File, Folder, IMietplanClient
 from sebastian.shared.Result import Result
 
 

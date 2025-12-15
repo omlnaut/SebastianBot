@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sebastian.clients.google.task.models import TaskResponse
-from sebastian.infrastructure.google.task.models import TaskListIds
+from sebastian.protocols.google_task import TaskListIds
 
 
 def post_create_task(

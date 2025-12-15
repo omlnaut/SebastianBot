@@ -3,7 +3,7 @@ from datetime import datetime
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from sebastian.infrastructure.google.task.models import (
+from sebastian.protocols.google_task import (
     CreatedTask,
     TaskList,
     TaskListIds,
