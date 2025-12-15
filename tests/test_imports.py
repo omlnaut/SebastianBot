@@ -21,10 +21,8 @@ def test_protocols_should_only_import_from_protocols():
     (
         archrule("protocols should only import from protocols")
         .match("sebastian.protocols.*")
-        .should_not_import("sebastian.clients.*")
-        .should_not_import("sebastian.usecases.*")
-        .should_not_import("sebastian.infrastructure.*")
-        .should_not_import("sebastian.shared.*")
+        .should_not_import("sebastian.*")
+        .may_import("sebastian.protocols.*")
         .check("sebastian")
     )
 
