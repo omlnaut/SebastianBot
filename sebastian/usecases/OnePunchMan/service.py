@@ -1,5 +1,5 @@
 from sebastian.protocols.reddit.models import RedditPost
-from sebastian.protocols.reddit import IRedditClient
+from sebastian.protocols.reddit.IClient import IRedditClient
 from sebastian.shared.dates import is_at_most_one_day_old
 
 

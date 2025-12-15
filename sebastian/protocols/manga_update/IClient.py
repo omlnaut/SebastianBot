@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from sebastian.protocols.manga_update.models import MangaChapter, MangaUpdateManga
+from .models import MangaChapter, MangaUpdateManga
 
 
 class IMangaUpdateClient(Protocol):

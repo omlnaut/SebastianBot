@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from sebastian.protocols.reddit.models import RedditPost
+from .models import RedditPost
 
 
 class IRedditClient(Protocol):

@@ -1,6 +1,6 @@
 from typing import Generator, Protocol
 
-from sebastian.protocols.mietplan.models import Folder
+from .models import Folder
 
 
 class IMietplanClient(Protocol):

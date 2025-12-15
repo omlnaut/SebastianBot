@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from sebastian.clients.google.gmail.query_builder import GmailQueryBuilder
-from sebastian.protocols.gmail import IGmailClient
+from sebastian.protocols.gmail.IClient import IGmailClient
 from sebastian.shared import Result
 
 from .models import ReturnData
