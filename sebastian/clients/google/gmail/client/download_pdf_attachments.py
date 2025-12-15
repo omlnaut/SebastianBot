@@ -3,7 +3,7 @@ from io import BytesIO
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from sebastian.protocols.gmail.models import FullMailResponse, PdfAttachment
+from sebastian.protocols.gmail import FullMailResponse, PdfAttachment
 
 
 class PdfMessageBody(BaseModel):

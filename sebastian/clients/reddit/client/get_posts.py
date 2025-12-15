@@ -1,6 +1,6 @@
 from typing import Any, Iterator
 
-from sebastian.protocols.reddit.models import RedditPost
+from sebastian.protocols.reddit import RedditPost
 
 
 def _parse_posts(submissions: Iterator[Any]) -> list[RedditPost]:

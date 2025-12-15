@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Generator
 import requests
 
-from sebastian.protocols.mietplan.models import File, Folder
+from sebastian.protocols.mietplan import File, Folder
 from ._models import MietplanFile, MietplanFolder
 import logging
 

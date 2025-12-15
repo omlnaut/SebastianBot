@@ -1,4 +1,4 @@
-from sebastian.protocols.manga_update.IClient import IMangaUpdateClient
+from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.shared import Result
 from sebastian.shared.dates import is_at_most_one_day_old
 

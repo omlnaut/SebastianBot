@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sebastian.protocols.google_task.IClient import IGoogleTaskClient
-from sebastian.protocols.google_task.models import CreatedTask, TaskListIds
+from sebastian.protocols.google_task import CreatedTask, IGoogleTaskClient, TaskListIds
 from sebastian.shared.dates import get_end_of_day
 
 

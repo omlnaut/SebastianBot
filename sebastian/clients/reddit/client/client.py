@@ -4,7 +4,7 @@ import praw  # type: ignore
 
 from .get_posts import _parse_posts
 from sebastian.clients.reddit.credentials import RedditCredentials
-from sebastian.protocols.reddit.models import RedditPost
+from sebastian.protocols.reddit import RedditPost
 
 
 class RedditClient:
