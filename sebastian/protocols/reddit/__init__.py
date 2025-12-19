@@ -1,4 +1,4 @@
 from .IClient import IRedditClient
-from .models import RedditPost
+from .models import RedditComment, RedditPost
 
-__all__ = ["IRedditClient", "RedditPost"]
+__all__ = ["IRedditClient", "RedditComment", "RedditPost"]

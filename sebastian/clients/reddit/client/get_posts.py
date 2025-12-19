@@ -11,6 +11,7 @@ def _parse_posts(submissions: Iterator[Any]) -> list[RedditPost]:
             created_at_timestamp=int(submission.created_utc),
             title=submission.title,
             flair=getattr(submission, "link_flair_text", None),
+            post_id=submission.id,
             destination_url=getattr(submission, "url", None),
         )
         for submission in submissions
