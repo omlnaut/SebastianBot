@@ -40,4 +40,3 @@ class GmailQueryBuilder:
     def build(self) -> str:
         """Build the final query string"""
         return " ".join(self._query_parts)
-        return " ".join(self._query_parts)

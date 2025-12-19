@@ -3,6 +3,7 @@ Architecture tests to enforce import boundaries and separation of concerns.
 
 Uses pytest-archon to validate import constraints in a declarative way.
 """
+
 from pytest_archon import archrule
 
 
@@ -26,3 +27,12 @@ def test_protocols_should_only_import_from_protocols():
         .check("sebastian")
     )
 
+
+def test_usecases_should_not_import_from_clients():
+    """Ensure usecases do not import from clients."""
+    (
+        archrule("usecases should not import from clients")
+        .match("sebastian.usecases.*")
+        .should_not_import("sebastian.clients.*")
+        .check("sebastian")
+    )
