@@ -1836,6 +1836,24 @@ pygments = ">=2.7.2"
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-archon"
+version = "0.0.7"
+description = "Rule your architecture like a real developer"
+optional = false
+python-versions = ">=3.8"
+groups = ["test"]
+files = [
+    {file = "pytest_archon-0.0.7-py3-none-any.whl", hash = "sha256:5aaad17cff853d058ca686dd1da425ce884daf33ae9668011323173631dc4e94"},
+    {file = "pytest_archon-0.0.7.tar.gz", hash = "sha256:6a1e814c84adbea4afc188369733ec898f2525cc401f3ca965498f8b3ee454d5"},
+]
+
+[package.dependencies]
+pytest = ">=7.2"
+
+[package.extras]
+dev = ["check-manifest", "check-wheel-contents", "coverage", "mypy", "pyroma", "ruff"]
+
+[[package]]
 name = "pytest-cov"
 version = "7.0.0"
 description = "Pytest plugin for measuring coverage."
@@ -2382,4 +2400,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "7440214d31f9c8fdfea743ae789fec4c646dfae737503803fc4f247bd7c903f2"
+content-hash = "3da570ff2a2d1e91a51e34564a7ea2ef4a573eeca0d5ba3de8d137e623ca260b"

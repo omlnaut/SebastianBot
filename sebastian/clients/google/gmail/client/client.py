@@ -14,12 +14,12 @@ class GmailClient:
         )
 
     def fetch_mails(self, query: str) -> list[FullMailResponse]:
-        """Fetch full email messages matching the query. Use the GmailQueryBuilder to build the query."""
+        """Fetch full email messages matching the query. Use the GmailQueryBuilder from sebastian.shared.gmail to build the query."""
         message_ids = fetch_message_ids(self._service, query)
         emails = [fetch_full_mail(self._service, msg_id.id) for msg_id in message_ids]
         return emails
 
     def download_pdf_attachments(self, query: str) -> list[PdfAttachment]:
-        """Download PDF attachments from messages matching the query. Use the GmailQueryBuilder to build the query."""
+        """Download PDF attachments from messages matching the query. Use the GmailQueryBuilder from sebastian.shared.gmail to build the query."""
         messages = self.fetch_mails(query)
         return download_pdf_attachments_from_messages(self._service, messages)

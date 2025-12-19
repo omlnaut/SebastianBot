@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
-from sebastian.clients.google.gmail.query_builder import GmailQueryBuilder
+from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.shared import Result
 
