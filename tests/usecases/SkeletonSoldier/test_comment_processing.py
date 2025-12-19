@@ -115,3 +115,20 @@ def test_extract_demonic_scans_link_case_insensitive():
 
     # Assert
     assert result == "https://DemonicScans.org/chapter/123"
+
+
+def test_extract_demonic_scans_link_with_surrounding_punctuation():
+    # Arrange
+    now = datetime.now(timezone.utc)
+    comments = [
+        RedditComment(
+            body="Here it is (https://demonicscans.org/chapter/456) enjoy!",
+            created_at_timestamp=int(now.timestamp()),
+        )
+    ]
+
+    # Act
+    result = _extract_demonic_scans_link(comments)
+
+    # Assert
+    assert result == "https://demonicscans.org/chapter/456"

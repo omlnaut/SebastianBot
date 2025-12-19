@@ -21,15 +21,13 @@ def _extract_demonic_scans_link(comments: list[RedditComment]) -> str | None:
         if not is_at_most_one_day_old(comment.created_at_datetime):
             continue
         
-        # Check if comment body contains link to demonic scans
-        if demonic_scans_domain in comment.body.lower():
-            # Extract URL from comment body
-            words = comment.body.split()
-            for word in words:
-                if demonic_scans_domain in word.lower():
-                    # Clean up the URL (remove trailing punctuation)
-                    url = word.rstrip(".,;:!?)")
-                    if url.startswith("http"):
-                        return url
+        # Check if comment body contains link to demonic scans and extract URL
+        words = comment.body.split()
+        for word in words:
+            if demonic_scans_domain in word.lower():
+                # Clean up the URL (remove surrounding punctuation)
+                url = word.strip(".,;:!?)([]{}")
+                if url.startswith("http"):
+                    return url
     
     return None
