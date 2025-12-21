@@ -7,6 +7,8 @@
     - protocol file should be named after the client (e.g., `reddit.py` for RedditClient)
     - protocol class should be named I{ClientName} (e.g., IRedditClient)
     - include all public methods from the client
+    - protocols should not include any implementation details, only the method signatures and docstrings
+        - esp. make sure that all interface-related models are defined in the protocol layer
 - use dependency injection for things like credentials (usually fetched via pydantic model from azure key vault)
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable
@@ -21,3 +23,8 @@
     - example: `GoogleTaskClient.create_task_with_notes()` uses helpers extracted to `create_task_with_notes.py`
     - bad example: private methods that are (or could be) used by multiple public methods should stay in the main client file. i.e. authentication, token fetching, etc.
     - good example: complex logic in `__init__` (i.e. for authentication) can be extracted to a `_login.py` helper file.
+- when clients need to support filtering or transformation callbacks:
+    - accept callbacks as optional parameters (e.g., `post_filter: Callable[[T], bool] | None = None`)
+    - apply the callback within the client for efficiency
+    - this allows service layer to define business logic while keeping client layer reusable
+    - example: `RedditClient.get_posts()` accepts `post_filter` to filter posts based on service-specific criteria

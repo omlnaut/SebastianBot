@@ -1,6 +1,7 @@
 import logging
+from typing import Callable
 
-import praw  # type: ignore
+import praw
 
 from .get_posts import _parse_posts
 from sebastian.clients.reddit.credentials import RedditCredentials
@@ -18,8 +19,13 @@ class RedditClient:
             user_agent=credentials.user_agent,
         )
 
-    def get_posts(self, subreddit: str) -> list[RedditPost]:
+    def get_posts(
+        self,
+        subreddit: str,
+        limit: int,
+        post_filter: Callable[[RedditPost], bool] | None = None,
+    ) -> list[RedditPost]:
         """Fetch posts from a subreddit."""
         logging.info(f"Fetching posts from subreddit: {subreddit}")
         subreddit_obj = self._reddit.subreddit(subreddit)
-        return _parse_posts(subreddit_obj.new(limit=100))
+        return _parse_posts(subreddit_obj.new(limit=limit), post_filter=post_filter)
