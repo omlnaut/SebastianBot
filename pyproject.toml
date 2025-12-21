@@ -35,4 +35,4 @@ build-backend = "poetry.core.masonry.api"
 pythonpath = ["."]
 
 [tool.coverage.run]
-source = ["sebastian/infrastructure", "sebastian/shared", "sebastian/usecases"]
+source = ["sebastian/shared", "sebastian/usecases"]

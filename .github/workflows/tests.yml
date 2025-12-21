@@ -46,7 +46,7 @@ jobs:
           echo "✅ requirements.txt is up-to-date"
 
       - name: Run tests
-        run: poetry run pytest --cov=sebastian --cov-report=xml
+        run: poetry run pytest --cov --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
