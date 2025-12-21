@@ -30,13 +30,13 @@ def _parse_posts(
         if not _is_valid_post(post, post_filter):
             continue
 
-        post.comments = parse_comments_from_submission(submission)
+        post.comments = _parse_comments_from_submission(submission)
         posts.append(post)
 
     return posts
 
 
-def parse_comments_from_submission(submission):
+def _parse_comments_from_submission(submission: Any) -> list[RedditComment]:
     comments = [
         _parse_comment(comment)
         for comment in submission.comments
@@ -54,7 +54,7 @@ def _is_valid_post(
     return post_filter(post)
 
 
-def _parse_post_from_submission(submission):
+def _parse_post_from_submission(submission: Any) -> RedditPost:
     post = RedditPost(
         subreddit=getattr(submission, "subreddit", "error fetching subreddit"),
         created_at_timestamp=int(submission.created_utc),

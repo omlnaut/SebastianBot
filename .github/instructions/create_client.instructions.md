@@ -23,3 +23,8 @@
     - example: `GoogleTaskClient.create_task_with_notes()` uses helpers extracted to `create_task_with_notes.py`
     - bad example: private methods that are (or could be) used by multiple public methods should stay in the main client file. i.e. authentication, token fetching, etc.
     - good example: complex logic in `__init__` (i.e. for authentication) can be extracted to a `_login.py` helper file.
+- when clients need to support filtering or transformation callbacks:
+    - accept callbacks as optional parameters (e.g., `post_filter: Callable[[T], bool] | None = None`)
+    - apply the callback within the client for efficiency
+    - this allows service layer to define business logic while keeping client layer reusable
+    - example: `RedditClient.get_posts()` accepts `post_filter` to filter posts based on service-specific criteria
