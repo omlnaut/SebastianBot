@@ -5,5 +5,5 @@
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.projectLanguageModel": 2,
-    "explorer.excludeGitIgnore": false
+    "explorer.excludeGitIgnore": true
 }
