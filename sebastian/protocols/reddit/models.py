@@ -1,5 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
+
+
+@dataclass
+class RedditComment:
+    text: str
+    replies: list["RedditComment"]
 
 
 @dataclass
@@ -9,6 +15,7 @@ class RedditPost:
     title: str
     flair: str | None
     destination_url: str | None = None
+    comments: list[RedditComment] = field(default_factory=list)
 
     @property
     def created_at_datetime(self) -> datetime:

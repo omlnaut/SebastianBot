@@ -7,6 +7,8 @@
     - protocol file should be named after the client (e.g., `reddit.py` for RedditClient)
     - protocol class should be named I{ClientName} (e.g., IRedditClient)
     - include all public methods from the client
+    - protocols should not include any implementation details, only the method signatures and docstrings
+        - esp. make sure that all interface-related models are defined in the protocol layer
 - use dependency injection for things like credentials (usually fetched via pydantic model from azure key vault)
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable

@@ -1,17 +1,66 @@
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 
-from sebastian.protocols.reddit import RedditPost
+from sebastian.protocols.reddit import RedditPost, RedditComment
 
 
-def _parse_posts(submissions: Iterator[Any]) -> list[RedditPost]:
+def _parse_comment(comment: Any) -> RedditComment:
+    """Parse a Reddit comment into a RedditComment object recursively."""
+    # Parse replies recursively
+    replies = []
+    if hasattr(comment, "replies"):
+        for reply in comment.replies:
+            # Skip MoreComments objects
+            if hasattr(reply, "body"):
+                replies.append(_parse_comment(reply))
+
+    return RedditComment(
+        text=comment.body,
+        replies=replies,
+    )
+
+
+def _parse_posts(
+    submissions: Iterator[Any], post_filter: Callable[[RedditPost], bool] | None = None
+) -> list[RedditPost]:
     """Parse Reddit submissions into RedditPost objects."""
-    return [
-        RedditPost(
-            subreddit=getattr(submission, "subreddit", "error fetching subreddit"),
-            created_at_timestamp=int(submission.created_utc),
-            title=submission.title,
-            flair=getattr(submission, "link_flair_text", None),
-            destination_url=getattr(submission, "url", None),
-        )
-        for submission in submissions
+    posts = []
+    for submission in submissions:
+        post = _parse_post_from_submission(submission)
+
+        if not _is_valid_post(post, post_filter):
+            continue
+
+        post.comments = parse_comments_from_submission(submission)
+        posts.append(post)
+
+    return posts
+
+
+def parse_comments_from_submission(submission):
+    comments = [
+        _parse_comment(comment)
+        for comment in submission.comments
+        if hasattr(comment, "body")  # Skip MoreComments
     ]
+
+    return comments
+
+
+def _is_valid_post(
+    post: RedditPost, post_filter: Callable[[RedditPost], bool] | None
+) -> bool:
+    if post_filter is None:
+        return True
+    return post_filter(post)
+
+
+def _parse_post_from_submission(submission):
+    post = RedditPost(
+        subreddit=getattr(submission, "subreddit", "error fetching subreddit"),
+        created_at_timestamp=int(submission.created_utc),
+        title=submission.title,
+        flair=getattr(submission, "link_flair_text", None),
+        destination_url=getattr(submission, "url", None),
+    )
+
+    return post

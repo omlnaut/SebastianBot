@@ -15,5 +15,5 @@ class OnePunchManService:
         self.reddit_client = reddit_client
 
     def get_new_chapter_posts(self) -> list[RedditPost]:
-        posts = self.reddit_client.get_posts("OnePunchMan")
+        posts = self.reddit_client.get_posts("OnePunchMan", limit=50)
         return [post for post in posts if _is_new_chapter_post(post)]
