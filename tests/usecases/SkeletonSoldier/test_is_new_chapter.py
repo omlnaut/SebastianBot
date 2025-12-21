@@ -5,13 +5,13 @@ import pytest
 
 
 @pytest.fixture
-def today() -> int:
-    return int((datetime.now(timezone.utc) - timedelta(hours=5)).timestamp())
+def today() -> datetime:
+    return datetime.now(timezone.utc) - timedelta(hours=5)
 
 
 @pytest.fixture
-def in_past() -> int:
-    return int((datetime.now(timezone.utc) - timedelta(days=2)).timestamp())
+def in_past() -> datetime:
+    return datetime.now(timezone.utc) - timedelta(days=2)
 
 
 @pytest.fixture
@@ -20,10 +20,10 @@ def new_chapter_flair() -> str:
 
 
 @pytest.fixture
-def reddit_post(today: int, new_chapter_flair: str) -> RedditPost:
+def reddit_post(today: datetime, new_chapter_flair: str) -> RedditPost:
     return RedditPost(
         subreddit="SkeletonSoldier",
-        created_at_timestamp=today,
+        created_at=today,
         title="Test Post",
         flair=new_chapter_flair,
     )
@@ -39,8 +39,10 @@ def test_flair_is_not_new_chapter_returns_false(reddit_post: RedditPost):
     assert not _is_new_chapter_post(reddit_post)
 
 
-def test_post_older_than_one_day_returns_false(reddit_post: RedditPost, in_past: int):
-    reddit_post.created_at_timestamp = in_past
+def test_post_older_than_one_day_returns_false(
+    reddit_post: RedditPost, in_past: datetime
+):
+    reddit_post.created_at = in_past
     assert not _is_new_chapter_post(reddit_post)
 
 

@@ -1,4 +1,5 @@
 from typing import Any, Callable, Iterator
+from datetime import datetime, timezone
 
 from sebastian.protocols.reddit import RedditPost, RedditComment
 
@@ -15,6 +16,7 @@ def _parse_comment(comment: Any) -> RedditComment:
 
     return RedditComment(
         text=comment.body,
+        created_at=datetime.fromtimestamp(comment.created_utc, timezone.utc),
         replies=replies,
     )
 
@@ -57,10 +59,11 @@ def _is_valid_post(
 def _parse_post_from_submission(submission: Any) -> RedditPost:
     post = RedditPost(
         subreddit=getattr(submission, "subreddit", "error fetching subreddit"),
-        created_at_timestamp=int(submission.created_utc),
+        created_at=datetime.fromtimestamp(submission.created_utc, timezone.utc),
         title=submission.title,
         flair=getattr(submission, "link_flair_text", None),
         destination_url=getattr(submission, "url", None),
+        text=getattr(submission, "selftext", None),
     )
 
     return post
