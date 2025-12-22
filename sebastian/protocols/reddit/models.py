@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 class RedditComment:
     text: str
     created_at: datetime
-    replies: list["RedditComment"]
 
 
 @dataclass

@@ -1,24 +1,22 @@
 from typing import Any, Callable, Iterator
 from datetime import datetime, timezone
+from praw.models.comment_forest import MoreComments
+from praw.models.reddit.comment import Comment
 
 from sebastian.protocols.reddit import RedditPost, RedditComment
 
 
-def _parse_comment(comment: Any) -> RedditComment:
+def _parse_comment(comment: Comment | MoreComments) -> RedditComment | None:
     """Parse a Reddit comment into a RedditComment object recursively."""
     # Parse replies recursively
-    replies = []
-    if hasattr(comment, "replies"):
-        for reply in comment.replies:
-            # Skip MoreComments objects
-            if hasattr(reply, "body"):
-                replies.append(_parse_comment(reply))
-
-    return RedditComment(
-        text=comment.body,
-        created_at=datetime.fromtimestamp(comment.created_utc, timezone.utc),
-        replies=replies,
-    )
+    match comment:
+        case MoreComments():
+            return None
+        case Comment():
+            return RedditComment(
+                text=comment.body,
+                created_at=datetime.fromtimestamp(comment.created_utc, timezone.utc),
+            )
 
 
 def _parse_posts(
@@ -39,10 +37,11 @@ def _parse_posts(
 
 
 def _parse_comments_from_submission(submission: Any) -> list[RedditComment]:
+    submission.comments.replace_more(limit=0)
     comments = [
-        _parse_comment(comment)
-        for comment in submission.comments
-        if hasattr(comment, "body")  # Skip MoreComments
+        parsed_comment
+        for comment in submission.comments.list()
+        if (parsed_comment := _parse_comment(comment)) is not None
     ]
 
     return comments
