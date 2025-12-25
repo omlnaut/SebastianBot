@@ -1,4 +1,3 @@
-from sebastian.clients.reddit.helper import has_flair
 from sebastian.protocols.reddit import IRedditClient, RedditPost
 from sebastian.shared.dates import is_at_most_one_day_old
 
@@ -7,9 +6,7 @@ SUBREDDIT_NAME = "OnePunchMan"
 
 
 def _is_new_chapter_post(post: RedditPost) -> bool:
-    return is_at_most_one_day_old(post.created_at) and has_flair(
-        post, NEW_CHAPTER_FLAIR
-    )
+    return is_at_most_one_day_old(post.created_at) and post.has_flair(NEW_CHAPTER_FLAIR)
 
 
 class OnePunchManService:

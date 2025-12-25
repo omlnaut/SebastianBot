@@ -16,3 +16,6 @@ class RedditPost:
     flair: str | None
     destination_url: str | None = None
     text: str | None = None
+
+    def has_flair(self, flair: str) -> bool:
+        return self.flair is not None and self.flair.lower() == flair.lower()
