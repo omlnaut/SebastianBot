@@ -14,6 +14,7 @@ from cloud.functions.infrastructure.telegram.helper import (
 from function_app import app
 from sebastian.protocols.reddit import RedditPost
 from sebastian.protocols.google_task import TaskListIds
+from sebastian.protocols.reddit.models import RedditComment
 
 from .TriggerTimes import TriggerTimes
 
@@ -36,12 +37,12 @@ def check_skeleton_soldier_updates(
 
         service = resolve_skeleton_soldier_service()
         logging.info("Checking for new Skeleton Soldier chapters")
-        new_chapter_posts = service.get_new_chapter_posts()
+        new_chapter_comments = service.get_new_chapter_comments()
 
-        logging.info(f"Found {len(new_chapter_posts)} new chapter(s)")
+        logging.info(f"Found {len(new_chapter_comments)} new chapter(s)")
 
         create_task_events = [
-            _to_create_task_event(post).to_output() for post in new_chapter_posts
+            _to_create_task_event().to_output() for comment in new_chapter_comments
         ]
 
         if create_task_events:
@@ -54,9 +55,9 @@ def check_skeleton_soldier_updates(
         telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
 
 
-def _to_create_task_event(post: RedditPost) -> CreateTaskEvent:
+def _to_create_task_event() -> CreateTaskEvent:
     return CreateTaskEvent(
-        title=f"Skeleton Soldier {post.title}",
-        notes=post.destination_url,
+        title=f"Skeleton Soldier",
+        notes="https://demonicscans.org/manga/Skeleton-Soldier",
         task_list_id=TaskListIds.Mangas,
     )
