@@ -6,23 +6,9 @@ from praw.models.reddit.comment import Comment
 from sebastian.protocols.reddit import RedditPost, RedditComment
 
 
-def _parse_posts(
-    submissions: Iterator[Any], post_filter: Callable[[RedditPost], bool] | None = None
-) -> list[RedditPost]:
+def _parse_posts(submissions: Iterator[Any]) -> list[RedditPost]:
     """Parse Reddit submissions into RedditPost objects."""
-    return [
-        post
-        for submission in submissions
-        if _is_valid_post(post := _parse_post_from_submission(submission), post_filter)
-    ]
-
-
-def _is_valid_post(
-    post: RedditPost, post_filter: Callable[[RedditPost], bool] | None
-) -> bool:
-    if post_filter is None:
-        return True
-    return post_filter(post)
+    return [_parse_post_from_submission(submission) for submission in submissions]
 
 
 def _parse_post_from_submission(submission: Any) -> RedditPost:

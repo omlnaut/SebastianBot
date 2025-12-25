@@ -10,7 +10,6 @@ class IRedditClient(Protocol):
         self,
         subreddit: str,
         limit: int,
-        post_filter: Callable[[RedditPost], bool] | None = None,
     ) -> list[RedditPost]:
         """Fetch posts from a subreddit."""
         ...

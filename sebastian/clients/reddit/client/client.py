@@ -24,13 +24,12 @@ class RedditClient:
         self,
         subreddit: str,
         limit: int,
-        post_filter: Callable[[RedditPost], bool] | None = None,
     ) -> list[RedditPost]:
         """Fetch posts from a subreddit."""
         logging.info(f"Fetching posts from subreddit: {subreddit}")
         subreddit_obj = self._reddit.subreddit(subreddit)
         posts = subreddit_obj.new(limit=limit)
-        return _parse_posts(posts, post_filter=post_filter)
+        return _parse_posts(posts)
 
     def get_comments(self, subreddit: str, limit: int) -> list[RedditComment]:
         """Fetch most recent comments from a subreddit."""
