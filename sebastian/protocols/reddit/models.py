@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 
 
 @dataclass
@@ -16,4 +16,3 @@ class RedditPost:
     flair: str | None
     destination_url: str | None = None
     text: str | None = None
-    comments: list[RedditComment] = field(default_factory=list)
