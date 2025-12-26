@@ -6,6 +6,8 @@ from cloud.functions.infrastructure.telegram.config import (
 )
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.google.drive.client import GoogleDriveClient
+from sebastian.clients.google.gemini.client import GeminiClient
+from sebastian.clients.google.gemini.credentials import GeminiApiKey
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
@@ -54,3 +56,8 @@ def resolve_google_drive_client() -> GoogleDriveClient:
 def resolve_mietplan_client() -> MietplanClient:
     credentials = get_secret(SecretKeys.MietplanCredentials, MietplanCredentials)
     return MietplanClient(credentials)
+
+
+def resolve_gemini_client() -> GeminiClient:
+    credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
+    return GeminiClient(credentials)

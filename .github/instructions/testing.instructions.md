@@ -38,17 +38,32 @@ Testing primarily focuses on the `sebastian/` application layer, as this contain
 
 ## Test Structure
 
-Tests mirror the source code structure:
+Tests are organized by type:
 
 ```
 tests/
-├── test_dates.py              # Tests for sebastian/shared/dates.py
-├── test_imports.py            # Architecture constraint tests
-└── usecases/
-    └── DeliveryReady/
-        ├── test_parsing.py    # Tests for parsing logic
-        └── dhl_test_mail.html # Test fixture
+├── unit_tests/                # Unit tests for isolated logic
+│   ├── test_dates.py          # Tests for sebastian/shared/dates.py
+│   ├── test_imports.py        # Architecture constraint tests
+│   └── usecases/
+│       └── DeliveryReady/
+│           ├── test_parsing.py    # Tests for parsing logic
+│           └── dhl_test_mail.html # Test fixture
+└── integration_tests/         # Integration tests with external services
+    └── test_gemini.py         # Tests for Gemini API integration
 ```
+
+**Unit Tests** (`tests/unit_tests/`):
+- Tests for pure functions, parsing logic, and business rules
+- No external service dependencies
+- Fast execution
+- Mirror source code structure
+
+**Integration Tests** (`tests/integration_tests/`):
+- Tests that call real external services
+- Require credentials (via resolvers)
+- Slower execution
+- Organized by client/service being tested
 
 ### Naming Conventions
 - Test files: `test_{module_name}.py`
@@ -85,14 +100,20 @@ def test_{function_name}_{edge_case}():
 # Install test dependencies (using Poetry)
 poetry install --with test
 
-# Run all tests
+# Run all tests (unit + integration)
 poetry run pytest
 
+# Run only unit tests (fast, no external dependencies)
+poetry run pytest tests/unit_tests
+
+# Run only integration tests (requires credentials)
+poetry run pytest tests/integration_tests
+
 # Run tests with coverage
-poetry run pytest --cov=sebastian --cov-report=html
+poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
 
 # Run specific test file
-poetry run pytest tests/test_dates.py
+poetry run pytest tests/unit_tests/test_dates.py
 
 # Run tests matching a pattern
 poetry run pytest -k "test_parsing"
@@ -109,7 +130,9 @@ pythonpath = ["."]
 
 ## GitHub Actions Workflow
 
-Tests run automatically on pull requests and pushes to main. The workflow is configured in `.github/workflows/tests.yml`:
+Tests run automatically on pull requests and pushes to main. The workflow is configured in `.github/workflows/tests.yml`.
+
+**Note**: Only **unit tests** run in CI (`tests/unit_tests`) to avoid requiring credentials and keep CI fast. Integration tests should be run locally before merging.
 
 ```yaml
 name: Tests
@@ -144,7 +167,7 @@ jobs:
         run: poetry install --only main,test
       
       - name: Run tests
-        run: poetry run pytest --cov=sebastian --cov-report=xml
+        run: poetry run pytest tests/unit_tests --cov --cov-report=xml
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

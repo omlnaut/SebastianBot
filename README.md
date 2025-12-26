@@ -100,18 +100,28 @@ The devcontainer includes:
 
 The project uses **pytest** for testing with a focus on the application layer (`sebastian/`).
 
+**Test organization:**
+- `tests/unit_tests/` - Unit tests (no external dependencies, run in CI)
+- `tests/integration_tests/` - Integration tests (require credentials, run locally)
+
 **Run all tests:**
 ```bash
 poetry run pytest
 ```
 
+**Run only unit tests:**
+```bash
+poetry run pytest tests/unit_tests
+```
+
 **Run with coverage:**
 ```bash
-poetry run pytest --cov=sebastian --cov-report=html
+poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
 ```
 
 **CI/CD:**
-- Tests run automatically on pull requests and pushes to main via GitHub Actions
+- Only unit tests run automatically in CI (fast, no credentials needed)
+- Integration tests should be run locally before merging
 - Coverage reports are uploaded to Codecov for PR annotations
 - See [`.github/instructions/testing.instructions.md`](.github/instructions/testing.instructions.md) for detailed testing guidelines
 
