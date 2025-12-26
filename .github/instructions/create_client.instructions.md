@@ -4,12 +4,19 @@
     - extract models that are part of the public interface of the client in a models.py
 - create a resolver in cloud/dependencies/clients.py
 - create a protocol in sebastian/protocols/ defining the client's public interface
-    - protocol file should be named after the client (e.g., `reddit.py` for RedditClient)
+    - protocol can be either a single file (e.g., `reddit.py`) or a directory with `__init__.py` (e.g., `gemini/IClient.py` + `gemini/__init__.py`)
+        - use directory structure when protocol needs to be organized with multiple files
+        - single file is preferred for simple protocols
     - protocol class should be named I{ClientName} (e.g., IRedditClient)
     - include all public methods from the client
     - protocols should not include any implementation details, only the method signatures and docstrings
         - esp. make sure that all interface-related models are defined in the protocol layer
+    - protocols may import from `sebastian.shared.*` for shared types like `Result`
 - use dependency injection for things like credentials (usually fetched via pydantic model from azure key vault)
+- client public methods should return `Result[T]` for error handling, where T is the success type
+    - use `Result.from_item(item=value)` for successful results
+    - use `Result.from_item(errors=[...])` for error results
+    - this allows callers to handle errors gracefully without exceptions
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable
 - if a public method uses private helper methods, extract those helpers to a separate file named after the public method

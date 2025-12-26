@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
-from sebastian.shared import Result
+from sebastian.shared.Result import Result
 
 
 T = TypeVar("T", bound=BaseModel)
