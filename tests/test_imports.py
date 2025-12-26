@@ -24,6 +24,7 @@ def test_protocols_should_only_import_from_protocols():
         .match("sebastian.protocols.*")
         .should_not_import("sebastian.*")
         .may_import("sebastian.protocols.*")
+        .may_import("sebastian.shared.*")
         .check("sebastian")
     )
 
