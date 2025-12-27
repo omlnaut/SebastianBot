@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient
+from sebastian.protocols.gemini import IGeminiClient
 from sebastian.shared import Result
 
 from .models import ReturnData
@@ -9,8 +10,9 @@ from .parsing import parse_return_email_html
 
 
 class ReturnTrackerService:
-    def __init__(self, gmail_client: IGmailClient):
+    def __init__(self, gmail_client: IGmailClient, gemini_client: IGeminiClient):
         self.gmail_client = gmail_client
+        self.gemini_client = gemini_client
 
     def get_recent_returns(
         self, time_back: timedelta = timedelta(hours=1)
@@ -36,10 +38,11 @@ class ReturnTrackerService:
             errors: list[str] = []
 
             for mail in mails:
-                try:
-                    returns.append(parse_return_email_html(mail.payload))
-                except Exception as e:  # pragma: no cover - parsing robustness
-                    errors.append(f"Error parsing return email: {str(e)}")
+                result = parse_return_email_html(mail.payload, self.gemini_client)
+                if result.item:
+                    returns.append(result.item)
+                if result.errors:
+                    errors.extend(result.errors)
 
             return Result.from_item(item=returns, errors=errors)
         except Exception as e:

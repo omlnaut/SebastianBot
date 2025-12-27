@@ -1,4 +1,5 @@
 from sebastian.infrastructure.google.task.service import TaskService
+from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.google_task import IGoogleTaskClient
@@ -14,6 +15,7 @@ from sebastian.usecases.SkeletonSoldier.service import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
 
 from .clients import (
+    resolve_gemini_client,
     resolve_gmail_client,
     resolve_google_drive_client,
     resolve_google_task_client,
@@ -89,5 +91,6 @@ def resolve_winsim_service(
 
 def resolve_return_tracker_service(
     gmail_client: IGmailClient = resolve_gmail_client(),
+    gemini_client: IGeminiClient = resolve_gemini_client(),
 ) -> ReturnTrackerService:
-    return ReturnTrackerService(gmail_client=gmail_client)
+    return ReturnTrackerService(gmail_client=gmail_client, gemini_client=gemini_client)

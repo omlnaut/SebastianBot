@@ -1,88 +1,33 @@
-import re
-
 from bs4 import BeautifulSoup
+
+from sebastian.protocols.gemini import IGeminiClient
+from sebastian.shared.Result import Result
 
 from .models import ReturnData
 
 
-def _find_tr_by_text(soup, text):  # type: ignore
-    text_element = soup.find(string=text)
-    if not text_element:
-        return None
-    return text_element.find_parent("tr")
+def parse_return_email_html(
+    html: str, gemini_client: IGeminiClient
+) -> Result[ReturnData]:
+    """Parse return email HTML using Gemini to extract structured data.
 
+    Args:
+        html: The HTML content of the return email
+        gemini_client: Gemini client for AI-powered parsing
 
-def _extract_return_date(soup) -> str:
-    return_text_tr = _find_tr_by_text(soup, "Rückgabe bis:")
-    if not return_text_tr:
-        raise ValueError("Could not find return date in the provided HTML.")
-
-    sep_tr = return_text_tr.find_next_sibling("tr")
-    if not sep_tr:
-        raise ValueError("Could not find separator row after return date.")
-
-    return_date_tr = sep_tr.find_next_sibling("tr")
-    if not return_date_tr:
-        raise ValueError("Could not find return date value row.")
-
-    return return_date_tr.text.strip()
-
-
-def _extract_pickup_location(soup) -> str:
-    location_tr = _find_tr_by_text(soup, "Abgabestandort")
-    if not location_tr:
-        raise ValueError("Could not find pickup location label in the provided HTML.")
-
-    next_tr = location_tr.find_next_sibling("tr")
-    if not next_tr:
-        raise ValueError("Could not find row after pickup location label.")
-
-    location_value_tr = next_tr.find_next_sibling("tr")
-    if not location_value_tr:
-        raise ValueError("Could not find pickup location value row.")
-
-    return location_value_tr.text.strip()
-
-
-def _extract_item_title(soup) -> str:
-    anzahl_tr = _find_tr_by_text(soup, re.compile("""^Anzahl:"""))
-    if not anzahl_tr:
-        raise ValueError("Could not find 'Anzahl' row in the provided HTML.")
-
-    prev_tr = anzahl_tr.find_previous_sibling("tr")
-    if not prev_tr:
-        raise ValueError("Could not find row before 'Anzahl' row.")
-
-    title_tr = prev_tr.find_previous_sibling("tr")
-    if not title_tr:
-        raise ValueError("Could not find item title row.")
-
-    return title_tr.text.strip()
-
-
-def _extract_order_number(soup) -> str:
-    order_number_element = soup.find(string=re.compile("^Bestellnummer"))
-    if not order_number_element:
-        raise ValueError("Could not find order number in the provided HTML.")
-
-    parts = order_number_element.split(" ")
-    if len(parts) < 2:
-        raise ValueError("Order number format is not as expected.")
-
-    return parts[1].strip()
-
-
-def parse_return_email_html(html: str) -> ReturnData:
+    Returns:
+        Result containing parsed ReturnData or error messages
+    """
+    # Extract visible text from HTML
     soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text()
 
-    return_date = _extract_return_date(soup)
-    order_number = _extract_order_number(soup)
-    pickup_location = _extract_pickup_location(soup)
-    item_title = _extract_item_title(soup)
+    # Create prompt for Gemini
+    prompt = f"""Given the following email text, extract all relevant information:
+--- email text start ---
+{text}
+--- email text end ---
+"""
 
-    return ReturnData(
-        return_date=return_date,
-        order_number=order_number,
-        pickup_location=pickup_location,
-        item_title=item_title,
-    )
+    # Use Gemini to parse the email
+    return gemini_client.get_response(prompt, response_schema=ReturnData)
