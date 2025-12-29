@@ -3,11 +3,12 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.clients import resolve_telegram_client
+from .SendTelegramMessageEvent import SendTelegramMessageEvent
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.infrastructure.telegram import service
 
-from .helper import SendTelegramMessageEvent, telegram_output_binding
+from .helper import telegram_output_binding
 
 
 @app.route(route="test_send_telegram_message")

@@ -5,8 +5,10 @@ import azure.functions as func
 from cloud.dependencies.services import resolve_google_task_service
 from cloud.functions.infrastructure.google.helper import load_google_credentials
 from .models import CreateTaskEvent
-from cloud.functions.infrastructure.telegram.helper import (
+from cloud.functions.infrastructure.telegram.SendTelegramMessageEvent import (
     SendTelegramMessageEvent,
+)
+from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
 from cloud.helper import parse_payload

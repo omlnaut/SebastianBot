@@ -8,8 +8,10 @@ from cloud.functions.infrastructure.google.task import (
     task_output_binding,
 )
 from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
-from cloud.functions.infrastructure.telegram.helper import (
+from cloud.functions.infrastructure.telegram.SendTelegramMessageEvent import (
     SendTelegramMessageEvent,
+)
+from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
 from function_app import app
