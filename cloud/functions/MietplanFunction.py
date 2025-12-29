@@ -4,7 +4,7 @@ import logging
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies.services import resolve_mietplan_service
-from cloud.functions.infrastructure.telegram.SendTelegramMessageEvent import (
+from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEvent,
 )
 from cloud.functions.infrastructure.telegram.helper import (

@@ -3,7 +3,7 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.clients import resolve_telegram_client
-from .SendTelegramMessageEvent import SendTelegramMessageEvent
+from .models import SendTelegramMessageEvent
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.infrastructure.telegram import service
