@@ -33,4 +33,10 @@
         - `azeventgrid: func.EventGridEvent` as argument in function
         - `event = parse_payload(azeventgrid, ModelClass)` inside for parsing
     - deploy to azure
+    - create subscription
+        - go to topic on azure ui, create event subscription
+3. Producer:
+    - create uri and key entries in `local.settings.json`
+    - create same vars in env variables in azure ui
+    - create output helper
 
