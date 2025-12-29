@@ -1,4 +1,4 @@
-from .CreateTaskEvent import CreateTaskEvent
+from .models import CreateTaskEvent
 from .function import create_task, test_create_task
 from .helper import task_output_binding
 

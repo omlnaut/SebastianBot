@@ -6,7 +6,7 @@ from cloud.dependencies.services import resolve_mangaupdate_service
 from cloud.functions.infrastructure.google.task import (
     task_output_binding,
 )
-from cloud.functions.infrastructure.google.task.CreateTaskEvent import CreateTaskEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
 from cloud.functions.infrastructure.telegram.helper import (
     SendTelegramMessageEvent,
     telegram_output_binding,
