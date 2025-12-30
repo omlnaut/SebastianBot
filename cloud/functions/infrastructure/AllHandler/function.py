@@ -10,7 +10,7 @@ from function_app import app
 
 @app.route(route="test_trigger_allhandler")
 @allhandler_output_binding()
-def test_create_task(
+def test_trigger_allhandler(
     req: func.HttpRequest, allHandlerOutput: func.Out[func.EventGridOutputEvent]
 ) -> func.HttpResponse:
     logging.info("HTTP test - emit trigger all handler event")
