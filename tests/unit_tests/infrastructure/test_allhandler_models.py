@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 import pytest
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
@@ -108,3 +109,25 @@ def test_to_output_data_is_model_dump(test_start: datetime):
 
     _assert_base_fields(result, test_start)
     assert result.get_json() == expected_data
+
+
+def test_event_is_json_serializable(test_start: datetime):
+    """Test that the event output can be serialized to JSON."""
+    task_event = CreateTaskEvent(
+        title="Test Task", notes="Test notes", due=datetime(2026, 1, 20)
+    )
+    telegram_event = SendTelegramMessageEvent(message="Test message")
+    event = AllHandlerEvent(
+        create_task_events=[task_event],
+        send_telegram_message_events=[telegram_event],
+    )
+
+    result = event.to_output()
+
+    # This will raise TypeError if any field is not JSON serializable
+    json_string = json.dumps(result.get_json())
+    assert json_string is not None
+
+    # Verify we can deserialize it back
+    parsed = json.loads(json_string)
+    assert parsed["create_task_events"][0]["task_list_id"] == TaskListIds.Default.value

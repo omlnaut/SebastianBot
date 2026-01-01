@@ -18,7 +18,7 @@ class AllHandlerEvent(BaseModel):
     def to_output(self) -> func.EventGridOutputEvent:
         return func.EventGridOutputEvent(
             id="allhandler-event",
-            data=self.model_dump(),
+            data=self.model_dump(mode="json"),
             subject="allhandler_event",
             event_type="allhandler_event",
             event_time=datetime.now(),
