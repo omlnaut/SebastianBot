@@ -4,9 +4,7 @@ from datetime import timedelta
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies.services import resolve_return_tracker_service
-from cloud.functions.infrastructure.google.task import (
-    task_output_binding,
-)
+from cloud.functions.infrastructure.google.task.helper import task_output_binding
 from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEvent,
