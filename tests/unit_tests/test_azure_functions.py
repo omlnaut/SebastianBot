@@ -4,8 +4,8 @@ import astroid
 from astroid.nodes import FunctionDef
 
 
+# WaitForRefactor
 def _get_azure_function_names(filepath: Path) -> list[str]:
-    # Parse the file into a module node
     module = astroid.parse(filepath.read_text())
 
     target_decorator_string = "app."
