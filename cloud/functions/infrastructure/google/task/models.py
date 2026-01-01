@@ -14,13 +14,12 @@ class CreateTaskEvent(BaseModel):
     notes: str | None = None
     due: datetime | None = None
     task_list_id: TaskListIds = TaskListIds.Default
-    subject: str = "create_task"
 
     def to_output(self) -> func.EventGridOutputEvent:
         return func.EventGridOutputEvent(
             id=str(uuid.uuid4()),
             data=self.model_dump(mode="json"),
-            subject=self.subject,
+            subject="create_task",
             event_type="create_task_event",
             event_time=datetime.now(),
             data_version="1.0",

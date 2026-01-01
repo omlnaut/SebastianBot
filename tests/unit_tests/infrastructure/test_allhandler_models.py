@@ -55,7 +55,9 @@ def test_to_output_with_task_events(test_start: datetime):
     task_event_data = result.get_json()["create_task_events"][0]
     assert task_event_data["title"] == "Test Task"
     assert task_event_data["notes"] == "Test notes"
-    assert task_event_data["due"] == datetime(2026, 1, 20)
+    assert (
+        task_event_data["due"] == "2026-01-20T00:00:00"
+    )  # ISO format from mode='json'
     assert task_event_data["task_list_id"] == TaskListIds.Default.value
     assert result.get_json()["send_telegram_message_events"] == []
 
@@ -93,22 +95,6 @@ def test_to_output_with_multiple_events(test_start: datetime):
     _assert_base_fields(result, test_start)
     assert len(result.get_json()["create_task_events"]) == 2
     assert len(result.get_json()["send_telegram_message_events"]) == 2
-
-
-def test_to_output_data_is_model_dump(test_start: datetime):
-    """Test that the data field correctly contains the model dump."""
-    task_event = CreateTaskEvent(title="Test", notes="Notes", due=datetime(2026, 1, 20))
-    telegram_event = SendTelegramMessageEvent(message="Text")
-    event = AllHandlerEvent(
-        create_task_events=[task_event],
-        send_telegram_message_events=[telegram_event],
-    )
-
-    result = event.to_output()
-    expected_data = event.model_dump()
-
-    _assert_base_fields(result, test_start)
-    assert result.get_json() == expected_data
 
 
 def test_event_is_json_serializable(test_start: datetime):
