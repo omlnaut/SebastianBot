@@ -6,6 +6,8 @@ from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
 import azure.functions as func
 
+from sebastian.protocols.google_task.models import TaskListIds
+
 
 @pytest.fixture
 def test_start() -> datetime:
@@ -53,6 +55,7 @@ def test_to_output_with_task_events(test_start: datetime):
     assert task_event_data["title"] == "Test Task"
     assert task_event_data["notes"] == "Test notes"
     assert task_event_data["due"] == datetime(2026, 1, 20)
+    assert task_event_data["task_list_id"] == TaskListIds.Default.value
     assert result.get_json()["send_telegram_message_events"] == []
 
 
