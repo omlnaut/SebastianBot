@@ -1,10 +1,7 @@
 # Next
 
 ## continue with
-- fix telegram cloud import
-- cleanup instruction files
-- plan test concept
-- formalize error result pattern
+- "new mail" source
 
 ## future ideas
 - auto-test all secret models against
