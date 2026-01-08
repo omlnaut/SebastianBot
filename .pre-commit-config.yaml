@@ -1,15 +1,15 @@
 repos:
   - repo: local
     hooks:
-      - id: poetry-lock
-        name: Update poetry.lock
-        entry: poetry lock
+      - id: uv-lock
+        name: Update uv.lock
+        entry: uv lock
         language: system
         files: ^pyproject\.toml$
         pass_filenames: false
-      - id: poetry-export
-        name: Export requirements.txt from Poetry
-        entry: poetry export -f requirements.txt --output requirements.txt --without-hashes
+      - id: uv-export
+        name: Export requirements.txt from uv
+        entry: uv pip compile pyproject.toml -o requirements.txt
         language: system
-        files: ^(pyproject\.toml|poetry\.lock)$
+        files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false

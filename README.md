@@ -93,7 +93,7 @@ The devcontainer includes:
 - Python 3.12
 - Azure Functions Core Tools
 - Azure CLI
-- Poetry for dependency management
+- uv for dependency management
 - All Python dependencies pre-installed
 
 ### Testing
@@ -106,17 +106,17 @@ The project uses **pytest** for testing with a focus on the application layer (`
 
 **Run all tests:**
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 **Run only unit tests:**
 ```bash
-poetry run pytest tests/unit_tests
+uv run pytest tests/unit_tests
 ```
 
 **Run with coverage:**
 ```bash
-poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
+uv run pytest tests/unit_tests --cov=sebastian --cov-report=html
 ```
 
 **CI/CD:**
@@ -127,44 +127,44 @@ poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
 
 ### Dependency Management
 
-This project uses **Poetry** for dependency management while maintaining compatibility with Azure Functions deployment via `requirements.txt`.
+This project uses **uv** for dependency management while maintaining compatibility with Azure Functions deployment via `requirements.txt`.
 
 #### Adding Dependencies
 
 **Production dependencies:**
 ```bash
-poetry add <package-name>
+uv add <package-name>
 ```
 
 **Development dependencies:**
 ```bash
-poetry add --group dev <package-name>
+uv add --dev <package-name>
 ```
 
 **Test dependencies:**
 ```bash
-poetry add --group test <package-name>
+uv add --optional test <package-name>
 ```
 
-Both `pyproject.toml` and `poetry.lock` will be updated automatically.
+Both `pyproject.toml` and `uv.lock` will be updated automatically.
 
 #### Removing Dependencies
 
 ```bash
-poetry remove <package-name>
+uv remove <package-name>
 ```
 
 #### Deployment to Azure
 
-Azure Functions requires a `requirements.txt` file. A **pre-commit hook** automatically exports this file whenever `pyproject.toml` or `poetry.lock` changes, ensuring it stays in sync.
+Azure Functions requires a `requirements.txt` file. A **pre-commit hook** automatically exports this file whenever `pyproject.toml` or `uv.lock` changes, ensuring it stays in sync.
 
 **CI Validation:**
 The pull request pipeline automatically checks that `requirements.txt` is up-to-date. If the check fails, either:
 - Commit your changes (the pre-commit hook will update it automatically), or
 - Run the export command manually:
-Committing your changes will only work if there are changes to `poetry.lock` or `pyproject.toml`
+Committing your changes will only work if there are changes to `uv.lock` or `pyproject.toml`
 ```bash
-poetry export -f requirements.txt --output requirements.txt --without-hashes
+uv pip compile pyproject.toml -o requirements.txt
 ```
 
 Only production dependencies are included in deployments—dev and test dependencies (pytest, ipykernel, etc.) are excluded.
