@@ -19,34 +19,29 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+          enable-cache: true
 
       - name: Install dependencies
-        run: poetry install --only main,test
-
-      - name: Install Poetry export plugin
-        run: poetry self add poetry-plugin-export
+        run: uv pip install --system -e ".[test]"
 
       - name: Check requirements.txt is up-to-date
         run: |
           TEMP_FILE=$(mktemp)
           trap "rm -f $TEMP_FILE" EXIT
-          poetry export -f requirements.txt --without-hashes > "$TEMP_FILE"
+          uv pip compile pyproject.toml -o "$TEMP_FILE"
           if ! diff -u requirements.txt "$TEMP_FILE"; then
             echo "❌ requirements.txt is out of date!"
-            echo "Run 'poetry export -f requirements.txt --output requirements.txt --without-hashes' to update it."
+            echo "Run 'uv pip compile pyproject.toml -o requirements.txt' to update it."
             echo "Or commit and the pre-commit hook will update it automatically."
             exit 1
           fi
           echo "✅ requirements.txt is up-to-date"
 
       - name: Run tests
-        run: poetry run pytest tests/unit_tests --cov --cov-report=xml
+        run: uv run pytest tests/unit_tests --cov --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

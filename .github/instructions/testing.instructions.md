@@ -97,26 +97,26 @@ def test_{function_name}_{edge_case}():
 ### Local Development
 
 ```bash
-# Install test dependencies (using Poetry)
-poetry install --with test
+# Install test dependencies (using uv)
+uv sync --extra test
 
 # Run all tests (unit + integration)
-poetry run pytest
+uv run pytest
 
 # Run only unit tests (fast, no external dependencies)
-poetry run pytest tests/unit_tests
+uv run pytest tests/unit_tests
 
 # Run only integration tests (requires credentials)
-poetry run pytest tests/integration_tests
+uv run pytest tests/integration_tests
 
 # Run tests with coverage
-poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
+uv run pytest tests/unit_tests --cov=sebastian --cov-report=html
 
 # Run specific test file
-poetry run pytest tests/unit_tests/test_dates.py
+uv run pytest tests/unit_tests/test_dates.py
 
 # Run tests matching a pattern
-poetry run pytest -k "test_parsing"
+uv run pytest -k "test_parsing"
 ```
 
 ### Configuration
@@ -156,18 +156,16 @@ jobs:
         with:
           python-version: '3.12'
       
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+          enable-cache: true
       
       - name: Install dependencies
-        run: poetry install --only main,test
+        run: uv pip install --system -e ".[test]"
       
       - name: Run tests
-        run: poetry run pytest tests/unit_tests --cov --cov-report=xml
+        run: uv run pytest tests/unit_tests --cov --cov-report=xml
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -188,7 +186,7 @@ Clients are excluded since they primarily interact with external services.
 
 ### Local Coverage Report
 ```bash
-poetry run pytest --cov=sebastian --cov-report=html
+uv run pytest --cov=sebastian --cov-report=html
 open htmlcov/index.html
 ```
 
@@ -306,7 +304,7 @@ When developing new features, follow these steps:
 
 ### Test Checklist for PRs
 - [ ] Tests added for new functionality
-- [ ] All tests pass locally (`poetry run pytest`)
+- [ ] All tests pass locally (`uv run pytest`)
 - [ ] Test names follow naming conventions
 - [ ] Edge cases considered
 - [ ] No hardcoded paths in test files
@@ -314,6 +312,6 @@ When developing new features, follow these steps:
 
 ## Dependencies
 
-Test dependencies are in `pyproject.toml` under `[tool.poetry.group.test.dependencies]`:
+Test dependencies are in `pyproject.toml` under `[project.optional-dependencies]` test group:
 - `pytest` - Test framework
 - `pytest-cov` - Coverage reporting

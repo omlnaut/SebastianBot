@@ -1,36 +1,37 @@
-[tool.poetry]
+[project]
 name = "sebastianbot"
 version = "0.1.0"
 description = "Azure Functions bot for personal automation"
-authors = ["omlnaut"]
-package-mode = false
+authors = [{name = "omlnaut"}]
+requires-python = ">=3.12"
+dependencies = [
+    "azure-functions>=1.24,<2.0",
+    "python-telegram-bot>=22.5,<23.0",
+    "azure-identity>=1.25,<2.0",
+    "azure-keyvault-secrets>=4.10,<5.0",
+    "pydantic>=2.12,<3.0",
+    "google-auth-oauthlib>=1.2,<2.0",
+    "google-api-python-client>=2.187,<3.0",
+    "beautifulsoup4>=4.14,<5.0",
+    "requests>=2.32.5,<3.0",
+    "praw>=7.8.1,<8.0",
+    "google-genai>=1.56.0,<2.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-azure-functions = "^1.24"
-python-telegram-bot = "^22.5"
-azure-identity = "^1.25"
-azure-keyvault-secrets = "^4.10"
-pydantic = "^2.12"
-google-auth-oauthlib = "^1.2"
-google-api-python-client = "^2.187"
-beautifulsoup4 = "^4.14"
-requests = "^2.32.5"
-praw = "^7.8.1"
-google-genai = "^1.56.0"
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^7.1"
-pre-commit = "^4.0"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^9.0"
-pytest-cov = "^7.0"
-pytest-archon = "^0.0.7"
+[project.optional-dependencies]
+dev = [
+    "ipykernel>=7.1,<8.0",
+    "pre-commit>=4.0,<5.0",
+]
+test = [
+    "pytest>=9.0,<10.0",
+    "pytest-cov>=7.0,<8.0",
+    "pytest-archon>=0.0.7,<0.1.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

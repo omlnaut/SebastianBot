@@ -1,9 +1,9 @@
 FROM python:3.12-bullseye
 
-# Install Poetry
-RUN pip install poetry && poetry add poetry-plugin-export
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-COPY pyproject.toml poetry.lock /tmp/
+COPY pyproject.toml uv.lock* /tmp/
 
-# Install dependencies with Poetry
-RUN cd /tmp && poetry config virtualenvs.create false && poetry install
+# Install dependencies with uv
+RUN cd /tmp && uv pip install --system -r pyproject.toml
