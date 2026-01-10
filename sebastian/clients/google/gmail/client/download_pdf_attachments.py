@@ -4,6 +4,7 @@ from io import BytesIO
 from pydantic import BaseModel, ConfigDict, Field
 
 from sebastian.protocols.gmail import FullMailResponse, PdfAttachment
+from .retry_decorator import retry_on_network_error
 
 
 class PdfMessageBody(BaseModel):
@@ -31,6 +32,7 @@ def _extract_pdf_parts(message: FullMailResponse) -> list[PdfMessagePart]:
     return [PdfMessagePart.model_validate(part) for part in pdf_parts]
 
 
+@retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
 def _download_pdf_attachment(service, message_id: str, attachment_id: str) -> bytes:
     """Download a single PDF attachment and return as BytesIO"""
     attachment = (

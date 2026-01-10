@@ -36,28 +36,33 @@ def all_handler(
     azeventgrid: func.EventGridEvent,
     telegramOutput: func.Out[func.EventGridOutputEvent],
 ):
-    logging.info("AllHandler triggered")
-
-    payload = parse_payload(azeventgrid, AllHandlerEvent)
-
-    # wip, just send telegram messages for now
-    # will get removed later
-    telegram_messages = []
-    for telegram_event in payload.send_telegram_message_events:
-        telegram_event.message += "\n\n(From AllHandler)"
-        telegram_messages.append(telegram_event.to_output())
-
-    for task_event in payload.create_task_events:
-        message = SendTelegramMessageEvent(
-            message=f"Task to be created: {task_event.title}: {task_event.notes or 'No notes'} at {task_event.due or 'No due date'}",
+    try:
+        logging.info("AllHandler triggered")
+        telegramOutput.set(
+            SendTelegramMessageEvent(message="AllHandler triggered").to_output()
         )
-        telegram_messages.append(message.to_output())
 
-    if telegram_messages:
-        telegramOutput.set(telegram_messages)  # type: ignore
+        payload = parse_payload(azeventgrid, AllHandlerEvent)
 
-    telegramOutput.set(
-        SendTelegramMessageEvent(message="AllHandler triggered").to_output()
-    )
+        # wip, just send telegram messages for now
+        # will get removed later
+        telegram_messages = []
+        for telegram_event in payload.send_telegram_message_events:
+            telegram_event.message += "\n\n(From AllHandler)"
+            telegram_messages.append(telegram_event.to_output())
 
-    logging.info("AllHandler completed")
+        for task_event in payload.create_task_events:
+            message = SendTelegramMessageEvent(
+                message=f"Task to be created: {task_event.title}: {task_event.notes or 'No notes'} at {task_event.due or 'No due date'}",
+            )
+            telegram_messages.append(message.to_output())
+
+        if telegram_messages:
+            telegramOutput.set(telegram_messages)  # type: ignore
+
+        logging.info("AllHandler completed")
+
+    except Exception as e:
+        error_msg = f"Error in all_handler: {str(e)}"
+        logging.error(error_msg)
+        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
