@@ -26,6 +26,17 @@
         - function App -> Identity -> enable system assigned
 
 ## event grid
-- topics are independet of resource groups
-- subscriptions are what ties the activation to a certain resource
-- for now, re-use the existing topics to slowly migrate to the new project
+1. Create new topic in azure web ui
+2. Consumer:
+    - create function
+        - `@app.event_grid_trigger(arg_name="azeventgrid")` as decorator for function
+        - `azeventgrid: func.EventGridEvent` as argument in function
+        - `event = parse_payload(azeventgrid, ModelClass)` inside for parsing
+    - deploy to azure
+    - create subscription
+        - go to topic on azure ui, create event subscription
+3. Producer:
+    - create uri and key entries in `local.settings.json`
+    - create same vars in env variables in azure ui
+    - create output helper
+

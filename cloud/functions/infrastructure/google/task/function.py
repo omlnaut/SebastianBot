@@ -3,17 +3,18 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.services import resolve_google_task_service
-from cloud.functions.infrastructure.google.helper import load_google_credentials
-from cloud.functions.infrastructure.telegram.helper import (
+from .models import CreateTaskEvent
+from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEvent,
+)
+from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.protocols.google_task import CreatedTask, TaskListIds
-from sebastian.infrastructure.google.task.service import TaskService
 
-from .helper import CreateTaskEvent, task_output_binding
+from .helper import task_output_binding
 
 
 @app.route(route="test_create_task")

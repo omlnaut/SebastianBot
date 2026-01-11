@@ -71,8 +71,13 @@ class WinSimService:
             .after_date(time_threshold)
             .build()
         )
+        mails = self.gmail_client.fetch_mails(query)
 
-        pdfs = self.gmail_client.download_pdf_attachments(query)
+        pdfs = [
+            pdf
+            for mail in mails
+            for pdf in self.gmail_client.download_pdf_attachments(mail)
+        ]
         return pdfs
 
     def _generate_filename(self) -> str:

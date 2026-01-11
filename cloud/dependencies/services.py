@@ -6,6 +6,7 @@ from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.protocols.reddit import IRedditClient
+from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
@@ -13,6 +14,7 @@ from sebastian.usecases.OnePunchMan.service import OnePunchManService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.SkeletonSoldier.service import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
+
 
 from .clients import (
     resolve_gemini_client,
@@ -94,3 +96,11 @@ def resolve_return_tracker_service(
     gemini_client: IGeminiClient = resolve_gemini_client(),
 ) -> ReturnTrackerService:
     return ReturnTrackerService(gmail_client=gmail_client, gemini_client=gemini_client)
+
+
+def resolve_allhandler_service(
+    gmail_client: IGmailClient = resolve_gmail_client(),
+    gemini_client: IGeminiClient = resolve_gemini_client(),
+) -> AllHandlerService:
+
+    return AllHandlerService(gmail=gmail_client, gemini=gemini_client)
