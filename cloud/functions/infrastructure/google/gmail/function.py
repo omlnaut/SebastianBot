@@ -29,8 +29,8 @@ def gmail_check_function(
 
         service = resolve_allhandler_service()
         logging.info("Checking for new emails")
-        one_minute_ago = datetime.now() - timedelta(minutes=5)
-        results = service.process_all_emails(after=one_minute_ago)
+        five_minutes_ago = datetime.now() - timedelta(minutes=5)
+        results = service.process_all_emails(after=five_minutes_ago)
 
         errors = []
         success = []

@@ -14,7 +14,7 @@ from sebastian.usecases.OnePunchMan.service import OnePunchManService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.SkeletonSoldier.service import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
-from sebastian.usecases.AllHandler.service import AllHandlerService
+
 
 from .clients import (
     resolve_gemini_client,
