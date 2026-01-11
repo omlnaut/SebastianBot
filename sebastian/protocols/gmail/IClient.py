@@ -10,6 +10,6 @@ class IGmailClient(Protocol):
         """Fetch full email messages matching the query."""
         ...
 
-    def download_pdf_attachments(self, query: str) -> list[PdfAttachment]:
-        """Download PDF attachments from messages matching the query."""
+    def download_pdf_attachments(self, mail: FullMailResponse) -> list[PdfAttachment]:
+        """Download PDF attachments from a full email message."""
         ...

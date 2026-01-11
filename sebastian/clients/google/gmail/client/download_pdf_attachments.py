@@ -55,19 +55,18 @@ def _download_pdf_attachment(service, message_id: str, attachment_id: str) -> by
 
 
 def download_pdf_attachments_from_messages(
-    service, messages: list[FullMailResponse]
+    service, mail: FullMailResponse
 ) -> list[PdfAttachment]:
     """Download all PDF attachments from a list of messages"""
     pdf_attachments: list[PdfAttachment] = []
 
-    for message in messages:
-        pdf_parts = _extract_pdf_parts(message)
-        for pdf_part in pdf_parts:
-            pdf_bytes = _download_pdf_attachment(
-                service, message.id, pdf_part.body.attachment_id
-            )
-            pdf_attachments.append(
-                PdfAttachment(filename=pdf_part.filename, data=pdf_bytes)
-            )
+    pdf_parts = _extract_pdf_parts(mail)
+    for pdf_part in pdf_parts:
+        pdf_bytes = _download_pdf_attachment(
+            service, mail.id, pdf_part.body.attachment_id
+        )
+        pdf_attachments.append(
+            PdfAttachment(filename=pdf_part.filename, data=pdf_bytes)
+        )
 
     return pdf_attachments
