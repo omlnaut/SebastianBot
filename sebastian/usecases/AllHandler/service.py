@@ -15,7 +15,7 @@ class AllHandlerService:
         self.gemini = gemini
 
     def process_all_emails(self, after: datetime) -> list[Result[AllHandlerEvent]]:
-        query = GmailQueryBuilder().after_date(after).build()
+        query = GmailQueryBuilder().after_date(after).exclude_me().build()
 
         emails = self.gmail.fetch_mails(query)
 

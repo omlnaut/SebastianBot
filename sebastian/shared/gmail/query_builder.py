@@ -20,6 +20,11 @@ class GmailQueryBuilder:
         self._query_parts.append(f"from:{email}")
         return self
 
+    def exclude_me(self) -> "GmailQueryBuilder":
+        """Exclude emails from me (the authenticated user)"""
+        self._query_parts.append("-from:me")
+        return self
+
     def subject(self, text: str, exact: bool = True) -> "GmailQueryBuilder":
         """Add subject: filter"""
         if exact:
