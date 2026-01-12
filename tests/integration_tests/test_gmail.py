@@ -36,3 +36,18 @@ def test_download_pdf_attachments(gmail_client: IGmailClient):
     attachments = gmail_client.download_pdf_attachments(mails[0])
     assert len(attachments) > 0, "No PDF attachments downloaded"
     assert all(isinstance(attachment.data, bytes) for attachment in attachments)
+
+
+def test_query_builder_exclude_me(gmail_client: IGmailClient):
+    base_query = (
+        GmailQueryBuilder()
+        .subject("Take a look!", exact=False)
+        .from_email("oneironaut.oml@gmail.com")
+        .after_date(datetime(2025, 12, 18))
+    )
+
+    mails_with_me = gmail_client.fetch_mails(base_query.build())
+    assert len(mails_with_me) > 0
+
+    mails_without_me = gmail_client.fetch_mails(base_query.exclude_me().build())
+    assert len(mails_without_me) == 0
