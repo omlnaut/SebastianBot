@@ -37,7 +37,6 @@ def test_to_output_with_empty_events(test_start: datetime):
     _assert_base_fields(result, test_start)
     assert result.get_json() == {
         "create_task_events": [],
-        "send_telegram_message_events": [],
     }
 
 
@@ -59,20 +58,6 @@ def test_to_output_with_task_events(test_start: datetime):
         task_event_data["due"] == "2026-01-20T00:00:00"
     )  # ISO format from mode='json'
     assert task_event_data["task_list_id"] == TaskListIds.Default.value
-    assert result.get_json()["send_telegram_message_events"] == []
-
-
-def test_to_output_with_telegram_events(test_start: datetime):
-    """Test to_output with send telegram message events."""
-    telegram_event = SendTelegramMessageEvent(message="Test message")
-    event = AllHandlerEvent(send_telegram_message_events=[telegram_event])
-    result = event.to_output()
-
-    _assert_base_fields(result, test_start)
-    assert result.get_json()["create_task_events"] == []
-    assert len(result.get_json()["send_telegram_message_events"]) == 1
-    telegram_event = result.get_json()["send_telegram_message_events"][0]
-    assert telegram_event["message"] == "Test message"
 
 
 def test_to_output_with_multiple_events(test_start: datetime):
@@ -83,29 +68,23 @@ def test_to_output_with_multiple_events(test_start: datetime):
     task_event2 = CreateTaskEvent(
         title="Task 2", notes="Notes 2", due=datetime(2026, 1, 21)
     )
-    telegram_event1 = SendTelegramMessageEvent(message="Message 1")
-    telegram_event2 = SendTelegramMessageEvent(message="Message 2")
 
     event = AllHandlerEvent(
         create_task_events=[task_event1, task_event2],
-        send_telegram_message_events=[telegram_event1, telegram_event2],
     )
     result = event.to_output()
 
     _assert_base_fields(result, test_start)
     assert len(result.get_json()["create_task_events"]) == 2
-    assert len(result.get_json()["send_telegram_message_events"]) == 2
 
 
-def test_event_is_json_serializable(test_start: datetime):
+def test_event_is_json_serializable():
     """Test that the event output can be serialized to JSON."""
     task_event = CreateTaskEvent(
         title="Test Task", notes="Test notes", due=datetime(2026, 1, 20)
     )
-    telegram_event = SendTelegramMessageEvent(message="Test message")
     event = AllHandlerEvent(
         create_task_events=[task_event],
-        send_telegram_message_events=[telegram_event],
     )
 
     result = event.to_output()

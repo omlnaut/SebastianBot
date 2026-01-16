@@ -19,9 +19,6 @@ class AllHandlerEvent(BaseModel):
     create_task_events: list[CreateTaskEvent] = Field(
         default_factory=list, description="List of Tasks to be created"
     )
-    send_telegram_message_events: list[SendTelegramMessageEvent] = Field(
-        default_factory=list, description="List of Telegram messages to be sent"
-    )
 
     def is_empty(self) -> bool:
-        return not bool(self.create_task_events or self.send_telegram_message_events)
+        return not bool(self.create_task_events)

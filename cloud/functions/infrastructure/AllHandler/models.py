@@ -16,9 +16,6 @@ class AllHandlerEvent(BaseModel):
     create_task_events: list[CreateTaskEvent] = Field(
         default_factory=list, description="List of Tasks to be created"
     )
-    send_telegram_message_events: list[SendTelegramMessageEvent] = Field(
-        default_factory=list, description="List of Telegram messages to be sent"
-    )
 
     def to_output(self) -> func.EventGridOutputEvent:
         return func.EventGridOutputEvent(
@@ -42,12 +39,4 @@ class AllHandlerEvent(BaseModel):
             for task in application_event.create_task_events
         ]
 
-        send_telegram_message_events = [
-            SendTelegramMessageEvent(message=msg.message)
-            for msg in application_event.send_telegram_message_events
-        ]
-
-        return cls(
-            create_task_events=create_task_events,
-            send_telegram_message_events=send_telegram_message_events,
-        )
+        return cls(create_task_events=create_task_events)

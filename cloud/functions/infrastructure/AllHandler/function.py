@@ -20,9 +20,6 @@ def test_trigger_allhandler(
 
     base_event = AllHandlerEvent(
         create_task_events=[CreateTaskEvent(title="Test Task from AllHandler")],
-        send_telegram_message_events=[
-            SendTelegramMessageEvent(message="Test Message from AllHandler")
-        ],
     )
 
     allHandlerOutput.set(base_event.to_output())
@@ -47,9 +44,6 @@ def all_handler(
         # wip, just send telegram messages for now
         # will get removed later
         telegram_messages = []
-        for telegram_event in payload.send_telegram_message_events:
-            telegram_event.message += "\n\n(From AllHandler)"
-            telegram_messages.append(telegram_event.to_output())
 
         for task_event in payload.create_task_events:
             message = SendTelegramMessageEvent(
