@@ -15,26 +15,15 @@ def gemini() -> IGeminiClient:
     return resolve_gemini_client()
 
 
-def test_build_prompt_make_new_appointment(gemini: IGeminiClient):
-    html_file = TEST_CONTENT_PATH / "make_new_appointment.html"
-    html_content = html_file.read_text()
-
-    text_content = clean_html_tags(html_content)
-    prompt = build_prompt(text_content)
-
-    result = gemini.get_response(prompt, AllHandlerEvent)
-
-    assert not result.has_errors()
-
-    event = result.item
-
-    assert event is not None
-    assert len(event.create_task_events) == 1
-    assert len(event.send_telegram_message_events) == 0
-
-
-def test_build_prompt_fetch_recipe(gemini: IGeminiClient):
-    html_file = TEST_CONTENT_PATH / "fetch_recipe.html"
+@pytest.mark.parametrize(
+    "html_filename",
+    [
+        "make_new_appointment.html",
+        "fetch_recipe.html",
+    ],
+)
+def test_build_prompt(gemini: IGeminiClient, html_filename: str):
+    html_file = TEST_CONTENT_PATH / html_filename
     html_content = html_file.read_text()
 
     text_content = clean_html_tags(html_content)
