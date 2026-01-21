@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 from cloud.dependencies.clients import resolve_gemini_client
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
 from sebastian.protocols.gemini.IClient import IGeminiClient
 from sebastian.usecases.AllHandler.prompt_builder import build_prompt, clean_html_tags
+from sebastian.usecases.AllHandler.prompt_models import AllHandlerEvent
 
 
 TEST_CONTENT_PATH = Path(__file__).parent / "test_content"
@@ -37,6 +37,8 @@ def test_build_prompt_create_task(gemini: IGeminiClient, html_filename: str):
 
     assert event is not None
     assert len(event.create_task_events) == 1
+    assert len(event.archive_email_events) == 0
+    assert len(event.put_email_in_to_read_events) == 0
 
 
 @pytest.mark.parametrize(
@@ -60,3 +62,5 @@ def test_build_prompt_ignore(gemini: IGeminiClient, html_filename: str):
 
     assert event is not None
     assert len(event.create_task_events) == 0
+    assert len(event.archive_email_events) == 0
+    assert len(event.put_email_in_to_read_events) == 1
