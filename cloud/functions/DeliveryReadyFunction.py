@@ -4,9 +4,9 @@ from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies.services import resolve_delivery_ready_service
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -50,16 +50,16 @@ def check_delivery_ready(
         if result.errors:
             logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
-                SendTelegramMessageEvent(message=result.errors_string).to_output()
+                SendTelegramMessageEventGrid(message=result.errors_string).to_output()
             )
 
     except Exception as e:
         error_msg = f"Error in delivery_ready: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
 
-def _map_to_task_event(pickup: PickupData) -> CreateTaskEvent:
+def _map_to_task_event(pickup: PickupData) -> CreateTaskEventGrid:
     title = f"Paket abholen: {pickup.preview}"
 
     notes = ""
@@ -71,4 +71,6 @@ def _map_to_task_event(pickup: PickupData) -> CreateTaskEvent:
     if pickup.tracking_number:
         notes += f"\nTracking: {pickup.tracking_number}"
 
-    return CreateTaskEvent(title=title, notes=notes, task_list_id=TaskListIds.Default)
+    return CreateTaskEventGrid(
+        title=title, notes=notes, task_list_id=TaskListIds.Default
+    )

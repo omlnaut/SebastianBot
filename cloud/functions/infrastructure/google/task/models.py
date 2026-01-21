@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 
 
-class CreateTaskEvent(BaseModel):
+class CreateTaskEventGrid(BaseModel):
     title: str
     notes: str | None = None
     due: datetime | None = None

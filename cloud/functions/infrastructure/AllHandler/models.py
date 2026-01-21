@@ -3,11 +3,11 @@ from typing import Self
 from pydantic import BaseModel, Field
 
 from cloud.functions.infrastructure.google.gmail.models import (
-    ArchiveEmailEvent,
-    PutEmailInToReadEvent,
+    ArchiveEmailEventGrid,
+    PutEmailInToReadEventGrid,
 )
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
+from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 
 from sebastian.usecases.AllHandler.prompt_models import (
     AllHandlerEvent as ApplicationAllHandlerEvent,
@@ -17,14 +17,14 @@ import azure.functions as func
 
 
 class AllHandlerEventGrid(BaseModel):
-    create_task_events: list[CreateTaskEvent] = Field(
+    create_task_events: list[CreateTaskEventGrid] = Field(
         default_factory=list, description="List of Tasks to be created"
     )
-    archive_email_events: list[ArchiveEmailEvent] = Field(
+    archive_email_events: list[ArchiveEmailEventGrid] = Field(
         default_factory=list,
         description="Use this event if email does not need immediate action and will only be used for checking i.e. invoices in hindsight.",
     )
-    put_email_in_to_read_events: list[PutEmailInToReadEvent] = Field(
+    put_email_in_to_read_events: list[PutEmailInToReadEventGrid] = Field(
         default_factory=list,
         description="Use this event to mark emails as to-read for later review, i.e. job offers, newsletters, etc.",
     )
@@ -43,7 +43,7 @@ class AllHandlerEventGrid(BaseModel):
     @classmethod
     def from_application(cls, application_event: ApplicationAllHandlerEvent) -> Self:
         create_task_events = [
-            CreateTaskEvent(
+            CreateTaskEventGrid(
                 title=task.title,
                 notes=task.notes,
                 due=task.due,
@@ -52,11 +52,11 @@ class AllHandlerEventGrid(BaseModel):
             for task in application_event.create_task_events
         ]
         archive_email_events = [
-            ArchiveEmailEvent(title=email.title)
+            ArchiveEmailEventGrid(title=email.title)
             for email in application_event.archive_email_events
         ]
         put_email_in_to_read_events = [
-            PutEmailInToReadEvent(title=email.title)
+            PutEmailInToReadEventGrid(title=email.title)
             for email in application_event.put_email_in_to_read_events
         ]
 

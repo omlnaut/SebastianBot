@@ -3,7 +3,7 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.clients import resolve_telegram_client
-from .models import SendTelegramMessageEvent
+from .models import SendTelegramMessageEventGrid
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.infrastructure.telegram import service
@@ -18,7 +18,7 @@ def test_send_telegram_message(
 ) -> func.HttpResponse:
     logging.info("Python event trigger function processed a request.")
     telegramOutput.set(
-        SendTelegramMessageEvent(message="hello there testi").to_output()
+        SendTelegramMessageEventGrid(message="hello there testi").to_output()
     )
 
     return func.HttpResponse("yay")
@@ -29,7 +29,7 @@ async def send_telegram_message(azeventgrid: func.EventGridEvent):
     try:
         logging.info("Start to send telegram message")
 
-        input_event = parse_payload(azeventgrid, SendTelegramMessageEvent)
+        input_event = parse_payload(azeventgrid, SendTelegramMessageEventGrid)
 
         client = resolve_telegram_client()
 

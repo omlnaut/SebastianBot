@@ -6,7 +6,7 @@ import datetime
 import uuid
 
 
-class SendTelegramMessageEvent(BaseModel):
+class SendTelegramMessageEventGrid(BaseModel):
     message: str
 
     def to_output(self) -> func.EventGridOutputEvent:

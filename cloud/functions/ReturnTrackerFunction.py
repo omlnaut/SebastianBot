@@ -5,9 +5,9 @@ from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies.services import resolve_return_tracker_service
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -51,16 +51,16 @@ def check_return_tracker(
         if result.errors:
             logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
-                SendTelegramMessageEvent(message=result.errors_string).to_output()
+                SendTelegramMessageEventGrid(message=result.errors_string).to_output()
             )
 
     except Exception as e:
         error_msg = f"Error in return_tracker: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
 
-def _map_to_task_event(return_data: ReturnData) -> CreateTaskEvent:
+def _map_to_task_event(return_data: ReturnData) -> CreateTaskEventGrid:
     title = "Retoure"
     notes = (
         f"{return_data.item_title}\n"
@@ -68,4 +68,6 @@ def _map_to_task_event(return_data: ReturnData) -> CreateTaskEvent:
         f"Retoure bis: {return_data.return_date}\n"
         f"Order: {return_data.order_number}"
     )
-    return CreateTaskEvent(title=title, notes=notes, task_list_id=TaskListIds.Default)
+    return CreateTaskEventGrid(
+        title=title, notes=notes, task_list_id=TaskListIds.Default
+    )

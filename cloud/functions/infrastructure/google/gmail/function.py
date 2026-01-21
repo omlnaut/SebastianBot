@@ -5,7 +5,7 @@ from cloud.functions.TriggerTimes import TriggerTimes
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
+from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 from function_app import app
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
@@ -39,7 +39,7 @@ def gmail_check_function(
             if result.has_errors():
                 error_msg = f"Error processing email: {result.errors_string}"
                 logging.error(error_msg)
-                errors.append(SendTelegramMessageEvent(message=error_msg))
+                errors.append(SendTelegramMessageEventGrid(message=error_msg))
             else:
                 event = result.item
                 assert event is not None
@@ -55,4 +55,4 @@ def gmail_check_function(
     except Exception as e:
         error_msg = f"Error in gmail_check_function: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())

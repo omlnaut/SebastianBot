@@ -4,7 +4,7 @@ from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
 from cloud.dependencies.services import resolve_winsim_service
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -40,16 +40,16 @@ def check_winsim_invoices(
                 f"📄 WinSim: Uploaded {len(result.item)} invoice(s) to Google Drive"
             )
             telegramOutput.set(
-                SendTelegramMessageEvent(message=success_msg).to_output()
+                SendTelegramMessageEventGrid(message=success_msg).to_output()
             )
 
         if result.errors:
             logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
-                SendTelegramMessageEvent(message=result.errors_string).to_output()
+                SendTelegramMessageEventGrid(message=result.errors_string).to_output()
             )
 
     except Exception as e:
         error_msg = f"Error in check_winsim_invoices: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
