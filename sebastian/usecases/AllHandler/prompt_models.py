@@ -30,9 +30,6 @@ class SendTelegramMessageEvent(BaseModel):
 
 
 class AllHandlerEvent(BaseModel):
-    create_task_events: list[CreateTaskEvent] = Field(
-        default_factory=list, description="List of Tasks to be created"
-    )
     archive_email_events: list[ArchiveEmailEvent] = Field(
         default_factory=list,
         description="Use this event if email does not need immediate action and will only be used for checking i.e. invoices in hindsight.",
@@ -40,6 +37,10 @@ class AllHandlerEvent(BaseModel):
     put_email_in_to_read_events: list[PutEmailInToReadEvent] = Field(
         default_factory=list,
         description="Use this event to mark emails as to-read for later review, i.e. job offers, newsletters, etc.",
+    )
+    create_task_events: list[CreateTaskEvent] = Field(
+        default_factory=list,
+        description="Use this event when the email requires an action to be taken that is not covered by other the events.",
     )
 
     def is_empty(self) -> bool:
