@@ -3,7 +3,7 @@ import logging
 import uuid
 import azure.functions as func
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
+from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
 from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
@@ -18,7 +18,7 @@ def test_trigger_allhandler(
 ) -> func.HttpResponse:
     logging.info("HTTP test - emit trigger all handler event")
 
-    base_event = AllHandlerEvent(
+    base_event = AllHandlerEventGrid(
         create_task_events=[CreateTaskEvent(title="Test Task from AllHandler")],
     )
 
@@ -39,7 +39,7 @@ def all_handler(
             SendTelegramMessageEvent(message="AllHandler triggered").to_output()
         )
 
-        payload = parse_payload(azeventgrid, AllHandlerEvent)
+        payload = parse_payload(azeventgrid, AllHandlerEventGrid)
 
         # wip, just send telegram messages for now
         # will get removed later

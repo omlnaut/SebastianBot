@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 
 import pytest
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
+from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
 from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
 import azure.functions as func
@@ -31,7 +31,7 @@ def _assert_base_fields(
 
 def test_to_output_with_empty_events(test_start: datetime):
     """Test to_output with no events."""
-    event = AllHandlerEvent()
+    event = AllHandlerEventGrid()
     result = event.to_output()
 
     _assert_base_fields(result, test_start)
@@ -45,7 +45,7 @@ def test_to_output_with_task_events(test_start: datetime):
     task_event = CreateTaskEvent(
         title="Test Task", notes="Test notes", due=datetime(2026, 1, 20)
     )
-    event = AllHandlerEvent(create_task_events=[task_event])
+    event = AllHandlerEventGrid(create_task_events=[task_event])
     result = event.to_output()
 
     _assert_base_fields(result, test_start)
@@ -69,7 +69,7 @@ def test_to_output_with_multiple_events(test_start: datetime):
         title="Task 2", notes="Notes 2", due=datetime(2026, 1, 21)
     )
 
-    event = AllHandlerEvent(
+    event = AllHandlerEventGrid(
         create_task_events=[task_event1, task_event2],
     )
     result = event.to_output()
@@ -83,7 +83,7 @@ def test_event_is_json_serializable():
     task_event = CreateTaskEvent(
         title="Test Task", notes="Test notes", due=datetime(2026, 1, 20)
     )
-    event = AllHandlerEvent(
+    event = AllHandlerEventGrid(
         create_task_events=[task_event],
     )
 

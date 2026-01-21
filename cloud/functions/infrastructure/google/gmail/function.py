@@ -3,7 +3,7 @@ import logging
 from cloud.dependencies.services import resolve_allhandler_service
 from cloud.functions.TriggerTimes import TriggerTimes
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
+from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
 from function_app import app
@@ -46,7 +46,7 @@ def gmail_check_function(
                 if event.is_empty():
                     logging.info("No events to process in this email, skipping.")
                     continue
-                api_event = AllHandlerEvent.from_application(event)
+                api_event = AllHandlerEventGrid.from_application(event)
                 success.append(api_event)
 
         telegramOutput.set([event.to_output() for event in errors])  # type: ignore

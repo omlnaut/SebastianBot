@@ -16,7 +16,7 @@ from sebastian.usecases.AllHandler.prompt_models import (
 import azure.functions as func
 
 
-class AllHandlerEvent(BaseModel):
+class AllHandlerEventGrid(BaseModel):
     create_task_events: list[CreateTaskEvent] = Field(
         default_factory=list, description="List of Tasks to be created"
     )
@@ -39,6 +39,7 @@ class AllHandlerEvent(BaseModel):
             data_version="1.0",
         )
 
+    # todo: from_application for all event grids
     @classmethod
     def from_application(cls, application_event: ApplicationAllHandlerEvent) -> Self:
         create_task_events = [
