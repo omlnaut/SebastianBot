@@ -32,11 +32,13 @@ class SendTelegramMessageEvent(BaseModel):
 class AllHandlerEvent(BaseModel):
     archive_email_events: list[ArchiveEmailEvent] = Field(
         default_factory=list,
-        description="Use this event if email does not need immediate action and will only be used for checking i.e. invoices in hindsight.",
+        description="Use this event if email does not need immediate action and will only be used for checking i.e. invoices in hindsight.  Don't use this event for emails that require immediate action other than reading.",
     )
     put_email_in_to_read_events: list[PutEmailInToReadEvent] = Field(
         default_factory=list,
-        description="Use this event to mark emails as to-read for later review, i.e. job offers, newsletters, etc.",
+        description="""Use this event to mark emails as to-read for later review, i.e. job offers, newsletters, etc. Don't use this event for:
+         - emails that require immediate action other than reading. This includes mails that notify of messages in other apps
+         """,
     )
     create_task_events: list[CreateTaskEvent] = Field(
         default_factory=list,

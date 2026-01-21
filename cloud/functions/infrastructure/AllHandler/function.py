@@ -45,6 +45,18 @@ def all_handler(
         # will get removed later
         telegram_messages = []
 
+        for archive_email_event in payload.archive_email_events:
+            message = SendTelegramMessageEvent(
+                message=f"Email to be archived: {archive_email_event.title}",
+            )
+            telegram_messages.append(message.to_output())
+
+        for mark_to_read_event in payload.put_email_in_to_read_events:
+            message = SendTelegramMessageEvent(
+                message=f"Email to be marked as to-read: {mark_to_read_event.title}",
+            )
+            telegram_messages.append(message.to_output())
+
         for task_event in payload.create_task_events:
             message = SendTelegramMessageEvent(
                 message=f"Task to be created: {task_event.title}: {task_event.notes or 'No notes'} at {task_event.due or 'No due date'}",

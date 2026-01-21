@@ -17,12 +17,9 @@ def gemini() -> IGeminiClient:
 
 @pytest.mark.parametrize(
     "html_filename",
-    [
-        "make_new_appointment.html",
-        "fetch_recipe.html",
-    ],
+    ["make_new_appointment.html", "fetch_recipe.html", "tk_message.html"],
 )
-def test_build_prompt_create_task(gemini: IGeminiClient, html_filename: str):
+def test_prompt_create_task(gemini: IGeminiClient, html_filename: str):
     html_file = TEST_CONTENT_PATH / html_filename
     html_content = html_file.read_text()
 
@@ -47,7 +44,7 @@ def test_build_prompt_create_task(gemini: IGeminiClient, html_filename: str):
         "linked_jobs.html",
     ],
 )
-def test_build_prompt_ignore(gemini: IGeminiClient, html_filename: str):
+def test_prompt_to_read(gemini: IGeminiClient, html_filename: str):
     html_file = TEST_CONTENT_PATH / html_filename
     html_content = html_file.read_text()
 
