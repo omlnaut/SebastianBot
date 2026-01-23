@@ -6,6 +6,7 @@ from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.protocols.reddit import IRedditClient
+from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
 from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
@@ -104,3 +105,14 @@ def resolve_allhandler_service(
 ) -> AllHandlerService:
 
     return AllHandlerService(gmail=gmail_client, gemini=gemini_client)
+
+
+def resolve_allhandler_mail_service(
+    gmail_client: IGmailClient = resolve_gmail_client(),
+    allhandler_service: AllHandlerService = resolve_allhandler_service(),
+) -> "MailToAllHandler":
+
+    return MailToAllHandler(
+        mail_client=gmail_client,
+        all_handler_service=allhandler_service,
+    )

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from cloud.dependencies.services import resolve_allhandler_service
+from cloud.dependencies.services import resolve_allhandler_mail_service
 from cloud.functions.TriggerTimes import TriggerTimes
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
@@ -27,10 +27,10 @@ def gmail_check_function(
     try:
         logging.info("GmailCheck timer function processed a request.")
 
-        service = resolve_allhandler_service()
+        service = resolve_allhandler_mail_service()
         logging.info("Checking for new emails")
         five_minutes_ago = datetime.now() - timedelta(minutes=5)
-        results = service.process_all_emails(after=five_minutes_ago)
+        results = service.process_recent_emails(after=five_minutes_ago)
 
         errors = []
         success = []

@@ -14,22 +14,10 @@ class AllHandlerService:
         self.gmail = gmail
         self.gemini = gemini
 
-    def process_all_emails(self, after: datetime) -> list[Result[AllHandlerEvent]]:
-        query = GmailQueryBuilder().after_date(after).exclude_me().build()
-
-        emails = self.gmail.fetch_mails(query)
-
-        events = self._process_emails(emails)
-
-        return events
-
-    def _process_emails(
-        self, emails: list[FullMailResponse]
-    ) -> list[Result[AllHandlerEvent]]:
-        events = []
-        for email in emails:
-            clean_payload = clean_html_tags(email.payload)
-            prompt = build_prompt(clean_payload)
+    def handle_content(self, contents: list[str]) -> list[Result[AllHandlerEvent]]:
+        results = []
+        for content in contents:
+            prompt = build_prompt(clean_html_tags(content))
             result = self.gemini.get_response(prompt, AllHandlerEvent)
-            events.append(result)
-        return events
+            results.append(result)
+        return results

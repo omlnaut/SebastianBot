@@ -2,7 +2,7 @@ from sebastian.protocols.google_task import TaskListIds
 
 
 import azure.functions as func
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel
 
 
 import uuid
