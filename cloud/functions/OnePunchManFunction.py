@@ -2,7 +2,7 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.dependencies.services import resolve_one_punch_man_service
+from cloud.dependencies.usecases import resolve_one_punch_man_service
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
 from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (

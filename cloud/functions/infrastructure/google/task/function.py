@@ -2,7 +2,7 @@ import logging
 
 import azure.functions as func
 
-from cloud.dependencies.services import resolve_google_task_service
+from cloud.dependencies.usecases import resolve_google_task_service
 from .models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,

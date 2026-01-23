@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from cloud.dependencies.services import resolve_allhandler_mail_service
+from cloud.dependencies.usecases import resolve_allhandler_mail_service
 from cloud.functions.TriggerTimes import TriggerTimes
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid

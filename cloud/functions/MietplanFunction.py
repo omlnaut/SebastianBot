@@ -3,7 +3,7 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.dependencies.services import resolve_mietplan_service
+from cloud.dependencies.usecases import resolve_mietplan_service
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
 )
