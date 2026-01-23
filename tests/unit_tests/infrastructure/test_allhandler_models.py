@@ -37,6 +37,8 @@ def test_to_output_with_empty_events(test_start: datetime):
     _assert_base_fields(result, test_start)
     assert result.get_json() == {
         "create_task_events": [],
+        "archive_email_events": [],
+        "put_email_in_to_read_events": [],
     }
 
 

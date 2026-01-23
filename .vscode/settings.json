@@ -5,5 +5,11 @@
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.projectLanguageModel": 2,
-    "explorer.excludeGitIgnore": true
+    "explorer.excludeGitIgnore": false,
+    "files.exclude": {
+        "__blobstorage__": true,
+        ".pytest_cache": true,
+        "**/__azurite_db*.json": true,
+        "**/__pycache__/": true
+    }
 }

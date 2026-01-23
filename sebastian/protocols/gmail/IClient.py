@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from .models import FullMailResponse, PdfAttachment
+from .models import FullMailResponse, GmailTag, PdfAttachment
 
 
 class IGmailClient(Protocol):
@@ -12,4 +12,8 @@ class IGmailClient(Protocol):
 
     def download_pdf_attachments(self, mail: FullMailResponse) -> list[PdfAttachment]:
         """Download PDF attachments from a full email message."""
+        ...
+
+    def add_tag(self, email_id: str, tag: GmailTag) -> None:
+        """Add a tag/label to an email."""
         ...

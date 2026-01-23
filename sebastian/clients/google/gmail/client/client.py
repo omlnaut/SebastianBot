@@ -1,7 +1,7 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
-from sebastian.protocols.gmail import FullMailResponse, PdfAttachment
+from sebastian.protocols.gmail import FullMailResponse, GmailTag, PdfAttachment
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
 from .fetch_mails import fetch_full_mail, fetch_message_ids
@@ -22,3 +22,10 @@ class GmailClient:
     def download_pdf_attachments(self, mail: FullMailResponse) -> list[PdfAttachment]:
         """Download PDF attachments from a full email message."""
         return download_pdf_attachments_from_messages(self._service, mail)
+
+    def add_tag(self, email_id: str, tag: GmailTag) -> None:
+        """Add a tag/label to an email."""
+        modify_request = {"addLabelIds": [tag.value], "removeLabelIds": []}
+        self._service.users().messages().modify(
+            userId="me", id=email_id, body=modify_request
+        ).execute()

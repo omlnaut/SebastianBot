@@ -1,8 +1,15 @@
 import base64
 from dataclasses import dataclass
+from enum import Enum
 from io import BytesIO
 
 from pydantic import BaseModel
+
+
+class GmailTag(str, Enum):
+    """Enum mapping readable tag names to Gmail label IDs. Fill in actual label IDs as needed."""
+
+    ToRead = "Label_2648990123443534971"
 
 
 @dataclass
