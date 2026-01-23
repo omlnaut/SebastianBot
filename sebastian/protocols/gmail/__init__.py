@@ -1,4 +1,4 @@
 from .IClient import IGmailClient
-from .models import FullMailResponse, MessageId, PdfAttachment
+from .models import FullMailResponse, GmailTag, MessageId, PdfAttachment
 
-__all__ = ["IGmailClient", "FullMailResponse", "MessageId", "PdfAttachment"]
+__all__ = ["IGmailClient", "FullMailResponse", "GmailTag", "MessageId", "PdfAttachment"]
