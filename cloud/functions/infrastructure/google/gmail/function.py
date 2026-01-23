@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import logging
-from cloud.dependencies.services import resolve_allhandler_service
+from cloud.dependencies.usecases import resolve_allhandler_mail_service
 from cloud.functions.TriggerTimes import TriggerTimes
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
+from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
+from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 from function_app import app
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
@@ -27,10 +27,10 @@ def gmail_check_function(
     try:
         logging.info("GmailCheck timer function processed a request.")
 
-        service = resolve_allhandler_service()
+        service = resolve_allhandler_mail_service()
         logging.info("Checking for new emails")
         five_minutes_ago = datetime.now() - timedelta(minutes=5)
-        results = service.process_all_emails(after=five_minutes_ago)
+        results = service.process_recent_emails(after=five_minutes_ago)
 
         errors = []
         success = []
@@ -39,14 +39,14 @@ def gmail_check_function(
             if result.has_errors():
                 error_msg = f"Error processing email: {result.errors_string}"
                 logging.error(error_msg)
-                errors.append(SendTelegramMessageEvent(message=error_msg))
+                errors.append(SendTelegramMessageEventGrid(message=error_msg))
             else:
                 event = result.item
                 assert event is not None
                 if event.is_empty():
                     logging.info("No events to process in this email, skipping.")
                     continue
-                api_event = AllHandlerEvent.from_application(event)
+                api_event = AllHandlerEventGrid.from_application(event)
                 success.append(api_event)
 
         telegramOutput.set([event.to_output() for event in errors])  # type: ignore
@@ -55,4 +55,4 @@ def gmail_check_function(
     except Exception as e:
         error_msg = f"Error in gmail_check_function: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())

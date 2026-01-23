@@ -2,10 +2,10 @@ import logging
 
 import azure.functions as func
 
-from cloud.dependencies.services import resolve_google_task_service
-from .models import CreateTaskEvent
+from cloud.dependencies.usecases import resolve_google_task_service
+from .models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -24,7 +24,7 @@ def test_create_task(
 ) -> func.HttpResponse:
     logging.info("HTTP test - emit create task event")
 
-    event_model = CreateTaskEvent(
+    event_model = CreateTaskEventGrid(
         title="Sample Task", notes="Sample notes", task_list_id=TaskListIds.Mangas
     )
     taskOutput.set(event_model.to_output())
@@ -40,7 +40,7 @@ def create_task(
 ):
     try:
         logging.info("EventGrid create task triggered")
-        event = parse_payload(azeventgrid, CreateTaskEvent)
+        event = parse_payload(azeventgrid, CreateTaskEventGrid)
 
         logging.info(f"Creating task: {event.title}")
 
@@ -51,13 +51,13 @@ def create_task(
         )
         message = _build_message(created_task)
 
-        telegramOutput.set(SendTelegramMessageEvent(message=message).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=message).to_output())
 
         logging.info(f"Created task: {created_task.title}")
     except Exception as e:
         error_msg = f"Error creating task: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
 
 def _build_message(created_task: CreatedTask) -> str:

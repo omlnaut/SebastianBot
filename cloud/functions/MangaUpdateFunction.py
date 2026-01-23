@@ -2,11 +2,11 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.dependencies.services import resolve_mangaupdate_service
+from cloud.dependencies.usecases import resolve_mangaupdate_service
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -49,20 +49,20 @@ def check_manga_update(
         if result.errors:
             logging.error(f"Errors occurred: {result.errors_string}")
             telegramOutput.set(
-                SendTelegramMessageEvent(message=result.errors_string).to_output()
+                SendTelegramMessageEventGrid(message=result.errors_string).to_output()
             )
 
     except Exception as e:
         error_msg = f"Error in manga_update: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
 
-def _map_to_task_event(manga) -> CreateTaskEvent:
+def _map_to_task_event(manga) -> CreateTaskEventGrid:
     """
     Private helper to map manga data to a CreateTaskEvent.
     """
-    return CreateTaskEvent(
+    return CreateTaskEventGrid(
         title=f"{manga.title} Chapter {manga.chapter}",
         notes=manga.url,
         task_list_id=TaskListIds.Mangas,

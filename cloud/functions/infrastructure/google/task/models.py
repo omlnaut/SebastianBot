@@ -2,14 +2,14 @@ from sebastian.protocols.google_task import TaskListIds
 
 
 import azure.functions as func
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel
 
 
 import uuid
 from datetime import datetime
 
 
-class CreateTaskEvent(BaseModel):
+class CreateTaskEventGrid(BaseModel):
     title: str
     notes: str | None = None
     due: datetime | None = None

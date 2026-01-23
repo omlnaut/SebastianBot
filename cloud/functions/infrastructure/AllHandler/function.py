@@ -3,10 +3,10 @@ import logging
 import uuid
 import azure.functions as func
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
-from cloud.functions.infrastructure.AllHandler.models import AllHandlerEvent
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
+from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEvent
+from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 from cloud.helper.parsing import parse_payload
 from function_app import app
 
@@ -18,8 +18,8 @@ def test_trigger_allhandler(
 ) -> func.HttpResponse:
     logging.info("HTTP test - emit trigger all handler event")
 
-    base_event = AllHandlerEvent(
-        create_task_events=[CreateTaskEvent(title="Test Task from AllHandler")],
+    base_event = AllHandlerEventGrid(
+        create_task_events=[CreateTaskEventGrid(title="Test Task from AllHandler")],
     )
 
     allHandlerOutput.set(base_event.to_output())
@@ -36,29 +36,29 @@ def all_handler(
     try:
         logging.info("AllHandler triggered")
         telegramOutput.set(
-            SendTelegramMessageEvent(message="AllHandler triggered").to_output()
+            SendTelegramMessageEventGrid(message="AllHandler triggered").to_output()
         )
 
-        payload = parse_payload(azeventgrid, AllHandlerEvent)
+        payload = parse_payload(azeventgrid, AllHandlerEventGrid)
 
         # wip, just send telegram messages for now
         # will get removed later
         telegram_messages = []
 
         for archive_email_event in payload.archive_email_events:
-            message = SendTelegramMessageEvent(
+            message = SendTelegramMessageEventGrid(
                 message=f"Email to be archived: {archive_email_event.title}",
             )
             telegram_messages.append(message.to_output())
 
         for mark_to_read_event in payload.put_email_in_to_read_events:
-            message = SendTelegramMessageEvent(
+            message = SendTelegramMessageEventGrid(
                 message=f"Email to be marked as to-read: {mark_to_read_event.title}",
             )
             telegram_messages.append(message.to_output())
 
         for task_event in payload.create_task_events:
-            message = SendTelegramMessageEvent(
+            message = SendTelegramMessageEventGrid(
                 message=f"Task to be created: {task_event.title}: {task_event.notes or 'No notes'} at {task_event.due or 'No due date'}",
             )
             telegram_messages.append(message.to_output())
@@ -71,4 +71,4 @@ def all_handler(
     except Exception as e:
         error_msg = f"Error in all_handler: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())

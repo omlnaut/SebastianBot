@@ -2,11 +2,11 @@ import logging
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
-from cloud.dependencies.services import resolve_skeleton_soldier_service
+from cloud.dependencies.usecases import resolve_skeleton_soldier_service
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
-from cloud.functions.infrastructure.google.task.models import CreateTaskEvent
+from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEvent,
+    SendTelegramMessageEventGrid,
 )
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
@@ -52,11 +52,11 @@ def check_skeleton_soldier_updates(
     except Exception as e:
         error_msg = f"Error in Skeleton Soldier function: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEvent(message=error_msg).to_output())
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
 
-def _to_create_task_event() -> CreateTaskEvent:
-    return CreateTaskEvent(
+def _to_create_task_event() -> CreateTaskEventGrid:
+    return CreateTaskEventGrid(
         title=f"Skeleton Soldier",
         notes="https://demonicscans.org/manga/Skeleton-Soldier",
         task_list_id=TaskListIds.Mangas,
