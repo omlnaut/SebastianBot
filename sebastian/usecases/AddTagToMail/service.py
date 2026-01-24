@@ -23,7 +23,7 @@ class AddTagToMail:
         try:
             logging.info(f"Adding tag {tag.name} to email {email_id}")
 
-            self.gmail_client.add_tag(email_id, tag)
+            self.gmail_client.modify_labels(email_id, add_labels=[tag])
 
             logging.info(f"Successfully added tag {tag.name} to email {email_id}")
             return Result.from_item(item=email_id)
