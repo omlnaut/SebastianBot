@@ -38,6 +38,18 @@ def test_download_pdf_attachments(gmail_client: IGmailClient):
     assert all(isinstance(attachment.data, bytes) for attachment in attachments)
 
 
+def test_query_builder_on_date(gmail_client: IGmailClient):
+    query = (
+        GmailQueryBuilder()
+        .from_email("azure-noreply@microsoft.com")
+        .after_date(datetime(2026, 1, 22))
+        .build()
+    )
+
+    mails = gmail_client.fetch_mails(query)
+    assert len(mails) == 1, "No emails found on the specific date"
+
+
 def test_query_builder_exclude_me(gmail_client: IGmailClient):
     base_query = (
         GmailQueryBuilder()

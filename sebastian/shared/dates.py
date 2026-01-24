@@ -19,3 +19,15 @@ def is_at_most_one_day_old(input_date: datetime | date) -> bool:
     now = date.today()
     one_day_ago = now - timedelta(days=1)
     return one_day_ago <= input_date <= now
+
+
+def to_timestamp(date: datetime | int) -> int:
+    """
+    Convert a datetime or timestamp to an integer timestamp.
+    If a datetime is provided, converts it to a Unix timestamp.
+    If an int is provided, returns it as-is.
+    """
+    if isinstance(date, datetime):
+        return int(date.timestamp())
+    else:
+        return int(date)
