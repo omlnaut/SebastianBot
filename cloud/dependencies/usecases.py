@@ -6,6 +6,7 @@ from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.protocols.reddit import IRedditClient
+from sebastian.usecases.AddTagToMail.service import AddTagToMail
 from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
 from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
@@ -116,3 +117,9 @@ def resolve_allhandler_mail_service(
         mail_client=gmail_client,
         all_handler_service=allhandler_service,
     )
+
+
+def resolve_add_tag_to_mail_service(
+    gmail_client: IGmailClient = resolve_gmail_client(),
+) -> AddTagToMail:
+    return AddTagToMail(gmail_client=gmail_client)
