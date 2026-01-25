@@ -4,7 +4,7 @@ from sebastian.protocols.gmail import IGmailClient, GmailLabel
 from sebastian.shared import Result
 
 
-class AddLabelToMail:
+class Handler:
     def __init__(self, gmail_client: IGmailClient):
         self.gmail_client = gmail_client
 

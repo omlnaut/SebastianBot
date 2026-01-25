@@ -6,7 +6,7 @@ from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.protocols.reddit import IRedditClient
-from sebastian.usecases.AddLabelToMail.AddLabelToMail import AddLabelToMail
+from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
 from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
 from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
