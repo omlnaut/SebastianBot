@@ -44,7 +44,9 @@ class GmailQueryBuilder:
     def on_date(self, date: datetime | int) -> "GmailQueryBuilder":
         """Add filter for emails on a specific date using Unix timestamp"""
         timestamp = to_timestamp(date)
-        self._query_parts.append(f"after:{timestamp} before:{timestamp + 86400}")
+        start_timestamp = timestamp - 1
+        end_timestamp = timestamp + 86400
+        self._query_parts.append(f"after:{start_timestamp} before:{end_timestamp}")
         return self
 
     def build(self) -> str:
