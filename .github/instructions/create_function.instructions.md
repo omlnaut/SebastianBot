@@ -10,6 +10,7 @@
         - service resolution via resolve_{name}_service()
         - error handling with try/except
         - output bindings (@task_output_binding, @telegram_output_binding) for infrastructure actions
+            - when creating, add todo comment for creating corresponding env vars
         - function signature: def check_{usecase_name}(mytimer: TimerRequest, {outputs}) -> None
         - private helper functions (e.g., _map_to_*, _create_*, _to_*) for mapping domain models to events/messages
     5. import function in function_app.py

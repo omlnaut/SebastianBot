@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sebastian.shared.dates import to_timestamp
+
 
 class GmailQueryBuilder:
     """Helper class to build Gmail search queries"""
@@ -35,11 +37,16 @@ class GmailQueryBuilder:
 
     def after_date(self, date: datetime | int) -> "GmailQueryBuilder":
         """Add after: filter using Unix timestamp"""
-        if isinstance(date, datetime):
-            timestamp = int(date.timestamp())
-        else:
-            timestamp = int(date)
+        timestamp = to_timestamp(date)
         self._query_parts.append(f"after:{timestamp}")
+        return self
+
+    def on_date(self, date: datetime | int) -> "GmailQueryBuilder":
+        """Add filter for emails on a specific date using Unix timestamp"""
+        timestamp = to_timestamp(date)
+        start_timestamp = timestamp - 1
+        end_timestamp = timestamp + 86400
+        self._query_parts.append(f"after:{start_timestamp} before:{end_timestamp}")
         return self
 
     def build(self) -> str:

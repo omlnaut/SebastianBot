@@ -64,6 +64,11 @@ tests/
 - Require credentials (via resolvers)
 - Slower execution
 - Organized by client/service being tested
+- As test files grow, split them by functionality:
+    - Create a directory for the client (e.g., `gmail/`)
+    - Split into focused test files (e.g., `test_fetch_mails.py`, `test_labels.py`, `test_pdf_attachments.py`)
+    - Add `conftest.py` for shared fixtures
+    - Example: `test_gmail.py` → `gmail/test_fetch_mails.py`, `gmail/test_labels.py`, etc.
 
 ### Naming Conventions
 - Test files: `test_{module_name}.py`
