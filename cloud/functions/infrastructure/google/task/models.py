@@ -4,7 +4,7 @@ from sebastian.protocols.google_task import TaskListIds
 import azure.functions as func
 from pydantic import BaseModel
 
-from cloud.helper.event_grid_mixin import EventGridMixin
+from cloud.helper.EventGridMixin import EventGridMixin
 
 import uuid
 from datetime import datetime

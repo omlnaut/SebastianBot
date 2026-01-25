@@ -4,7 +4,7 @@ from datetime import datetime
 import azure.functions as func
 from pydantic import BaseModel, Field
 
-from cloud.helper.event_grid_mixin import EventGridMixin
+from cloud.helper.EventGridMixin import EventGridMixin
 from sebastian.protocols.gmail import GmailLabel
 
 

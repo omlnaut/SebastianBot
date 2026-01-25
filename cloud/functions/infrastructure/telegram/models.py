@@ -1,10 +1,6 @@
-import azure.functions as func
 from pydantic import BaseModel
 
-from cloud.helper.event_grid_mixin import EventGridMixin
-
-import datetime
-import uuid
+from cloud.helper.EventGridMixin import EventGridMixin
 
 
 class SendTelegramMessageEventGrid(EventGridMixin, BaseModel):

@@ -19,8 +19,8 @@ def _assert_base_fields(
 ) -> None:
     """Assert common fields for all EventGridOutputEvent results."""
     assert isinstance(result, func.EventGridOutputEvent)
-    assert result.subject == "create_task"
-    assert result.event_type == "create_task_event"
+    assert result.subject == "CreateTask"
+    assert result.event_type == "CreateTask_event"
     assert result.event_time is not None
     assert result.event_time >= test_start
     assert result.data_version == "1.0"
@@ -51,13 +51,7 @@ def test_to_output_with_all_fields(test_start: datetime):
     )
     result = event.to_output()
 
-    assert isinstance(result, func.EventGridOutputEvent)
-    assert result.subject == "create_task"
-    assert result.event_type == "create_task_event"
-    assert result.event_time is not None
-    assert result.event_time >= test_start
-    assert result.data_version == "1.0"
-    assert len(result.id) == 36
+    _assert_base_fields(result, test_start)
 
     data = result.get_json()
     assert data["title"] == "Test Task"

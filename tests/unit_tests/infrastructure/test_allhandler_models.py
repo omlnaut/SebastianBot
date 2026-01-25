@@ -23,8 +23,8 @@ def _assert_base_fields(
     assert isinstance(result, func.EventGridOutputEvent)
     assert result.id is not None  # UUID generated
     assert len(result.id) == 36  # UUID format
-    assert result.subject == "all_handler"
-    assert result.event_type == "all_handler_event"
+    assert result.subject == "AllHandler"
+    assert result.event_type == "AllHandler_event"
     assert result.event_time is not None
     assert result.event_time >= test_start
     assert result.data_version == "1.0"
