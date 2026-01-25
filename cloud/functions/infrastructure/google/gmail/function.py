@@ -14,9 +14,6 @@ from cloud.functions.infrastructure.telegram.helper import telegram_output_bindi
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 from cloud.helper import parse_payload
 from function_app import app
-from sebastian.protocols.gmail import GmailLabel
-
-from .models import ModifyMailLabelEventGrid
 
 from azure.functions import EventGridOutputEvent, Out, TimerRequest
 
