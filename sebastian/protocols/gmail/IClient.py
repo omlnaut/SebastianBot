@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from .models import FullMailResponse, GmailTag, PdfAttachment
+from .models import FullMailResponse, GmailLabel, PdfAttachment
 
 
 class IGmailClient(Protocol):
@@ -17,8 +17,8 @@ class IGmailClient(Protocol):
     def modify_labels(
         self,
         email_id: str,
-        add_labels: list[GmailTag] | None = None,
-        remove_labels: list[GmailTag] | None = None,
+        add_labels: list[GmailLabel] | None = None,
+        remove_labels: list[GmailLabel] | None = None,
     ) -> None:
         """Modify labels on an email by adding and/or removing tags."""
         ...

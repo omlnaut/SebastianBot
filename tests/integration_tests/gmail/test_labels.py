@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sebastian.protocols.gmail import GmailTag
+from sebastian.protocols.gmail import GmailLabel
 from sebastian.protocols.gmail.IClient import IGmailClient
 from sebastian.protocols.gmail.models import FullMailResponse
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
@@ -34,7 +34,7 @@ def test_modify_labels(gmail_client: IGmailClient):
         ), f"Label {test_label.name} not found after adding"
         return mail
 
-    test_label = GmailTag.ToRead
+    test_label = GmailLabel.ToRead
     tag_label_id = test_label.value
     email_id = assert_label_not_present(tag_label_id).id
 

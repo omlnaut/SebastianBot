@@ -1,7 +1,7 @@
 from asyncio.log import logger
 import logging
 
-from sebastian.protocols.gmail import IGmailClient, GmailTag
+from sebastian.protocols.gmail import IGmailClient, GmailLabel
 from sebastian.shared import Result
 
 
@@ -9,7 +9,7 @@ class AddTagToMail:
     def __init__(self, gmail_client: IGmailClient):
         self.gmail_client = gmail_client
 
-    def add_tag(self, email_id: str, tag: GmailTag) -> Result[str]:
+    def add_tag(self, email_id: str, tag: GmailLabel) -> Result[str]:
         """
         Add a Gmail tag/label to a single email.
 
