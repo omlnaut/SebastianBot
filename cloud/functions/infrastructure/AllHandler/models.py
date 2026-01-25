@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Self
 from pydantic import BaseModel, Field
 
+from cloud.helper.event_grid_mixin import EventGridMixin
 from cloud.functions.infrastructure.google.gmail.models import (
     ArchiveEmailEventGrid,
     PutEmailInToReadEventGrid,
@@ -16,7 +17,7 @@ from sebastian.usecases.AllHandler.prompt_models import (
 import azure.functions as func
 
 
-class AllHandlerEventGrid(BaseModel):
+class AllHandlerEventGrid(EventGridMixin, BaseModel):
     create_task_events: list[CreateTaskEventGrid] = Field(
         default_factory=list, description="List of Tasks to be created"
     )
@@ -28,16 +29,6 @@ class AllHandlerEventGrid(BaseModel):
         default_factory=list,
         description="Use this event to mark emails as to-read for later review, i.e. job offers, newsletters, etc.",
     )
-
-    def to_output(self) -> func.EventGridOutputEvent:
-        return func.EventGridOutputEvent(
-            id="allhandler-event",
-            data=self.model_dump(mode="json"),
-            subject="allhandler_event",
-            event_type="allhandler_event",
-            event_time=datetime.now(),
-            data_version="1.0",
-        )
 
     # todo: from_application for all event grids
     @classmethod
