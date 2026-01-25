@@ -17,8 +17,8 @@ def _assert_base_fields(
 ) -> None:
     """Assert common fields for all EventGridOutputEvent results."""
     assert isinstance(result, func.EventGridOutputEvent)
-    assert result.subject == "send_telegram_message"
-    assert result.event_type == "send_telegram_message_event"
+    assert result.subject == "SendTelegramMessage"
+    assert result.event_type == "SendTelegramMessage_event"
     assert result.event_time is not None
     assert result.event_time >= test_start
     assert result.data_version == "1.0"

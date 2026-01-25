@@ -21,9 +21,10 @@ def _assert_base_fields(
 ) -> None:
     """Assert common fields for all EventGridOutputEvent results."""
     assert isinstance(result, func.EventGridOutputEvent)
-    assert result.id == "allhandler-event"
-    assert result.subject == "allhandler_event"
-    assert result.event_type == "allhandler_event"
+    assert result.id is not None  # UUID generated
+    assert len(result.id) == 36  # UUID format
+    assert result.subject == "AllHandler"
+    assert result.event_type == "AllHandler_event"
     assert result.event_time is not None
     assert result.event_time >= test_start
     assert result.data_version == "1.0"
