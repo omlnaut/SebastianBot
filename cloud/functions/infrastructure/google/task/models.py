@@ -1,12 +1,10 @@
 from sebastian.protocols.google_task import TaskListIds
 
 
-import azure.functions as func
 from pydantic import BaseModel
 
 from cloud.helper.EventGridMixin import EventGridMixin
 
-import uuid
 from datetime import datetime
 
 
