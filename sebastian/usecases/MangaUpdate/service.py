@@ -4,7 +4,8 @@ from sebastian.protocols.manga_update import (
     MangaPublisher,
     MangaChapter,
 )
-from sebastian.shared import Result
+from sebastian.protocols.models import AllActor, CreateTask, SendMessage
+from sebastian.protocols.google_task.models import TaskListIds
 from sebastian.shared.dates import is_at_most_one_day_old
 
 
@@ -34,16 +35,28 @@ class MangaUpdateService:
     def __init__(self, client: IMangaUpdateClient):
         self.client = client
 
-    def get_latest_chapters(self) -> Result[list[MangaChapter]]:
-        chapters: list[MangaChapter] = []
-        errors: list[str] = []
+    def get_latest_chapters(self) -> AllActor:
+        tasks: list[CreateTask] = []
+        errors: list[SendMessage] = []
 
         for manga in mangas:
             try:
                 chapter = self.client.get_latest_chapter(manga)
                 if is_at_most_one_day_old(chapter.release_date):
-                    chapters.append(chapter)
+                    tasks.append(_map_to_create_task(chapter))
             except Exception as e:
-                errors.append(f"Error fetching chapter for {manga.title}: {str(e)}")
+                errors.append(
+                    SendMessage(
+                        message=f"Error fetching chapter for {manga.title}: {str(e)}"
+                    )
+                )
 
-        return Result.from_item(item=chapters, errors=errors)
+        return AllActor(create_tasks=tasks, send_messages=errors)
+
+
+def _map_to_create_task(manga: MangaChapter) -> CreateTask:
+    return CreateTask(
+        title=f"{manga.title} Chapter {manga.chapter}",
+        notes=manga.url,
+        task_list_id=TaskListIds.Mangas,
+    )
