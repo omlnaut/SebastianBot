@@ -1,6 +1,7 @@
 import logging
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 from cloud.functions.infrastructure.google.task.helper import task_output_binding
+from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
 from cloud.helper.parsing import parse_payload
 from function_app import app
 import azure.functions as func
@@ -8,6 +9,7 @@ import azure.functions as func
 
 @app.event_grid_trigger(arg_name="azeventgrid")
 @task_output_binding()
+@telegram_output_binding()
 async def all_actor_handler(
     azeventgrid: func.EventGridEvent,
     taskOutput: func.Out[func.EventGridOutputEvent],
@@ -20,3 +22,9 @@ async def all_actor_handler(
     logging.info(
         f"Emitting {len(task_events)} task creation events: {[e.title for e in event.create_tasks]}"
     )
+
+    telegram_events = [
+        telegram_event.to_output() for telegram_event in event.send_messages
+    ]
+    telegramOutput.set(telegram_events)  # type: ignore
+    logging.info(f"Emitting {len(telegram_events)} telegram message events")
