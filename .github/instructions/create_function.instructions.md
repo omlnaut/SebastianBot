@@ -1,4 +1,4 @@
-# When creating a new cloud function (Azure Functions), follow these instructions:
+# When creating a new timer triggered cloud function (Azure Functions), follow these instructions:
 - put into cloud/functions/ directory as {Name}Function.py
 - cloud functions are timer-triggered and orchestrate infrastructure interactions
 - when creating a new function:
@@ -10,7 +10,6 @@
         - service resolution via resolve_{name}_service()
         - error handling with try/except
         - output bindings (@task_output_binding, @telegram_output_binding) for infrastructure actions
-            - when creating, add todo comment for creating corresponding env vars
         - function signature: def check_{usecase_name}(mytimer: TimerRequest, {outputs}) -> None
         - private helper functions (e.g., _map_to_*, _create_*, _to_*) for mapping domain models to events/messages
     5. import function in function_app.py
@@ -22,6 +21,13 @@
     - map service results to infrastructure events (tasks, telegram messages)
     - pass time span parameters to services as `timedelta` objects (construct with `timedelta(hours=1)` etc.) rather than raw ints
 - follow naming: check_{usecase_name} for the function name
+
+# When creating event grid triggered functions, follow these instructions:
+- same as above but:
+    - use @app.event_grid_trigger decorator with arg_name="azeventgrid"
+    - parse payload from event grid event with parse_payload(...)
+    - create output binding helper like telegram_output_binding
+        - when created new, add todo comment to add _uri and _setting to env variables
 
 ## Infrastructure Event Models
 - models in cloud/functions/infrastructure/**/models.py represent EventGrid events
