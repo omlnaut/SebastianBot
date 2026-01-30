@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from sebastian.protocols.google_task.models import TaskListIds
 
 
-class CreateTaskEvent(BaseModel):
+class CreateTaskPromptResult(BaseModel):
     title: str
     notes: str | None = None
     due: datetime | None = None
@@ -40,7 +40,7 @@ class AllHandlerEvent(BaseModel):
          - emails that require immediate action other than reading. This includes mails that notify of messages in other apps
          """,
     )
-    create_task_events: list[CreateTaskEvent] = Field(
+    create_task_events: list[CreateTaskPromptResult] = Field(
         default_factory=list,
         description="Use this event when the email requires an action to be taken that is not covered by other the events.",
     )
