@@ -17,6 +17,7 @@
     - use `Result.from_item(item=value)` for successful results
     - use `Result.from_item(errors=[...])` for error results
     - this allows callers to handle errors gracefully without exceptions
+    - NOTE: services calling clients often wrap calls in try/except and convert to `AllActor.send_messages` instead of propagating `Result` errors
 - when creating client from an investigation, add cells showing the usage of the client
 - check if it makes sense to extract private helper methods to make public methods more readable
 - if a public method uses private helper methods, extract those helpers to a separate file named after the public method

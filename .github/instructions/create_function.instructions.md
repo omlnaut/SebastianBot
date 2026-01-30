@@ -8,19 +8,26 @@
     4. create {Name}Function.py with:
         - @app.timer_trigger decorator with schedule from TriggerTimes, arg_name="mytimer", run_on_startup=False, use_monitor=False
         - service resolution via resolve_{name}_service()
-        - error handling with try/except
-        - output bindings (@task_output_binding, @telegram_output_binding) for infrastructure actions
-        - function signature: def check_{usecase_name}(mytimer: TimerRequest, {outputs}) -> None
-        - private helper functions (e.g., _map_to_*, _create_*, _to_*) for mapping domain models to events/messages
+        - use `@all_actor_output_binding()` decorator for functions that trigger infrastructure actions
+        - function signature: def check_{usecase_name}(mytimer: TimerRequest, allActorOutput: Out[EventGridOutputEvent]) -> None
+        - call service and convert result: `allActorOutput.set(AllActorEventGrid.from_application(actor_result).to_output())`
+        - no try/except needed - error handling is done in service layer (errors returned in `AllActor.send_messages`)
     5. import function in function_app.py
 - functions should:
     - return None (no return value)
-    - use logging for info/errors
-    - handle exceptions and send error messages via telegram using telegramOutput.set()
-    - check for errors using result.has_errors() and send result.errors_string via telegram
-    - map service results to infrastructure events (tasks, telegram messages)
+    - use logging for info messages
+    - be thin wrappers: resolve service → call service → output result
     - pass time span parameters to services as `timedelta` objects (construct with `timedelta(hours=1)` etc.) rather than raw ints
 - follow naming: check_{usecase_name} for the function name
+
+## AllActor Pattern for Functions
+- functions that need to trigger infrastructure actions (tasks, messages) should:
+    - use `@all_actor_output_binding()` decorator
+    - accept `allActorOutput: Out[EventGridOutputEvent]` parameter
+    - call service method that returns `AllActor` type
+    - convert to EventGrid: `allActorOutput.set(AllActorEventGrid.from_application(actor_result).to_output())`
+- the `all_actor_handler` function handles routing to specific infrastructure handlers
+- no error handling needed in function - services handle errors and return them in `AllActor.send_messages`
 
 # When creating event grid triggered functions, follow these instructions:
 - same as above but:
