@@ -3,6 +3,7 @@ import azure.functions as func
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 from cloud.functions.DeliveryReadyFunction import check_delivery_ready
+from cloud.functions.infrastructure.AllActor.function import all_actor_handler
 from cloud.functions.infrastructure.google.task.function import (
     create_task,
     test_create_task,
