@@ -173,12 +173,6 @@ jobs:
       
       - name: Run tests
         run: poetry run pytest tests/unit_tests --cov --cov-report=xml
-      
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: coverage.xml
-          fail_ci_if_error: false
 ```
 
 ## Coverage Reporting
@@ -196,12 +190,6 @@ Clients are excluded since they primarily interact with external services.
 poetry run pytest --cov=sebastian --cov-report=html
 open htmlcov/index.html
 ```
-
-### Codecov Integration
-- Coverage reports are uploaded to Codecov via GitHub Actions
-- The **Codecov GitHub App** must be installed on the repository for tokenless uploads
-- PR annotations show line-by-line coverage for changed files
-- Install the app at: https://github.com/apps/codecov
 
 ### Coverage Targets
 - Focus on increasing coverage for `sebastian/shared/` and parsing logic

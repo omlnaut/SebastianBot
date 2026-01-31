@@ -120,7 +120,7 @@ poetry run pytest tests/unit_tests --cov=sebastian --cov-report=html
 **CI/CD:**
 - Only unit tests run automatically in CI (fast, no credentials needed)
 - Integration tests should be run locally before merging
-- Coverage reports are uploaded to Codecov for PR annotations
+
 - See [`.github/instructions/testing.instructions.md`](.github/instructions/testing.instructions.md) for detailed testing guidelines
 
 ### Dependency Management
