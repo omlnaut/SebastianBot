@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.protocols.mietplan import File, Folder, IMietplanClient
-from sebastian.shared.Result import Result
+from sebastian.protocols.models import AllActor, SendMessage
 
 
 class MietplanService:
@@ -19,13 +19,13 @@ class MietplanService:
 
     def process_new_files(
         self, max_file_age: timedelta = timedelta(days=1)
-    ) -> Result[list[str]]:
+    ) -> AllActor:
         """
         Checks for new files in the mietplan source, and if they are newer than max_file_age,
         uploads them to Google Drive.
 
         Returns:
-            Result[list[str]]: A list of uploaded file paths on success, or an error message on failure.
+            AllActor: With send_messages containing success or error messages.
         """
         try:
             logging.info("Starting to process new mietplan files.")
@@ -44,13 +44,23 @@ class MietplanService:
             logging.info(
                 f"Finished processing. Uploaded {len(newly_uploaded_files)} new files."
             )
-            return Result.from_item(newly_uploaded_files)
+
+            if not newly_uploaded_files:
+                return AllActor(create_tasks=[], send_messages=[])
+
+            message = _create_message(newly_uploaded_files)
+            return AllActor(
+                create_tasks=[], send_messages=[SendMessage(message=message)]
+            )
 
         except Exception as e:
             logging.error(
                 f"An error occurred during mietplan file processing: {e}", exc_info=True
             )
-            return Result.from_item(errors=[str(e)])
+            return AllActor(
+                create_tasks=[],
+                send_messages=[SendMessage(message=f"Mietplan check failed: {str(e)}")],
+            )
 
     def _get_all_file_folder_pairs(self) -> list[tuple[File, Folder]]:
         return [
@@ -80,3 +90,10 @@ class MietplanService:
         logging.info(
             f"    Uploaded to Google Drive with file_id: {response.file_id} at path: {upload_path}"
         )
+
+
+def _create_message(uploaded_files: list[str]) -> str:
+    message = "Found new mietplan files:\n" + "\n".join(
+        [f"- {file}" for file in uploaded_files]
+    )
+    return message

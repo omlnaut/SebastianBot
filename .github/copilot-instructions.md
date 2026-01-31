@@ -33,3 +33,17 @@
 - use list comprehensions and early returns/continue to write more concise code
 - include relevant information, like IDs, in log messages
 - represent time spans passed into methods as `timedelta` (e.g. prefer `time_back: timedelta` over `hours_back: int`). Convert to absolute timestamps within the method body.
+
+## Error Handling Architecture
+- **Service Layer (sebastian/usecases/)**: 
+    - wrap try/except around client calls and external operations that may fail
+    - convert exceptions to `SendMessage` objects and include in `AllActor.send_messages` list
+    - keep try/except blocks narrow - around specific operations, not entire methods
+    - return `AllActor` type with both successes (`create_tasks`) and errors (`send_messages`)
+- **Client Layer (sebastian/clients/)**: 
+    - still return `Result[T]` for explicit error handling
+    - services calling clients often wrap in try/except and convert to `AllActor.send_messages`
+- **Function Layer (cloud/functions/)**: 
+    - no try/except needed - thin wrappers around service calls
+    - errors are already captured in `AllActor.send_messages` by services
+    - simply convert and output: `AllActorEventGrid.from_application(actor_result).to_output()`
