@@ -13,8 +13,6 @@ from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
 from sebastian.clients.mietplan.client import MietplanClient
 from sebastian.clients.mietplan.credentials import MietplanCredentials
-from sebastian.clients.reddit.client import RedditClient
-from sebastian.clients.reddit.credentials import RedditCredentials
 from sebastian.clients.telegram.client import TelegramClient
 from sebastian.clients.telegram.config import TelegramConfig
 
@@ -22,11 +20,6 @@ from sebastian.clients.telegram.config import TelegramConfig
 def resolve_gmail_client() -> GmailClient:
     credentials = load_google_credentials()
     return GmailClient(credentials)
-
-
-def resolve_reddit_client() -> RedditClient:
-    credentials = get_secret(SecretKeys.RedditCredentials, RedditCredentials)
-    return RedditClient(credentials)
 
 
 def resolve_mangaupdate_client() -> MangaUpdateClient:

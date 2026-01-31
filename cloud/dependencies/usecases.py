@@ -5,16 +5,13 @@ from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.protocols.reddit import IRedditClient
 from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
 from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
 from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
-from sebastian.usecases.OnePunchMan.service import OnePunchManService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
-from sebastian.usecases.SkeletonSoldier.service import SkeletonSoldierService
 from sebastian.usecases.WinSim.service import WinSimService
 
 
@@ -25,7 +22,6 @@ from .clients import (
     resolve_google_task_client,
     resolve_mangaupdate_client,
     resolve_mietplan_client,
-    resolve_reddit_client,
 )
 
 
@@ -41,27 +37,11 @@ def resolve_mietplan_service(
     )
 
 
-def resolve_skeleton_soldier_service(
-    reddit_client: IRedditClient = resolve_reddit_client(),
-) -> SkeletonSoldierService:
-    return SkeletonSoldierService(
-        reddit_client=reddit_client,
-    )
-
-
 def resolve_mangaupdate_service(
     mangaupdate_client: IMangaUpdateClient = resolve_mangaupdate_client(),
 ) -> MangaUpdateService:
     return MangaUpdateService(
         client=mangaupdate_client,
-    )
-
-
-def resolve_one_punch_man_service(
-    reddit_client: IRedditClient = resolve_reddit_client(),
-) -> OnePunchManService:
-    return OnePunchManService(
-        reddit_client=reddit_client,
     )
 
 
