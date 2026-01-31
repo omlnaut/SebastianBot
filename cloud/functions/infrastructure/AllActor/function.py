@@ -13,6 +13,7 @@ import azure.functions as func
 async def all_actor_handler(
     azeventgrid: func.EventGridEvent,
     taskOutput: func.Out[func.EventGridOutputEvent],
+    telegramOutput: func.Out[func.EventGridOutputEvent],
 ):
     logging.info("AllActor event received")
     event = parse_payload(azeventgrid, AllActorEventGrid)

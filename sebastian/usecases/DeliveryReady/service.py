@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import logging
 
 from sebastian.protocols.google_task.models import TaskListIds
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
@@ -28,6 +29,7 @@ class DeliveryReadyService:
         try:
             # todo make client call safe, return Result type
             mails = self.gmail_client.fetch_mails(query)
+            logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
         except Exception as e:
             return AllActor(
                 create_tasks=[],
