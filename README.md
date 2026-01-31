@@ -34,7 +34,7 @@ The project follows clean architecture principles with a clear separation betwee
 - Output bindings for Telegram notifications and Google Tasks
 
 **Application Layer** (`sebastian/`):
-- **Clients**: Interact with external services (Gmail, Reddit, Telegram, Google Drive/Tasks)
+- **Clients**: Interact with external services (Gmail, Telegram, Google Drive/Tasks)
 - **Usecases**: Orchestrate clients with business logic (e.g., checking for DHL pickups, tracking manga updates)
 - The application layer has no dependency on the cloud layer
 
@@ -53,8 +53,6 @@ The project follows clean architecture principles with a clear separation betwee
 | DeliveryReady | Checks Gmail for DHL pickup notifications | Hourly at :28 |
 | ReturnTracker | Tracks return shipments | Hourly at :35 |
 | MangaUpdate | Monitors manga update sources | Daily at 3:05 AM |
-| OnePunchMan | Checks for new One Punch Man chapters | Daily at 3:01 AM |
-| SkeletonSoldier | Checks for new Skeleton Soldier chapters | Daily at 3:03 AM |
 | WinSim | Archives WinSim invoices to Google Drive | Daily at 9:00 PM |
 | Mietplan | Manages rental payment schedules | Daily at 9:01 PM |
 
@@ -77,7 +75,7 @@ These instruction files ensure consistent code generation that follows the proje
 
 - Docker
 - VS Code with Dev Containers extension
-- Required credentials in Azure Key Vault (Reddit, Telegram, Google, etc.)
+- Required credentials in Azure Key Vault (Telegram, Google, MangaUpdate, etc.)
 
 ### Local Development
 
