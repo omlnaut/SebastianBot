@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from cloud.functions.infrastructure.google.helper import load_google_credentials
 from cloud.functions.infrastructure.telegram.config import (
     TelegramChat,
@@ -17,16 +19,19 @@ from sebastian.clients.telegram.client import TelegramClient
 from sebastian.clients.telegram.config import TelegramConfig
 
 
+@lru_cache()
 def resolve_gmail_client() -> GmailClient:
     credentials = load_google_credentials()
     return GmailClient(credentials)
 
 
+@lru_cache()
 def resolve_mangaupdate_client() -> MangaUpdateClient:
     credentials = get_secret(SecretKeys.MangaUpdateCredentials, MangaUpdateSecret)
     return MangaUpdateClient(credentials)
 
 
+@lru_cache()
 def resolve_telegram_client() -> TelegramClient:
     cloud_config = get_secret(SecretKeys.TelegramSebastianToken, CloudTelegramConfig)
     config = TelegramConfig(
@@ -36,21 +41,25 @@ def resolve_telegram_client() -> TelegramClient:
     return TelegramClient(config)
 
 
+@lru_cache()
 def resolve_google_task_client() -> GoogleTaskClient:
     credentials = load_google_credentials()
     return GoogleTaskClient(credentials)
 
 
+@lru_cache()
 def resolve_google_drive_client() -> GoogleDriveClient:
     credentials = load_google_credentials()
     return GoogleDriveClient(credentials)
 
 
+@lru_cache()
 def resolve_mietplan_client() -> MietplanClient:
     credentials = get_secret(SecretKeys.MietplanCredentials, MietplanCredentials)
     return MietplanClient(credentials)
 
 
+@lru_cache()
 def resolve_gemini_client() -> GeminiClient:
     credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
     return GeminiClient(credentials)

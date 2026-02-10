@@ -1,9 +1,22 @@
 from enum import Enum
+from functools import lru_cache
 from typing import Type, TypeVar
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import BaseModel
+
+
+@lru_cache()
+def _get_secret_client() -> SecretClient:
+    """Get or create a cached SecretClient instance.
+
+    This significantly reduces Azure Key Vault calls by reusing the same
+    client instance across all secret fetches within a function app instance.
+    """
+    key_vault_url = "https://omlnaut-sebastian.vault.azure.net/"
+    credential = DefaultAzureCredential()
+    return SecretClient(vault_url=key_vault_url, credential=credential)
 
 
 class SecretKeys(Enum):
@@ -36,14 +49,10 @@ def get_secret(secret_name: str | SecretKeys, model: Type[T]) -> T:
         Exception: If the secret is not found in the Key Vault.
 
     Note:
-        Ensure that the environment is configured with the necessary Azure credentials
-        to use DefaultAzureCredential.
+        Uses a cached SecretClient to minimize Azure Key Vault operations.
+        The cache persists within a function app instance's lifetime.
     """
-    key_vault_url = "https://omlnaut-sebastian.vault.azure.net/"
-
-    # Create a secret client using the DefaultAzureCredential
-    credential = DefaultAzureCredential()
-    secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+    secret_client = _get_secret_client()
 
     if isinstance(secret_name, SecretKeys):
         secret_name = str(secret_name)

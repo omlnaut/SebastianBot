@@ -36,5 +36,6 @@ def _handle_events(
     event_type: str,
 ):
     event_outputs = [event.to_output() for event in events]
-    output.set(event_outputs)  # type: ignore
+    if event_outputs:
+        output.set(event_outputs)  # type: ignore
     logging.info(f"Emitting {len(event_outputs)} <{event_type}> events.")
