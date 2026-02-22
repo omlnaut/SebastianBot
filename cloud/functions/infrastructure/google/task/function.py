@@ -62,7 +62,7 @@ def create_task(
 
 def _build_message(created_task: CreatedTask) -> str:
     message = f"TASK created: {created_task.title}"
-    if created_task.tasklist.name != TaskListIds.Default:
+    if created_task.tasklist.name != TaskListIds.Default.name:
         message += f" in {created_task.tasklist.name}"
     if created_task.due:
         message += f" ({created_task.due.date()})"
