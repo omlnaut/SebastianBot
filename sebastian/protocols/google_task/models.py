@@ -26,6 +26,7 @@ class CreatedTask:
     tasklist: TaskListIds
     due: datetime | None = None
     notes: str | None = None
+    webViewLink: str | None = None
 
 
 class TaskResponse(BaseModel):

@@ -36,6 +36,7 @@ class GoogleTaskClient:
             due=parsed.due,
             notes=parsed.notes,
             tasklist=tasklist_id,
+            webViewLink=parsed.webViewLink,
         )
 
     def get_tasks(
