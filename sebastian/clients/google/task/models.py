@@ -8,7 +8,7 @@ class TaskResponse(BaseModel):
     id: str
     etag: str
     title: str
-    due: datetime
+    due: datetime | None = None
     updated: datetime | None = None
     selfLink: str | None = None
     position: str | None = None
