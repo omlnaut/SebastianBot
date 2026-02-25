@@ -1,10 +1,11 @@
 from pydantic import BaseModel, Field
 from cloud.functions.infrastructure.google.gmail.models import ModifyMailLabelEventGrid
-from cloud.functions.infrastructure.google.task.models import (
-    CreateTaskEventGrid,
-    CompleteTaskEventGrid,
-)
+
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
+from cloud.functions.side_effects.create_task.models import (
+    CompleteTaskEventGrid,
+    CreateTaskEventGrid,
+)
 from cloud.helper.EventGridMixin import EventGridMixin
 from sebastian.protocols.models import AllActor
 

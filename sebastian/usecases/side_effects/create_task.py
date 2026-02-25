@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Protocol
 
+from sebastian.protocols.models import AllActor
 from sebastian.protocols.google_task.models import CreatedTask, TaskListIds
+from sebastian.protocols.models import SendMessage
 from sebastian.shared import Result
 from sebastian.shared.dates import get_end_of_day
 
@@ -31,15 +33,29 @@ class Handler:
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 
-    def handle(self, request: Request) -> Result[CreatedTask]:
+    def handle(self, request: Request) -> AllActor:
         due_date = request.due_date or get_end_of_day()
         try:
+            # todo: move try except to client
             created_task = self._client.create_task_with_notes(
                 tasklist_id=request.tasklist_id,
                 title=request.title,
                 notes=request.notes,
                 due_date=due_date,
             )
-            return Result(item=created_task)
         except Exception as e:
-            return Result(errors=[str(e)])
+            return AllActor(send_messages=[SendMessage(message=str(e))])
+
+        message = _build_message(created_task)
+        return AllActor(send_messages=[SendMessage(message=message)])
+
+
+def _build_message(created_task: CreatedTask) -> str:
+    message = f"TASK created: {created_task.title}"
+    if created_task.tasklist.name != TaskListIds.Default.name:
+        message += f" in {created_task.tasklist.name}"
+    if created_task.due:
+        message += f" ({created_task.due.date()})"
+    if created_task.webViewLink:
+        message += f"\n{created_task.webViewLink}"
+    return message

@@ -3,6 +3,8 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies import usecases
+from cloud.functions.infrastructure.AllActor.helper import all_actor_output_binding
+from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 
 
 from .models import CreateTaskEventGrid
@@ -12,6 +14,7 @@ from cloud.functions.infrastructure.telegram.models import (
 from cloud.functions.infrastructure.telegram.helper import (
     telegram_output_binding,
 )
+from azure.functions import EventGridOutputEvent, Out
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.protocols.google_task import CreatedTask, TaskListIds
@@ -35,10 +38,10 @@ def test_create_task(
 
 
 @app.event_grid_trigger(arg_name="azeventgrid")
-@telegram_output_binding()
+@all_actor_output_binding()
 def create_task(
     azeventgrid: func.EventGridEvent,
-    telegramOutput: func.Out[func.EventGridOutputEvent],
+    allActorOutput: Out[EventGridOutputEvent],
 ):
     try:
         logging.info("EventGrid create task triggered")
@@ -54,27 +57,18 @@ def create_task(
         )
         usecase = usecases.resolve_create_task()
 
-        result = usecase.handle(request)
+        actor_result = usecase.handle(request)
 
-        if result.has_errors():
-            error_msg = f"Error creating task: {result.errors_string}"
-            logging.error(error_msg)
-            telegramOutput.set(
-                SendTelegramMessageEventGrid(message=error_msg).to_output()
-            )
-        else:
-            if result.item:
-                created_task = result.item
-                message = _build_message(created_task)
-                telegramOutput.set(SendTelegramMessageEventGrid(message=message).to_output())
-                logging.info(f"Created task: {created_task.title}")
-            else:
-                logging.error("Task created but no item returned")
+        allActorOutput.set(AllActorEventGrid.from_application(actor_result).to_output())
 
     except Exception as e:
         error_msg = f"Error creating task: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
+        allActorOutput.set(
+            AllActorEventGrid(
+                send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
+            ).to_output()
+        )
 
 
 def _build_message(created_task: CreatedTask) -> str:
