@@ -13,6 +13,8 @@ from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
+from sebastian.usecases.shared import UseCaseHandler
+from sebastian.usecases.side_effects import complete_task
 
 
 from .clients import (
@@ -107,3 +109,11 @@ def resolve_add_label_to_mail_service(
     gmail_client: IGmailClient | None = None,
 ) -> AddLabelToMail:
     return AddLabelToMail(gmail_client=gmail_client or resolve_gmail_client())
+
+
+def resolve_complete_task(
+    task_client: complete_task.TaskClient | None = None,
+) -> UseCaseHandler[complete_task.Request, None]:
+    return complete_task.Handler(
+        task_client=task_client or resolve_google_task_client(),
+    )

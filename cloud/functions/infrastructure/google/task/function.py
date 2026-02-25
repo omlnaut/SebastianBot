@@ -2,7 +2,9 @@ import logging
 
 import azure.functions as func
 
-from cloud.dependencies.usecases import resolve_google_task_service
+from cloud.dependencies import usecases
+
+
 from .models import CreateTaskEventGrid, CompleteTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
@@ -44,7 +46,7 @@ def create_task(
 
         logging.info(f"Creating task: {event.title}")
 
-        service = resolve_google_task_service()
+        service = usecases.resolve_google_task_service()
 
         created_task = service.create_task_with_notes(
             event.task_list_id, event.title, event.notes or "", event.due
@@ -72,9 +74,12 @@ def complete_task(
 
         logging.info(f"Completing task: {event.task_id} in list {event.tasklist_id}")
 
-        service = resolve_google_task_service()
+        request = usecases.complete_task.Request(
+            tasklist_id=event.tasklist_id, task_id=event.task_id
+        )
+        usecase = usecases.resolve_complete_task()
 
-        result = service.set_task_to_completed(event.tasklist_id, event.task_id)
+        result = usecase.handle(request)
 
         if result.has_errors:
             error_msg = f"Error completing task: {result.errors_string}"
