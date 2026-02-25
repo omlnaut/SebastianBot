@@ -36,7 +36,7 @@ def complete_task(
 
         result = usecase.handle(request)
 
-        if result.has_errors:
+        if result.has_errors():
             error_msg = f"Error completing task: {result.errors_string}"
             logging.error(error_msg)
             telegramOutput.set(

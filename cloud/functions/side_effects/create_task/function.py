@@ -46,16 +46,31 @@ def create_task(
 
         logging.info(f"Creating task: {event.title}")
 
-        service = usecases.resolve_google_task_service()
-
-        created_task = service.create_task_with_notes(
-            event.task_list_id, event.title, event.notes or "", event.due
+        request = usecases.create_task.Request(
+            tasklist_id=event.task_list_id,
+            title=event.title,
+            notes=event.notes or "",
+            due_date=event.due,
         )
-        message = _build_message(created_task)
+        usecase = usecases.resolve_create_task()
 
-        telegramOutput.set(SendTelegramMessageEventGrid(message=message).to_output())
+        result = usecase.handle(request)
 
-        logging.info(f"Created task: {created_task.title}")
+        if result.has_errors():
+            error_msg = f"Error creating task: {result.errors_string}"
+            logging.error(error_msg)
+            telegramOutput.set(
+                SendTelegramMessageEventGrid(message=error_msg).to_output()
+            )
+        else:
+            if result.item:
+                created_task = result.item
+                message = _build_message(created_task)
+                telegramOutput.set(SendTelegramMessageEventGrid(message=message).to_output())
+                logging.info(f"Created task: {created_task.title}")
+            else:
+                logging.error("Task created but no item returned")
+
     except Exception as e:
         error_msg = f"Error creating task: {str(e)}"
         logging.error(error_msg)

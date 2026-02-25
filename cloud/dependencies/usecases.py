@@ -1,8 +1,6 @@
-from sebastian.infrastructure.google.task.service import TaskService
 from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
-from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
@@ -14,7 +12,7 @@ from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
 from sebastian.usecases.shared import UseCaseHandler
-from sebastian.usecases.side_effects import complete_task
+from sebastian.usecases.side_effects import complete_task, create_task
 
 
 from .clients import (
@@ -52,14 +50,6 @@ def resolve_delivery_ready_service(
 ) -> DeliveryReadyService:
     return DeliveryReadyService(
         gmail_client=gmail_client or resolve_gmail_client(),
-    )
-
-
-def resolve_google_task_service(
-    task_client: IGoogleTaskClient | None = None,
-) -> TaskService:
-    return TaskService(
-        client=task_client or resolve_google_task_client(),
     )
 
 
@@ -115,5 +105,13 @@ def resolve_complete_task(
     task_client: complete_task.TaskClient | None = None,
 ) -> UseCaseHandler[complete_task.Request, None]:
     return complete_task.Handler(
+        task_client=task_client or resolve_google_task_client(),
+    )
+
+
+def resolve_create_task(
+    task_client: create_task.TaskClient | None = None,
+) -> UseCaseHandler[create_task.Request, create_task.CreatedTask]:
+    return create_task.Handler(
         task_client=task_client or resolve_google_task_client(),
     )
