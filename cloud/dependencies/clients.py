@@ -17,22 +17,29 @@ from sebastian.clients.mietplan.client import MietplanClient
 from sebastian.clients.mietplan.credentials import MietplanCredentials
 from sebastian.clients.telegram.client import TelegramClient
 from sebastian.clients.telegram.config import TelegramConfig
+from sebastian.protocols.gemini.IClient import IGeminiClient
+from sebastian.protocols.gmail.IClient import IGmailClient
+from sebastian.protocols.google_drive.IClient import IGoogleDriveClient
+from sebastian.protocols.google_task.IClient import IGoogleTaskClient
+from sebastian.protocols.manga_update.IClient import IMangaUpdateClient
+from sebastian.protocols.mietplan.IClient import IMietplanClient
+from sebastian.protocols.telegram.IClient import ITelegramClient
 
 
 @lru_cache()
-def resolve_gmail_client() -> GmailClient:
+def resolve_gmail_client() -> IGmailClient:
     credentials = load_google_credentials()
     return GmailClient(credentials)
 
 
 @lru_cache()
-def resolve_mangaupdate_client() -> MangaUpdateClient:
+def resolve_mangaupdate_client() -> IMangaUpdateClient:
     credentials = get_secret(SecretKeys.MangaUpdateCredentials, MangaUpdateSecret)
     return MangaUpdateClient(credentials)
 
 
 @lru_cache()
-def resolve_telegram_client() -> TelegramClient:
+def resolve_telegram_client() -> ITelegramClient:
     cloud_config = get_secret(SecretKeys.TelegramSebastianToken, CloudTelegramConfig)
     config = TelegramConfig(
         token=cloud_config.tokens[TelegramToken.Sebastian].token,
@@ -42,24 +49,24 @@ def resolve_telegram_client() -> TelegramClient:
 
 
 @lru_cache()
-def resolve_google_task_client() -> GoogleTaskClient:
+def resolve_google_task_client() -> IGoogleTaskClient:
     credentials = load_google_credentials()
     return GoogleTaskClient(credentials)
 
 
 @lru_cache()
-def resolve_google_drive_client() -> GoogleDriveClient:
+def resolve_google_drive_client() -> IGoogleDriveClient:
     credentials = load_google_credentials()
     return GoogleDriveClient(credentials)
 
 
 @lru_cache()
-def resolve_mietplan_client() -> MietplanClient:
+def resolve_mietplan_client() -> IMietplanClient:
     credentials = get_secret(SecretKeys.MietplanCredentials, MietplanCredentials)
     return MietplanClient(credentials)
 
 
 @lru_cache()
-def resolve_gemini_client() -> GeminiClient:
+def resolve_gemini_client() -> IGeminiClient:
     credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
     return GeminiClient(credentials)
