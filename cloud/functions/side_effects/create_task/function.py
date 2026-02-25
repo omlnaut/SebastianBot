@@ -11,9 +11,6 @@ from .models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
 )
-from cloud.functions.infrastructure.telegram.helper import (
-    telegram_output_binding,
-)
 from azure.functions import EventGridOutputEvent, Out
 from cloud.helper import parse_payload
 from function_app import app
@@ -69,14 +66,3 @@ def create_task(
                 send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
             ).to_output()
         )
-
-
-def _build_message(created_task: CreatedTask) -> str:
-    message = f"TASK created: {created_task.title}"
-    if created_task.tasklist.name != TaskListIds.Default.name:
-        message += f" in {created_task.tasklist.name}"
-    if created_task.due:
-        message += f" ({created_task.due.date()})"
-    if created_task.webViewLink:
-        message += f"\n{created_task.webViewLink}"
-    return message

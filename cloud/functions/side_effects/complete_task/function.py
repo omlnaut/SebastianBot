@@ -2,14 +2,15 @@ import logging
 
 import azure.functions as func
 
+from azure.functions import EventGridOutputEvent, Out
+
 from cloud.dependencies import usecases
+from cloud.functions.infrastructure.AllActor.helper import all_actor_output_binding
+from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 
 from .models import CompleteTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
-)
-from cloud.functions.infrastructure.telegram.helper import (
-    telegram_output_binding,
 )
 from cloud.helper import parse_payload
 from function_app import app
@@ -18,10 +19,10 @@ from function_app import app
 
 
 @app.event_grid_trigger(arg_name="azeventgrid")
-@telegram_output_binding()
+@all_actor_output_binding()
 def complete_task(
     azeventgrid: func.EventGridEvent,
-    telegramOutput: func.Out[func.EventGridOutputEvent],
+    allActorOutput: Out[EventGridOutputEvent],
 ):
     try:
         logging.info("EventGrid complete task triggered")
@@ -34,16 +35,18 @@ def complete_task(
         )
         usecase = usecases.resolve_complete_task()
 
-        result = usecase.handle(request)
+        actor_result = usecase.handle(request)
 
-        if result.has_errors():
-            error_msg = f"Error completing task: {result.errors_string}"
-            logging.error(error_msg)
-            telegramOutput.set(
-                SendTelegramMessageEventGrid(message=error_msg).to_output()
-            )
+        allActorOutput.set(AllActorEventGrid.from_application(actor_result).to_output())
 
     except Exception as e:
         error_msg = f"Error completing task: {str(e)}"
         logging.error(error_msg)
-        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
+        allActorOutput.set(
+            AllActorEventGrid(
+                send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
+            ).to_output()
+        )
+
+
+# todo: refactor to general perform_usecase
