@@ -3,6 +3,7 @@ from typing import Optional
 
 from sebastian.protocols.google_task import CreatedTask, IGoogleTaskClient, TaskListIds
 from sebastian.shared.dates import get_end_of_day
+from sebastian.shared.Result import Result
 
 
 class TaskService:
@@ -20,3 +21,8 @@ class TaskService:
         return self.client.create_task_with_notes(
             tasklist_id=tasklist_id, title=title, notes=notes, due_date=due_date
         )
+
+    def set_task_to_completed(
+        self, tasklist_id: TaskListIds, task_id: str
+    ) -> Result[None]:
+        return self.client.set_task_to_completed(tasklist_id, task_id)

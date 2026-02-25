@@ -23,7 +23,13 @@ class ModifyMailLabel(BaseModel):
     remove_labels: list[GmailLabel] | None = None
 
 
+class CompleteTask(BaseModel):
+    tasklist_id: TaskListIds
+    task_id: str
+
+
 class AllActor(BaseModel):
     create_tasks: list[CreateTask] = Field(default_factory=list)
+    complete_tasks: list[CompleteTask] = Field(default_factory=list)
     send_messages: list[SendMessage] = Field(default_factory=list)
     modify_labels: list[ModifyMailLabel] = Field(default_factory=list)

@@ -6,6 +6,7 @@ from cloud.functions.DeliveryReadyFunction import check_delivery_ready
 from cloud.functions.infrastructure.AllActor.function import all_actor_handler
 from cloud.functions.infrastructure.google.task.function import (
     create_task,
+    complete_task,
     test_create_task,
 )
 from cloud.functions.infrastructure.telegram.function import (

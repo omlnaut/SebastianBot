@@ -61,6 +61,7 @@ class GoogleTaskClient:
             self._service.tasks().patch(
                 tasklist=tasklist_id.value, task=task_id, body={"status": "completed"}
             ).execute()
+            # todo: error handling on non-existent task?
             return Result.from_item(item=None)
         except Exception as e:
             return Result.from_item(errors=[str(e)])

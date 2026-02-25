@@ -3,7 +3,7 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.usecases import resolve_google_task_service
-from .models import CreateTaskEventGrid
+from .models import CreateTaskEventGrid, CompleteTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
 )
@@ -14,7 +14,7 @@ from cloud.helper import parse_payload
 from function_app import app
 from sebastian.protocols.google_task import CreatedTask, TaskListIds
 
-from .helper import task_output_binding
+from .helper import task_output_binding, complete_task_output_binding
 
 
 @app.route(route="test_create_task")
@@ -56,6 +56,35 @@ def create_task(
         logging.info(f"Created task: {created_task.title}")
     except Exception as e:
         error_msg = f"Error creating task: {str(e)}"
+        logging.error(error_msg)
+        telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
+
+
+@app.event_grid_trigger(arg_name="azeventgrid")
+@telegram_output_binding()
+def complete_task(
+    azeventgrid: func.EventGridEvent,
+    telegramOutput: func.Out[func.EventGridOutputEvent],
+):
+    try:
+        logging.info("EventGrid complete task triggered")
+        event = parse_payload(azeventgrid, CompleteTaskEventGrid)
+
+        logging.info(f"Completing task: {event.task_id} in list {event.tasklist_id}")
+
+        service = resolve_google_task_service()
+
+        result = service.set_task_to_completed(event.tasklist_id, event.task_id)
+
+        if result.has_errors:
+            error_msg = f"Error completing task: {result.errors_string}"
+            logging.error(error_msg)
+            telegramOutput.set(
+                SendTelegramMessageEventGrid(message=error_msg).to_output()
+            )
+
+    except Exception as e:
+        error_msg = f"Error completing task: {str(e)}"
         logging.error(error_msg)
         telegramOutput.set(SendTelegramMessageEventGrid(message=error_msg).to_output())
 
