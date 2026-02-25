@@ -14,7 +14,7 @@ from cloud.helper import parse_payload
 from function_app import app
 from sebastian.protocols.google_task import CreatedTask, TaskListIds
 
-from .helper import task_output_binding, complete_task_output_binding
+from .helper import task_output_binding
 
 
 @app.route(route="test_create_task")
