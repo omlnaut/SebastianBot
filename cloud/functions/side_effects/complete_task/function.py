@@ -28,5 +28,5 @@ def complete_task(
         create_request,
         usecases.resolve_complete_task,
         azeventgrid,
+        allActorOutput,
     )
-    allActorOutput.set(actor_result)

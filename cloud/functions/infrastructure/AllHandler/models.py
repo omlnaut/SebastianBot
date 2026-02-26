@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Self
 from pydantic import BaseModel, Field
 
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin
 from cloud.functions.infrastructure.google.gmail.models import (
     ArchiveEmailEventGrid,
     PutEmailInToReadEventGrid,

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin
 from sebastian.protocols.models import SendMessage
 
 

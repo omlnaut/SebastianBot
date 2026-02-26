@@ -1,7 +1,9 @@
 import uuid
+from abc import ABC
 from datetime import datetime
 
 import azure.functions as func
+from pydantic import BaseModel
 
 
 class EventGridMixin:
@@ -13,10 +15,14 @@ class EventGridMixin:
     - Example: ModifyMailLabelEventGrid -> subject: "modify_mail_label", event_type: "modify_mail_label_event"
     """
 
+    @property
+    def base_name(self):
+        return self.__class__.__name__.replace("EventGrid", "")
+
     def to_output(self) -> func.EventGridOutputEvent:
         """Generate EventGridOutputEvent with auto-derived configuration."""
         # Derive base name from class name (remove EventGrid suffix)
-        base_name = self.__class__.__name__.replace("EventGrid", "")
+        base_name = self.base_name
 
         return func.EventGridOutputEvent(
             id=str(uuid.uuid4()),
@@ -26,3 +32,7 @@ class EventGridMixin:
             event_time=datetime.now(),
             data_version="1.0",
         )
+
+
+class EventGridModel(BaseModel, EventGridMixin, ABC):
+    pass

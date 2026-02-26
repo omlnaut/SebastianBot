@@ -3,13 +3,13 @@ from sebastian.protocols.google_task import TaskListIds
 
 from pydantic import BaseModel
 
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridModel
 
 
 from sebastian.protocols.models import CompleteTask
 
 
-class CompleteTaskEventGrid(EventGridMixin, BaseModel):
+class CompleteTaskEventGrid(EventGridModel):
     tasklist_id: TaskListIds
     task_id: str
 

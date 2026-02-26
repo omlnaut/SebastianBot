@@ -6,7 +6,7 @@ from cloud.functions.side_effects.create_task.models import (
     CompleteTaskEventGrid,
     CreateTaskEventGrid,
 )
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin
 from sebastian.protocols.models import AllActor
 
 

@@ -3,7 +3,7 @@ from sebastian.protocols.google_task import TaskListIds
 
 from pydantic import BaseModel
 
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin
 
 from datetime import datetime
 

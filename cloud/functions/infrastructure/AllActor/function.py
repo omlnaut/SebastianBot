@@ -9,7 +9,7 @@ from cloud.functions.infrastructure.google.task.helper import (
     complete_task_output_binding,
 )
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
-from cloud.helper.EventGridMixin import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin
 from cloud.helper.parsing import parse_payload
 from function_app import app
 import azure.functions as func
