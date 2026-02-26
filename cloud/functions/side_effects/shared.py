@@ -3,7 +3,6 @@ from typing import Callable, TypeVar
 
 import azure.functions as func
 
-from pydantic import BaseModel
 
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 from sebastian.usecases.shared import UseCaseHandler
