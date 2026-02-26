@@ -3,14 +3,14 @@ from sebastian.protocols.google_task import TaskListIds
 
 from pydantic import BaseModel
 
-from cloud.helper.event_grid import EventGridMixin
+from cloud.helper.event_grid import EventGridMixin, EventGridModel
 
 from datetime import datetime
 
 from sebastian.protocols.models import CreateTask, CompleteTask
 
 
-class CreateTaskEventGrid(EventGridMixin, BaseModel):
+class CreateTaskEventGrid(EventGridModel):
     title: str
     notes: str | None = None
     due: datetime | None = None

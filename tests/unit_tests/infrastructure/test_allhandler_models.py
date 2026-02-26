@@ -3,10 +3,9 @@ import json
 
 import pytest
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
-from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 import azure.functions as func
 
+from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from sebastian.protocols.google_task.models import TaskListIds
 
 

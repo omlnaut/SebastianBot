@@ -103,7 +103,7 @@ def resolve_add_label_to_mail_service(
 
 def resolve_complete_task(
     task_client: complete_task.TaskClient | None = None,
-) -> UseCaseHandler[complete_task.Request, None]:
+) -> UseCaseHandler[complete_task.Request]:
     return complete_task.Handler(
         task_client=task_client or resolve_google_task_client(),
     )
@@ -111,7 +111,7 @@ def resolve_complete_task(
 
 def resolve_create_task(
     task_client: create_task.TaskClient | None = None,
-) -> UseCaseHandler[create_task.Request, create_task.CreatedTask]:
+) -> UseCaseHandler[create_task.Request]:
     return create_task.Handler(
         task_client=task_client or resolve_google_task_client(),
     )

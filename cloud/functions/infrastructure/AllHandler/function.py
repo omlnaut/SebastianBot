@@ -4,9 +4,9 @@ import uuid
 import azure.functions as func
 from cloud.functions.infrastructure.AllHandler.helper import allhandler_output_binding
 from cloud.functions.infrastructure.AllHandler.models import AllHandlerEventGrid
-from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
+from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from cloud.helper.parsing import parse_payload
 from function_app import app
 

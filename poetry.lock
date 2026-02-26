@@ -94,6 +94,23 @@ aio = ["aiohttp (>=3.0)"]
 tracing = ["opentelemetry-api (>=1.26,<2.0)"]
 
 [[package]]
+name = "azure-eventgrid"
+version = "4.22.0"
+description = "Microsoft Azure Event Grid Client Library for Python"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "azure_eventgrid-4.22.0-py3-none-any.whl", hash = "sha256:bcd37b90a61545a955eadfdb21477daef133a906947af9cac5b784c4ceab898e"},
+    {file = "azure_eventgrid-4.22.0.tar.gz", hash = "sha256:4ab47e0d50ea49fff83db035822c3367ca1cefd6024909ba109752cc54bf0e63"},
+]
+
+[package.dependencies]
+azure-core = ">=1.30.0"
+isodate = ">=0.6.1"
+typing-extensions = ">=4.6.0"
+
+[[package]]
 name = "azure-functions"
 version = "1.24.0"
 description = "Python library for Azure Functions."
@@ -3295,4 +3312,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "475b85f3116cabd644c7b3e9b11bc6a6980b4c30672a2c5798a6e793d5543fb1"
+content-hash = "5a1adfe15524ced89287c9ddcba67ff925ea25a3b898fd3b98bb174dee559e09"

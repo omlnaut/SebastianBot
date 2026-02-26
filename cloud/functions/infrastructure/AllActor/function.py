@@ -4,11 +4,12 @@ from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 from cloud.functions.infrastructure.google.gmail.helper import (
     modify_mail_label_output_binding,
 )
-from cloud.functions.infrastructure.google.task.helper import (
-    task_output_binding,
+
+from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
+from cloud.functions.side_effects.complete_task.helper import (
     complete_task_output_binding,
 )
-from cloud.functions.infrastructure.telegram.helper import telegram_output_binding
+from cloud.functions.side_effects.create_task.helper import task_output_binding
 from cloud.helper.event_grid import EventGridMixin
 from cloud.helper.parsing import parse_payload
 from function_app import app

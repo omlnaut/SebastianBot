@@ -3,6 +3,7 @@ from abc import ABC
 from datetime import datetime
 
 import azure.functions as func
+from azure.eventgrid import EventGridEvent
 from pydantic import BaseModel
 
 
@@ -30,6 +31,18 @@ class EventGridMixin:
             subject=base_name,
             event_type=f"{base_name}_event",
             event_time=datetime.now(),
+            data_version="1.0",
+        )
+
+    def to_direct_output(self) -> EventGridEvent:
+        """Generate EventGridEvent for SDK with auto-derived configuration."""
+        # Derive base name from class name (remove EventGrid suffix)
+        base_name = self.base_name
+
+        return EventGridEvent(
+            subject=base_name,
+            event_type=f"{base_name}_event",
+            data=self.model_dump(mode="json"),  # type: ignore
             data_version="1.0",
         )
 

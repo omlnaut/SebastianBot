@@ -2,9 +2,9 @@ from datetime import datetime
 import json
 
 import pytest
-from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 import azure.functions as func
 
+from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from sebastian.protocols.google_task.models import TaskListIds
 
 

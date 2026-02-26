@@ -4,7 +4,10 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 from cloud.functions.DeliveryReadyFunction import check_delivery_ready
 from cloud.functions.infrastructure.AllActor.function import all_actor_handler
-from cloud.functions.side_effects.complete_task.function import complete_task
+from cloud.functions.side_effects.complete_task.function import (
+    complete_task,
+    test_direct_send,
+)
 from cloud.functions.side_effects.create_task.function import (
     create_task,
     test_create_task,

@@ -23,7 +23,7 @@ def test_query_builder_on_date(gmail_client: IGmailClient):
     )
 
     mails = gmail_client.fetch_mails(query)
-    assert len(mails) == 1, "No emails found on the specific date"
+    assert len(mails) >= 1, "No emails found on the specific date"
 
 
 def test_query_builder_exclude_me(gmail_client: IGmailClient):

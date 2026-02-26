@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Self
 from pydantic import BaseModel, Field
 
+from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from cloud.helper.event_grid import EventGridMixin
 from cloud.functions.infrastructure.google.gmail.models import (
     ArchiveEmailEventGrid,
     PutEmailInToReadEventGrid,
 )
-from cloud.functions.infrastructure.google.task.models import CreateTaskEventGrid
 from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 
 from sebastian.usecases.AllHandler.prompt_models import (

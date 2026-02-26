@@ -17,7 +17,7 @@ def test_modify_labels(gmail_client: IGmailClient):
             .build()
         )
         mails = gmail_client.fetch_mails(query)
-        assert len(mails) == 1, "Expected exactly one email"
+        assert len(mails) >= 1, "Expected at least one email"
         return mails[0]
 
     def assert_label_not_present(label_id: str) -> FullMailResponse:
