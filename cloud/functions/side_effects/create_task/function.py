@@ -3,12 +3,10 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies import usecases
-from cloud.functions.infrastructure.AllActor.helper import all_actor_output_binding
 from cloud.functions.side_effects.shared import perform_usecase
 
 
 from .models import CreateTaskEventGrid
-from azure.functions import EventGridOutputEvent, Out
 from function_app import app
 from sebastian.protocols.google_task import TaskListIds
 
@@ -31,10 +29,8 @@ def test_create_task(
 
 
 @app.event_grid_trigger(arg_name="azeventgrid")
-@all_actor_output_binding()
 def create_task(
     azeventgrid: func.EventGridEvent,
-    allActorOutput: Out[EventGridOutputEvent],
 ):
     def create_request(event: CreateTaskEventGrid) -> usecases.create_task.Request:
         return usecases.create_task.Request(
@@ -44,10 +40,9 @@ def create_task(
             due_date=event.due,
         )
 
-    actor_result = perform_usecase(
+    perform_usecase(
         CreateTaskEventGrid,
         create_request,
         usecases.resolve_create_task,
         azeventgrid,
-        allActorOutput,
     )

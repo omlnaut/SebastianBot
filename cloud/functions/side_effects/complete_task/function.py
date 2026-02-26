@@ -22,10 +22,8 @@ from function_app import app
 
 
 @app.event_grid_trigger(arg_name="azeventgrid")
-@all_actor_output_binding()
 def complete_task(
     azeventgrid: func.EventGridEvent,
-    allActorOutput: Out[EventGridOutputEvent],
 ):
     def create_request(event: CompleteTaskEventGrid) -> usecases.complete_task.Request:
         return usecases.complete_task.Request(
@@ -37,7 +35,6 @@ def complete_task(
         create_request,
         usecases.resolve_complete_task,
         azeventgrid,
-        allActorOutput,
     )
 
 
