@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, get_type_hints
 
 import azure.functions as func
 
@@ -19,11 +19,11 @@ TEventModel = TypeVar("TEventModel", bound=event_grid.EventGridModel)
 
 
 def perform_usecase(
-    event_model: type[TEventModel],
     create_request: Callable[[TEventModel], TRequest],
     resolve_handler: Callable[[], UseCaseHandler[TRequest]],
     az_event: func.EventGridEvent,
 ) -> None:
+    event_model = _extract_first_arg_type(create_request)
     try:
         logging.info(f"EventGrid {event_model.base_name} triggered")
         event = parse_payload(az_event, event_model)
@@ -46,3 +46,13 @@ def perform_usecase(
         )
 
     logging.info(f"EventGrid {event_model.base_name} completed")
+
+
+def _extract_first_arg_type(func: Callable) -> type:
+    hints = get_type_hints(func)
+    for arg_name, arg_type in hints.items():
+        if arg_name != "return":
+            return arg_type
+    raise ValueError(
+        f"No argument type found in function {func.__name__} with hints {hints}"
+    )

@@ -41,7 +41,6 @@ def create_task(
         )
 
     perform_usecase(
-        CreateTaskEventGrid,
         create_request,
         usecases.resolve_create_task,
         azeventgrid,

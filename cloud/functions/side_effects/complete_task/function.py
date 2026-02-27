@@ -1,16 +1,9 @@
 import logging
-import os
-import uuid
-from datetime import datetime
 
 import azure.functions as func
-from azure.core.credentials import AzureKeyCredential
-from azure.eventgrid import EventGridEvent, EventGridPublisherClient
-from azure.functions import EventGridOutputEvent, Out
 
 from cloud.dependencies import usecases
 from cloud.functions.infrastructure.AllActor.helper import (
-    all_actor_output_binding,
     send_all_actor_events,
 )
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
@@ -31,7 +24,6 @@ def complete_task(
         )
 
     perform_usecase(
-        CompleteTaskEventGrid,
         create_request,
         usecases.resolve_complete_task,
         azeventgrid,
