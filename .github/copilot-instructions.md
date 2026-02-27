@@ -1,10 +1,17 @@
 # Project structure
 - root dir is always /workspaces/SebastianBot
 - cloud/ contains azure related code:
-    - functions/ for defining azure functions. One function per file.
-        - functions might be nested into subdirectories for better organization
-    - dependencies/ for constructing services and clients from the application layer
+    - dependencies/ for constructing usecases, services and clients from the application layer
+    - functions/ for defining azure functions
+        - side_effects/ for functions that trigger side effects in external services
+            - i.e. creating google tasks or sending telegram messages
+            - triggered via eventgrid
+            - use shared/perform_usecase for general flow
+            - in general one function per file, but might contain a second "test_..." function (http triggered for manually testing an eventgrid triggered function)
+
+        - infrastructure/ legacy dir. Everything in here should be moved to side_effects eventually
     - helper/ for azure related helpers
+    ##############
 - sebastian/ contains core logic for the bot (application layer):
     - clients/ for defining clients to interact with external services
     - protocols/ for defining interfaces (Python Protocols) for clients, enabling dependency injection and testability
