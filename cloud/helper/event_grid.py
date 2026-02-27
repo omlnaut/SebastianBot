@@ -20,6 +20,14 @@ class EventGridMixin:
     def base_name(self):
         return self.__class__.__name__.replace("EventGrid", "")
 
+    @classmethod
+    def uri_env_name(cls) -> str:
+        return f"{cls.__name__.replace('EventGrid', '').upper()}_EVENT_GRID_URI"
+
+    @classmethod
+    def key_env_name(cls) -> str:
+        return f"{cls.__name__.replace('EventGrid', '').upper()}_EVENT_GRID_KEY"
+
     def to_output(self) -> func.EventGridOutputEvent:
         """Generate EventGridOutputEvent with auto-derived configuration."""
         # Derive base name from class name (remove EventGrid suffix)
