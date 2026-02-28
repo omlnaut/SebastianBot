@@ -11,7 +11,7 @@ from azure.core.credentials import AzureKeyCredential
 
 from cloud.functions.infrastructure.AllActor.helper import send_all_actor_events
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
-from cloud.helper.event_grid import EventGridModel
+from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from sebastian.usecases.shared import UseCaseHandler
 
 
@@ -65,11 +65,20 @@ def perform_usecase(
 
 
 def send_eventgrid_events(events: list[EventGridModel]) -> None:
+    def _load_eventgrid_info(env_name: str) -> EventGridInfo:
+        raw_env_content = os.environ.get(env_name)
+        assert (
+            raw_env_content is not None
+        ), f"Did not find environment variable: {env_name}"
+
+        return EventGridInfo.model_validate_json(raw_env_content)
+
     for event_type, event_group in groupby(events, key=lambda x: type(x)):
         azure_events = [event.to_direct_output() for event in event_group]
+        event_grid_info = _load_eventgrid_info(event_type.env_name())
 
         client = EventGridPublisherClient(
-            endpoint=os.environ[event_type.uri_env_name()],
-            credential=AzureKeyCredential(os.environ[event_type.key_env_name()]),
+            endpoint=event_grid_info.uri,
+            credential=AzureKeyCredential(event_grid_info.key),
         )
         client.send(azure_events)
