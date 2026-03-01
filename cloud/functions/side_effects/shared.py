@@ -11,15 +11,24 @@ from azure.core.credentials import AzureKeyCredential
 
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
-from sebastian.usecases.shared import UseCaseHandler
 
 
 from cloud.functions.infrastructure.telegram.models import (
     SendTelegramMessageEventGrid,
 )
 from cloud.helper import parse_payload
+from typing import Protocol, TypeVar
+
+from sebastian.protocols.models import AllActor
+
 
 TRequest = TypeVar("TRequest")
+
+
+class UseCaseHandler[TRequest](Protocol):
+    def handle(self, request: TRequest) -> AllActor: ...
+
+
 TEventModel = TypeVar("TEventModel", bound=EventGridModel)
 
 
@@ -28,6 +37,10 @@ def perform_usecase(
     resolve_handler: Callable[[], UseCaseHandler[TRequest]],
     az_event: func.EventGridEvent,
 ) -> None:
+    """
+    Perform a usecase by creating a request from the EventGrid event,
+    resolving the handler, and handling the request.
+    """
 
     def _extract_first_arg_type(func: Callable) -> type:
         hints = get_type_hints(func)

@@ -12,5 +12,6 @@
         "**/__azurite_db*.json": true,
         "**/__pycache__/": true
     },
-    "chat.includeReferencedInstructions": true
+    "chat.includeReferencedInstructions": true,
+    "markdown.preview.fontSize": 14
 }
