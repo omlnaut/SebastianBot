@@ -1,10 +1,6 @@
-import uuid
-from datetime import datetime
-
-import azure.functions as func
 from pydantic import BaseModel, Field
 
-from cloud.helper.event_grid import EventGridMixin
+from cloud.helper.event_grid import EventGridModel
 from sebastian.protocols.gmail import GmailLabel
 
 
@@ -22,7 +18,7 @@ class PutEmailInToReadEventGrid(BaseModel):
     )
 
 
-class ModifyMailLabelEventGrid(EventGridMixin, BaseModel):
+class ModifyMailLabelEventGrid(EventGridModel):
     email_id: str = Field(
         ...,
         description="Gmail message ID to modify",

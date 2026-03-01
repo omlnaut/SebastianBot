@@ -3,28 +3,22 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies import usecases
-from cloud.functions.side_effects.shared import perform_usecase
+from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
 
 
 from .models import CreateTaskEventGrid
 from function_app import app
 from sebastian.protocols.google_task import TaskListIds
 
-from .helper import task_output_binding
-
 
 @app.route(route="test_create_task")
-@task_output_binding()
-def test_create_task(
-    req: func.HttpRequest, taskOutput: func.Out[func.EventGridOutputEvent]
-) -> func.HttpResponse:
+def test_create_task(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("HTTP test - emit create task event")
 
     event_model = CreateTaskEventGrid(
         title="Sample Task", notes="Sample notes", task_list_id=TaskListIds.Mangas
     )
-    taskOutput.set(event_model.to_output())
-
+    send_eventgrid_events([event_model])
     return func.HttpResponse("emitted")
 
 

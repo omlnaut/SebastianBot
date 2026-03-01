@@ -1,7 +1,7 @@
 from itertools import groupby
 import logging
 import os
-from typing import Callable, TypeVar, get_type_hints
+from typing import Callable, Sequence, TypeVar, get_type_hints
 
 from azure.eventgrid import EventGridPublisherClient
 from azure.eventgrid import EventGridPublisherClient
@@ -9,7 +9,6 @@ import azure.functions as func
 from azure.core.credentials import AzureKeyCredential
 
 
-from cloud.functions.infrastructure.AllActor.helper import send_all_actor_events
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from sebastian.usecases.shared import UseCaseHandler
@@ -48,12 +47,12 @@ def perform_usecase(
 
         actor_result = handler.handle(request)
 
-        send_all_actor_events([AllActorEventGrid.from_application(actor_result)])
+        send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
 
     except Exception as e:
         error_msg = f"Error {event_model.base_name}: {str(e)}"
         logging.error(error_msg)
-        send_all_actor_events(
+        send_eventgrid_events(
             [
                 AllActorEventGrid(
                     send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
@@ -64,7 +63,7 @@ def perform_usecase(
     logging.info(f"EventGrid {event_model.base_name} completed")
 
 
-def send_eventgrid_events(events: list[EventGridModel]) -> None:
+def send_eventgrid_events(events: Sequence[EventGridModel]) -> None:
     def _load_eventgrid_info(env_name: str) -> EventGridInfo:
         raw_env_content = os.environ.get(env_name)
         assert (
@@ -73,7 +72,12 @@ def send_eventgrid_events(events: list[EventGridModel]) -> None:
 
         return EventGridInfo.model_validate_json(raw_env_content)
 
-    for event_type, event_group in groupby(events, key=lambda x: type(x)):
+    for event_type, event_group_iterator in groupby(events, key=lambda x: type(x)):
+        event_group = list(event_group_iterator)
+        logging.info(
+            f"Sending {len(event_group)} EventGrid events for {event_type.env_name()}"
+        )
+        logging.info(event_group)
         azure_events = [event.to_direct_output() for event in event_group]
         event_grid_info = _load_eventgrid_info(event_type.env_name())
 

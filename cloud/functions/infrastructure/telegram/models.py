@@ -1,10 +1,8 @@
-from pydantic import BaseModel
-
-from cloud.helper.event_grid import EventGridMixin
+from cloud.helper.event_grid import EventGridModel
 from sebastian.protocols.models import SendMessage
 
 
-class SendTelegramMessageEventGrid(EventGridMixin, BaseModel):
+class SendTelegramMessageEventGrid(EventGridModel):
     message: str
 
     @staticmethod
