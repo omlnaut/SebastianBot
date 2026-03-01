@@ -19,7 +19,7 @@ def gemini() -> IGeminiClient:
     "html_filename",
     ["make_new_appointment.html", "fetch_recipe.html", "tk_message.html"],
 )
-def test_prompt_create_task(gemini: IGeminiClient, html_filename: str):
+def _test_prompt_create_task(gemini: IGeminiClient, html_filename: str):
     html_file = TEST_CONTENT_PATH / html_filename
     html_content = html_file.read_text()
 

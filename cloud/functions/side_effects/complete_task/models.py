@@ -1,8 +1,6 @@
 from sebastian.protocols.google_task import TaskListIds
 
 
-from pydantic import BaseModel
-
 from cloud.helper.event_grid import EventGridModel
 
 
