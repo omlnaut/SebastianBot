@@ -1,6 +1,7 @@
 import uuid
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Any, Self, TypeVar
 
 import azure.functions as func
 from azure.eventgrid import EventGridEvent
@@ -24,7 +25,10 @@ class EventGridInfo(BaseModel):
         return v
 
 
-class EventGridMixin:
+TRequest = TypeVar("TRequest", bound=BaseModel)
+
+
+class EventGridMixin[TRequest](ABC):
     """Mixin that provides auto-generated to_output() method for EventGrid models.
 
     Automatically derives event subject and type from class name:
@@ -32,6 +36,28 @@ class EventGridMixin:
     - Converts CamelCase to snake_case
     - Example: ModifyMailLabelEventGrid -> subject: "modify_mail_label", event_type: "modify_mail_label_event"
     """
+
+    @abstractmethod
+    def to_application(self) -> TRequest:
+        """Convert EventGrid model to application-layer model.
+
+        Each subclass must implement this method to return the appropriate
+        application-layer type (e.g., SendMessage, CreateTask, etc.).
+        """
+        ...
+
+    @classmethod
+    @abstractmethod
+    def from_application(cls, app_event: TRequest) -> Self:
+        """Create EventGrid model from application-layer model.
+
+        Each subclass must implement this class method to convert from
+        application-layer types (e.g., SendMessage, CreateTask) to EventGrid models.
+
+        Returns:
+            An instance of the concrete EventGrid model class.
+        """
+        ...
 
     @property
     def base_name(self):
@@ -76,5 +102,5 @@ class EventGridMixin:
         )
 
 
-class EventGridModel(BaseModel, EventGridMixin, ABC):
+class EventGridModel[TRequest](BaseModel, EventGridMixin[TRequest], ABC):
     pass

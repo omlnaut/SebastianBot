@@ -1,3 +1,5 @@
+from typing import Self
+
 from pydantic import Field
 from cloud.functions.infrastructure.google.gmail.models import ModifyMailLabelEventGrid
 
@@ -10,14 +12,14 @@ from cloud.helper.event_grid import EventGridModel
 from sebastian.protocols.models import AllActor
 
 
-class AllActorEventGrid(EventGridModel):
+class AllActorEventGrid(EventGridModel[AllActor]):
     create_tasks: list[CreateTaskEventGrid] = Field(default_factory=list)
     complete_tasks: list[CompleteTaskEventGrid] = Field(default_factory=list)
     send_messages: list[SendTelegramMessageEventGrid] = Field(default_factory=list)
     modify_labels: list[ModifyMailLabelEventGrid] = Field(default_factory=list)
 
-    @staticmethod
-    def from_application(app_event: AllActor):
+    @classmethod
+    def from_application(cls, app_event: AllActor) -> Self:
         create_tasks = [
             CreateTaskEventGrid.from_application(task)
             for task in app_event.create_tasks
@@ -39,7 +41,7 @@ class AllActorEventGrid(EventGridModel):
             )
             for label in app_event.modify_labels
         ]
-        return AllActorEventGrid(
+        return cls(
             create_tasks=create_tasks,
             complete_tasks=complete_tasks,
             send_messages=send_messages,

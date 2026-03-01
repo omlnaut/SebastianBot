@@ -1,3 +1,4 @@
+from cloud.functions.side_effects.shared import UseCaseHandler
 from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
@@ -11,8 +12,11 @@ from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
-from sebastian.usecases.shared import UseCaseHandler
-from sebastian.usecases.side_effects import complete_task, create_task
+from sebastian.usecases.side_effects import (
+    complete_task,
+    create_task,
+    send_telegram_message,
+)
 
 
 from .clients import (
@@ -22,6 +26,7 @@ from .clients import (
     resolve_google_task_client,
     resolve_mangaupdate_client,
     resolve_mietplan_client,
+    resolve_telegram_client,
 )
 
 
@@ -114,4 +119,12 @@ def resolve_create_task(
 ) -> UseCaseHandler[create_task.Request]:
     return create_task.Handler(
         task_client=task_client or resolve_google_task_client(),
+    )
+
+
+def resolve_send_telegram_message(
+    telegram_client: send_telegram_message.TelegramClient | None = None,
+) -> UseCaseHandler[send_telegram_message.Request]:
+    return send_telegram_message.Handler(
+        telegram_client=telegram_client or resolve_telegram_client(),
     )
