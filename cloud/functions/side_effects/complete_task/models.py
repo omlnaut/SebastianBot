@@ -1,3 +1,5 @@
+from typing import Self
+
 from sebastian.protocols.google_task import TaskListIds
 
 
@@ -11,9 +13,9 @@ class CompleteTaskEventGrid(EventGridModel):
     tasklist_id: TaskListIds
     task_id: str
 
-    @staticmethod
-    def from_application(app_event: CompleteTask):
-        return CompleteTaskEventGrid(
+    @classmethod
+    def from_application(cls, app_event: CompleteTask) -> Self:
+        return cls(
             tasklist_id=app_event.tasklist_id,
             task_id=app_event.task_id,
         )

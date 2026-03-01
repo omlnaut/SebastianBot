@@ -18,6 +18,11 @@ class AllActorEventGrid(EventGridModel[AllActor]):
     send_messages: list[SendTelegramMessageEventGrid] = Field(default_factory=list)
     modify_labels: list[ModifyMailLabelEventGrid] = Field(default_factory=list)
 
+    def to_application(self) -> AllActor:
+        raise NotImplementedError(
+            "This shouldn't be needed because the AllActor distributes events in the cloud layer"
+        )
+
     @classmethod
     def from_application(cls, app_event: AllActor) -> Self:
         create_tasks = [
@@ -32,13 +37,8 @@ class AllActorEventGrid(EventGridModel[AllActor]):
             SendTelegramMessageEventGrid.from_application(msg)
             for msg in app_event.send_messages
         ]
-        # todo: from_application
         modify_labels = [
-            ModifyMailLabelEventGrid(
-                email_id=label.email_id,
-                add_labels=label.add_labels,
-                remove_labels=label.remove_labels,
-            )
+            ModifyMailLabelEventGrid.from_application(label)
             for label in app_event.modify_labels
         ]
         return cls(

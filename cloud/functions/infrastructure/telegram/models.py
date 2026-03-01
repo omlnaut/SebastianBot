@@ -1,13 +1,15 @@
+from typing import Self
+
 from cloud.helper.event_grid import EventGridModel
 from sebastian.protocols.models import SendMessage
 
 
-class SendTelegramMessageEventGrid(EventGridModel):
+class SendTelegramMessageEventGrid(EventGridModel[SendMessage]):
     message: str
 
-    @staticmethod
-    def from_application(app_event: SendMessage):
-        return SendTelegramMessageEventGrid(
+    @classmethod
+    def from_application(cls, app_event: SendMessage) -> Self:
+        return cls(
             message=app_event.message,
         )
 
