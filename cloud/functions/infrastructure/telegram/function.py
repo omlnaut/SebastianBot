@@ -4,22 +4,18 @@ import azure.functions as func
 
 from cloud.dependencies.clients import resolve_telegram_client
 from .models import SendTelegramMessageEventGrid
+from cloud.functions.side_effects.shared import send_eventgrid_events
 from cloud.helper import parse_payload
 from function_app import app
 from sebastian.infrastructure.telegram import service
 
-from .helper import telegram_output_binding
-
 
 @app.route(route="test_send_telegram_message")
-@telegram_output_binding()
 def test_send_telegram_message(
-    req: func.HttpRequest, telegramOutput: func.Out[func.EventGridOutputEvent]
+    req: func.HttpRequest,
 ) -> func.HttpResponse:
     logging.info("Python event trigger function processed a request.")
-    telegramOutput.set(
-        SendTelegramMessageEventGrid(message="hello there testi").to_output()
-    )
+    send_eventgrid_events([SendTelegramMessageEventGrid(message="hello there testi")])
 
     return func.HttpResponse("yay")
 
