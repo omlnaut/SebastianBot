@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, override
 
 from pydantic import BaseModel, Field
 
@@ -36,6 +36,7 @@ class ModifyMailLabelEventGrid(EventGridModel[ModifyMailLabel]):
     )
 
     @classmethod
+    @override
     def from_application(cls, app_event: ModifyMailLabel) -> Self:
         return cls(
             email_id=app_event.email_id,

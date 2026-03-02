@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, override
 
 from pydantic import Field
 from cloud.functions.infrastructure.google.gmail.models import ModifyMailLabelEventGrid
@@ -19,6 +19,7 @@ class AllActorEventGrid(EventGridModel[AllActor]):
     modify_labels: list[ModifyMailLabelEventGrid] = Field(default_factory=list)
 
     @classmethod
+    @override
     def from_application(cls, app_event: AllActor) -> Self:
         create_tasks = [
             CreateTaskEventGrid.from_application(task)

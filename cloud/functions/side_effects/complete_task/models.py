@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, override
 
 from sebastian.protocols.google_task import TaskListIds
 
@@ -14,6 +14,7 @@ class CompleteTaskEventGrid(EventGridModel):
     task_id: str
 
     @classmethod
+    @override
     def from_application(cls, app_event: CompleteTask) -> Self:
         return cls(
             tasklist_id=app_event.tasklist_id,
