@@ -37,15 +37,6 @@ class EventGridMixin[TRequest](ABC):
     - Example: ModifyMailLabelEventGrid -> subject: "modify_mail_label", event_type: "modify_mail_label_event"
     """
 
-    @abstractmethod
-    def to_application(self) -> TRequest:
-        """Convert EventGrid model to application-layer model.
-
-        Each subclass must implement this method to return the appropriate
-        application-layer type (e.g., SendMessage, CreateTask, etc.).
-        """
-        ...
-
     @classmethod
     @abstractmethod
     def from_application(cls, app_event: TRequest) -> Self:

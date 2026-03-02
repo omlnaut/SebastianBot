@@ -42,10 +42,3 @@ class ModifyMailLabelEventGrid(EventGridModel[ModifyMailLabel]):
             add_labels=app_event.add_labels,
             remove_labels=app_event.remove_labels,
         )
-
-    def to_application(self) -> ModifyMailLabel:
-        return ModifyMailLabel(
-            email_id=self.email_id,
-            add_labels=self.add_labels,
-            remove_labels=self.remove_labels,
-        )

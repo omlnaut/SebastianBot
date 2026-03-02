@@ -23,11 +23,3 @@ class CreateTaskEventGrid(EventGridModel[CreateTask]):
             due=app_event.due,
             task_list_id=app_event.task_list_id,
         )
-
-    def to_application(self) -> CreateTask:
-        return CreateTask(
-            title=self.title,
-            notes=self.notes,
-            due=self.due,
-            task_list_id=self.task_list_id,
-        )

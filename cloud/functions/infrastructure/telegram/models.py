@@ -12,6 +12,3 @@ class SendTelegramMessageEventGrid(EventGridModel[SendMessage]):
         return cls(
             message=app_event.message,
         )
-
-    def to_application(self) -> SendMessage:
-        return SendMessage(message=self.message)
