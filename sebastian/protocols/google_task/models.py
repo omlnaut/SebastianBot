@@ -26,19 +26,4 @@ class Task:
     tasklist: TaskListIds
     due: datetime | None = None
     notes: str | None = None
-    webViewLink: str | None = None
-
-
-class TaskResponse(BaseModel):
-    kind: str
-    id: str
-    etag: str
-    title: str
-    due: datetime | None = None
-    updated: datetime | None = None
-    selfLink: str | None = None
-    position: str | None = None
-    notes: str | None = None
-    status: str | None = None
-    links: list[dict[str, str]] | None = None
-    webViewLink: str | None = None
+    link: str | None = None

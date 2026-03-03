@@ -3,9 +3,9 @@ from datetime import datetime
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
+from sebastian.clients.google.task.client._models import TaskResponse
 from sebastian.protocols.google_task import (
     Task,
-    TaskResponse,
     TaskList,
     TaskListIds,
 )
@@ -36,7 +36,7 @@ class GoogleTaskClient:
             due=parsed.due,
             notes=parsed.notes,
             tasklist=tasklist_id,
-            webViewLink=parsed.webViewLink,
+            link=parsed.webViewLink,
         )
 
     def get_tasks(

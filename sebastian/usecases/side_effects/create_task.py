@@ -56,6 +56,6 @@ def _build_message(created_task: Task) -> str:
         message += f" in {created_task.tasklist.name}"
     if created_task.due:
         message += f" ({created_task.due.date()})"
-    if created_task.webViewLink:
-        message += f"\n{created_task.webViewLink}"
+    if created_task.link:
+        message += f"\n{created_task.link}"
     return message

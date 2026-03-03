@@ -1,8 +1,7 @@
-from .models import Task, TaskResponse, TaskList, TaskListIds
+from .models import Task, TaskList, TaskListIds
 
 __all__ = [
     "Task",
-    "TaskResponse",
     "TaskList",
     "TaskListIds",
 ]
