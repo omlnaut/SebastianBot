@@ -14,6 +14,7 @@ def _get_secret_client() -> SecretClient:
     This significantly reduces Azure Key Vault calls by reusing the same
     client instance across all secret fetches within a function app instance.
     """
+    # todo: to appsettings
     key_vault_url = "https://omlnaut-sebastian.vault.azure.net/"
     credential = DefaultAzureCredential()
     return SecretClient(vault_url=key_vault_url, credential=credential)
