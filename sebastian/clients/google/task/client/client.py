@@ -4,7 +4,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from sebastian.protocols.google_task import (
-    CreatedTask,
+    Task,
     TaskResponse,
     TaskList,
     TaskListIds,
@@ -28,10 +28,10 @@ class GoogleTaskClient:
 
     def create_task_with_notes(
         self, tasklist_id: TaskListIds, title: str, notes: str, due_date: datetime
-    ) -> CreatedTask:
+    ) -> Task:
         task_body = build_task_body(title, notes, due_date)
         parsed = post_create_task(self._service, tasklist_id, task_body)
-        return CreatedTask(
+        return Task(
             title=parsed.title,
             due=parsed.due,
             notes=parsed.notes,

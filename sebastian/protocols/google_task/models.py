@@ -21,7 +21,7 @@ class TaskListIds(Enum):
 
 
 @dataclass
-class CreatedTask:
+class Task:
     title: str
     tasklist: TaskListIds
     due: datetime | None = None

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Protocol
 
 from sebastian.protocols.models import AllActor
-from sebastian.protocols.google_task.models import CreatedTask, TaskListIds
+from sebastian.protocols.google_task.models import Task, TaskListIds
 from sebastian.protocols.models import SendMessage
 from sebastian.shared import Result
 from sebastian.shared.dates import get_end_of_day
@@ -24,7 +24,7 @@ class TaskClient(Protocol):
         title: str,
         notes: str,
         due_date: datetime,
-    ) -> CreatedTask:
+    ) -> Task:
         """Should create a task with notes"""
         ...
 
@@ -50,7 +50,7 @@ class Handler:
         return AllActor(send_messages=[SendMessage(message=message)])
 
 
-def _build_message(created_task: CreatedTask) -> str:
+def _build_message(created_task: Task) -> str:
     message = f"TASK created: {created_task.title}"
     if created_task.tasklist.name != TaskListIds.Default.name:
         message += f" in {created_task.tasklist.name}"
