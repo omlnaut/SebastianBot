@@ -2,8 +2,11 @@ from datetime import datetime
 import json
 
 import pytest
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
 import azure.functions as func
+
+from cloud.functions.side_effects.send_message.models import (
+    SendTelegramMessageEventGrid,
+)
 
 
 @pytest.fixture

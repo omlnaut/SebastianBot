@@ -3,7 +3,8 @@ import logging
 from azure.functions import TimerRequest
 
 from cloud.dependencies.usecases import resolve_winsim_service
-from cloud.functions.infrastructure.telegram.models import (
+
+from cloud.functions.side_effects.send_message.models import (
     SendTelegramMessageEventGrid,
 )
 from cloud.functions.side_effects.shared import send_eventgrid_events

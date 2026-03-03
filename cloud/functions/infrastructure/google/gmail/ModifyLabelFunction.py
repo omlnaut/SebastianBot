@@ -3,7 +3,9 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.usecases import resolve_add_label_to_mail_service
-from cloud.functions.infrastructure.telegram.models import SendTelegramMessageEventGrid
+from cloud.functions.side_effects.send_message.models import (
+    SendTelegramMessageEventGrid,
+)
 from cloud.functions.side_effects.shared import send_eventgrid_events
 from cloud.helper import parse_payload
 from function_app import app

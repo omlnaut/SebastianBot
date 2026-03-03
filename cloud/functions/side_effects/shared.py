@@ -10,12 +10,12 @@ from azure.core.credentials import AzureKeyCredential
 
 
 from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
+from cloud.functions.side_effects.send_message.models import (
+    SendTelegramMessageEventGrid,
+)
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
 
 
-from cloud.functions.infrastructure.telegram.models import (
-    SendTelegramMessageEventGrid,
-)
 from cloud.helper import parse_payload
 from typing import Protocol, TypeVar
 

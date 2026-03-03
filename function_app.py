@@ -9,7 +9,7 @@ from cloud.functions.side_effects.create_task.function import (
     create_task,
     test_create_task,
 )
-from cloud.functions.infrastructure.telegram.function import (
+from cloud.functions.side_effects.send_message.function import (
     send_telegram_message,
     test_send_telegram_message,
 )
