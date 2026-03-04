@@ -7,7 +7,7 @@ from .models import CompleteTaskEventGrid
 from function_app import app
 
 
-@app.event_grid_trigger(arg_name="azeventgrid")
+@app.event_grid_trigger(arg_name="azeventgrid")  # type: ignore
 def complete_task(
     azeventgrid: func.EventGridEvent,
 ):

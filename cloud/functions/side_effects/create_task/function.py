@@ -4,7 +4,6 @@ import azure.functions as func
 
 from cloud.dependencies import usecases
 from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
-from sebastian.clients.google.task.client.taskslists import to_id
 from sebastian.domain.task import TaskLists
 
 
@@ -23,7 +22,7 @@ def test_create_task(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("emitted")
 
 
-@app.event_grid_trigger(arg_name="azeventgrid")
+@app.event_grid_trigger(arg_name="azeventgrid")  # type: ignore
 def create_task(
     azeventgrid: func.EventGridEvent,
 ):

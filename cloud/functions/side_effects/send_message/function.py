@@ -18,7 +18,7 @@ def test_send_telegram_message(
     return func.HttpResponse("yay")
 
 
-@app.event_grid_trigger(arg_name="azeventgrid")
+@app.event_grid_trigger(arg_name="azeventgrid")  # type: ignore
 def send_telegram_message(azeventgrid: func.EventGridEvent):
     def create_request(
         event: SendTelegramMessageEventGrid,

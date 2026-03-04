@@ -1,7 +1,7 @@
 from itertools import groupby
 import logging
 import os
-from typing import Callable, Sequence, TypeVar, get_type_hints
+from typing import Any, Callable, Sequence, TypeVar, get_type_hints
 
 from azure.eventgrid import EventGridPublisherClient
 from azure.eventgrid import EventGridPublisherClient
@@ -29,7 +29,7 @@ class UseCaseHandler[TRequest](Protocol):
     def handle(self, request: TRequest) -> AllActor: ...
 
 
-TEventModel = TypeVar("TEventModel", bound=EventGridModel)
+TEventModel = TypeVar("TEventModel", bound=EventGridModel[Any])
 
 
 def perform_usecase(
@@ -42,7 +42,7 @@ def perform_usecase(
     resolving the handler, and handling the request.
     """
 
-    def _extract_first_arg_type(func: Callable) -> type:
+    def _extract_first_arg_type(func: Callable[..., Any]) -> type[TEventModel]:
         hints = get_type_hints(func)
         for arg_name, arg_type in hints.items():
             if arg_name != "return":

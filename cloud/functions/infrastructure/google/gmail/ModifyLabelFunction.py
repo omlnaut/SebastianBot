@@ -29,7 +29,7 @@ def test_modify_mail_label(
     return func.HttpResponse("emitted")
 
 
-@app.event_grid_trigger(arg_name="azeventgrid")
+@app.event_grid_trigger(arg_name="azeventgrid")  # type: ignore
 def modify_mail_label(
     azeventgrid: func.EventGridEvent,
 ):

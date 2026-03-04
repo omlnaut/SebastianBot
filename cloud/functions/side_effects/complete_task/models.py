@@ -8,7 +8,7 @@ from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import CompleteTask
 
 
-class CompleteTaskEventGrid(EventGridModel):
+class CompleteTaskEventGrid(EventGridModel[CompleteTask]):
     tasklist: TaskLists
     task_id: str
 

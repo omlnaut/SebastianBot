@@ -15,10 +15,18 @@ from sebastian.protocols.models import AllActor
 
 
 class AllActorEventGrid(EventGridModel[AllActor]):
-    create_tasks: list[CreateTaskEventGrid] = Field(default_factory=list)
-    complete_tasks: list[CompleteTaskEventGrid] = Field(default_factory=list)
-    send_messages: list[SendTelegramMessageEventGrid] = Field(default_factory=list)
-    modify_labels: list[ModifyMailLabelEventGrid] = Field(default_factory=list)
+    create_tasks: list[CreateTaskEventGrid] = Field(
+        default_factory=list[CreateTaskEventGrid]
+    )
+    complete_tasks: list[CompleteTaskEventGrid] = Field(
+        default_factory=list[CompleteTaskEventGrid]
+    )
+    send_messages: list[SendTelegramMessageEventGrid] = Field(
+        default_factory=list[SendTelegramMessageEventGrid]
+    )
+    modify_labels: list[ModifyMailLabelEventGrid] = Field(
+        default_factory=list[ModifyMailLabelEventGrid]
+    )
 
     @classmethod
     @override

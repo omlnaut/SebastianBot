@@ -7,7 +7,7 @@ from function_app import app
 import azure.functions as func
 
 
-@app.event_grid_trigger(arg_name="azeventgrid")
+@app.event_grid_trigger(arg_name="azeventgrid")  # type: ignore
 def all_actor_handler(
     azeventgrid: func.EventGridEvent,
 ):
