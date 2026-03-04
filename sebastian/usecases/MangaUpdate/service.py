@@ -1,4 +1,4 @@
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.protocols.manga_update import (
     IMangaUpdateClient,
     MangaUpdateManga,

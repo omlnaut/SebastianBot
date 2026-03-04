@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Protocol
 
+from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import AllActor
-from sebastian.protocols.google_task.models import Task, TaskLists
 from sebastian.protocols.models import SendMessage
 from sebastian.shared import Result
 from sebastian.shared.dates import get_end_of_day

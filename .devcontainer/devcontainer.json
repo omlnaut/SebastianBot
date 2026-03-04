@@ -28,6 +28,8 @@
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
 				"python.pythonPath": "/usr/local/bin/python",
+				"python.analysis.typeCheckingMode": "standard",
+				"python.testing.autoTestDiscoverOnSaveEnabled": false,
 				"jupyter.useDefaultConfigForJupyter": true
 			}
 		}

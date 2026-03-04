@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta, timezone
 
 from cloud.dependencies.clients import resolve_google_task_client
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def test_google_task_client_integration(google_task_client):
 
     def create_task():
         created_task = google_task_client.create_task_with_notes(
-            tasklist_id=TaskLists.Default, title=title, notes=notes, due_date=due_date
+            tasklist=TaskLists.Default, title=title, notes=notes, due_date=due_date
         )
 
         assert created_task.title == title
@@ -25,7 +25,7 @@ def test_google_task_client_integration(google_task_client):
         return created_task
 
     def fetch_task_id() -> str:
-        tasks_result = google_task_client.get_tasks(tasklist_id=TaskLists.Default)
+        tasks_result = google_task_client.get_tasks(tasklist=TaskLists.Default)
         assert not tasks_result.has_errors()
 
         tasks = tasks_result.item
@@ -40,12 +40,12 @@ def test_google_task_client_integration(google_task_client):
 
     def set_task_as_completed(task_id: str):
         complete_result = google_task_client.set_task_to_completed(
-            tasklist_id=TaskLists.Default, task_id=task_id
+            tasklist=TaskLists.Default, task_id=task_id
         )
         assert not complete_result.has_errors()
 
     def check_task_is_completed(task_id: str):
-        tasks_result = google_task_client.get_tasks(tasklist_id=TaskLists.Default)
+        tasks_result = google_task_client.get_tasks(tasklist=TaskLists.Default)
         assert not tasks_result.has_errors()
 
         tasks = tasks_result.item

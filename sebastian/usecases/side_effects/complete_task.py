@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import AllActor, SendMessage
 from sebastian.shared import Result
 

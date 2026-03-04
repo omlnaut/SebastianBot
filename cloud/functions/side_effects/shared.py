@@ -76,7 +76,7 @@ def perform_usecase(
     logging.info(f"EventGrid {event_model.base_name} completed")
 
 
-def send_eventgrid_events(events: Sequence[EventGridModel]) -> None:
+def send_eventgrid_events(events: Sequence[TEventModel]) -> None:
     def _load_eventgrid_info(env_name: str) -> EventGridInfo:
         raw_env_content = os.environ.get(env_name)
         assert (
@@ -98,4 +98,4 @@ def send_eventgrid_events(events: Sequence[EventGridModel]) -> None:
             endpoint=event_grid_info.uri,
             credential=AzureKeyCredential(event_grid_info.key),
         )
-        client.send(azure_events)
+        client.send(azure_events)  # type: ignore

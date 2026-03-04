@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import logging
 
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient

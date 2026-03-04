@@ -1,4 +1,4 @@
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 
 
 def to_id(tasklist: TaskLists) -> str:

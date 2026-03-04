@@ -13,5 +13,5 @@
         "**/__pycache__/": true
     },
     "chat.includeReferencedInstructions": true,
-    "markdown.preview.fontSize": 14
+    "markdown.preview.fontSize": 14,
 }

@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from sebastian.clients.google.task.client._models import TaskList, TaskResponse
 from sebastian.clients.google.task.client.taskslists import to_id
 
-from sebastian.protocols.google_task.models import Task, TaskLists
+from sebastian.domain.task import Task, TaskLists
 from sebastian.shared.Result import Result
 
 from .create_task_with_notes import build_task_body, post_create_task

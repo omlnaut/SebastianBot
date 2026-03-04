@@ -6,7 +6,7 @@ import azure.functions as func
 
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from sebastian.clients.google.task.client.taskslists import to_id
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def test_to_output_with_minimal_fields(test_start: datetime):
     assert data["title"] == "Test Task"
     assert data["notes"] is None
     assert data["due"] is None
-    assert data["task_list_id"] == to_id(TaskLists.Default)
+    assert data["tasklist"] == TaskLists.Default.value
 
 
 def test_to_output_with_all_fields(test_start: datetime):
@@ -58,7 +58,7 @@ def test_to_output_with_all_fields(test_start: datetime):
     assert data["title"] == "Test Task"
     assert data["notes"] == "Test notes"
     assert data["due"] == "2026-01-20T10:30:00"  # ISO format from mode='json'
-    assert data["task_list_id"] == TaskLists.Mangas.value
+    assert data["tasklist"] == TaskLists.Mangas.value
 
 
 def test_to_output_with_different_task_lists(test_start: datetime):
@@ -69,7 +69,7 @@ def test_to_output_with_different_task_lists(test_start: datetime):
 
         _assert_base_fields(result, test_start)
         data = result.get_json()
-        assert data["task_list_id"] == task_list_id.value
+        assert data["tasklist"] == task_list_id.value
 
 
 def test_to_output_data_is_model_dump(test_start: datetime):
@@ -87,7 +87,7 @@ def test_to_output_data_is_model_dump(test_start: datetime):
     assert result.get_json() == expected_data
 
 
-def test_event_is_json_serializable(test_start: datetime):
+def test_event_is_json_serializable():
     """Test that the event output can be serialized to JSON."""
     event = CreateTaskEventGrid(
         title="Test Task",
@@ -103,8 +103,8 @@ def test_event_is_json_serializable(test_start: datetime):
 
     # Verify we can deserialize it back and fields are correctly serialized
     parsed = json.loads(json_string)
-    assert isinstance(parsed["task_list_id"], str)
-    assert parsed["task_list_id"] == to_id(TaskLists.Mangas)
+    assert isinstance(parsed["tasklist"], int)
+    assert parsed["tasklist"] == TaskLists.Mangas.value
     assert isinstance(parsed["due"], str)
     assert parsed["due"] == "2026-01-20T10:30:00"
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.gemini import IGeminiClient

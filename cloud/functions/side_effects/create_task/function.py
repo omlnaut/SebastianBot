@@ -5,7 +5,7 @@ import azure.functions as func
 from cloud.dependencies import usecases
 from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
 from sebastian.clients.google.task.client.taskslists import to_id
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 
 
 from .models import CreateTaskEventGrid

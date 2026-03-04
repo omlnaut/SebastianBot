@@ -5,8 +5,7 @@ from cloud.helper.event_grid import EventGridModel
 
 from datetime import datetime
 
-from sebastian.clients.google.task.client.taskslists import to_id
-from sebastian.protocols.google_task.models import TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import CreateTask
 
 
