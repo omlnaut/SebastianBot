@@ -4,11 +4,12 @@ import azure.functions as func
 
 from cloud.dependencies import usecases
 from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
+from sebastian.clients.google.task.client.taskslists import to_id
+from sebastian.protocols.google_task.models import TaskLists
 
 
 from .models import CreateTaskEventGrid
 from function_app import app
-from sebastian.protocols.google_task import TaskListIds
 
 
 @app.route(route="test_create_task")
@@ -16,7 +17,7 @@ def test_create_task(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("HTTP test - emit create task event")
 
     event_model = CreateTaskEventGrid(
-        title="Sample Task", notes="Sample notes", task_list_id=TaskListIds.Mangas
+        title="Sample Task", notes="Sample notes", tasklist=TaskLists.Mangas
     )
     send_eventgrid_events([event_model])
     return func.HttpResponse("emitted")
@@ -28,7 +29,7 @@ def create_task(
 ):
     def create_request(event: CreateTaskEventGrid) -> usecases.create_task.Request:
         return usecases.create_task.Request(
-            tasklist_id=event.task_list_id,
+            tasklist=event.tasklist,
             title=event.title,
             notes=event.notes or "",
             due_date=event.due,

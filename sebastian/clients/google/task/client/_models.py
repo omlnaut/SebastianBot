@@ -1,7 +1,14 @@
 from pydantic import BaseModel
-
-
 from datetime import datetime
+
+
+class TaskList(BaseModel):
+    kind: str
+    id: str
+    etag: str
+    title: str
+    updated: datetime | None = None
+    selfLink: str | None = None
 
 
 class TaskResponse(BaseModel):
@@ -17,6 +24,3 @@ class TaskResponse(BaseModel):
     status: str | None = None
     links: list[dict[str, str]] | None = None
     webViewLink: str | None = None
-
-    def to_task_model(self):
-        pass

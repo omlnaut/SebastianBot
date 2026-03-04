@@ -1,3 +1,4 @@
+from sebastian.protocols.google_task.models import TaskLists
 from sebastian.protocols.manga_update import (
     IMangaUpdateClient,
     MangaUpdateManga,
@@ -5,7 +6,6 @@ from sebastian.protocols.manga_update import (
     MangaChapter,
 )
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
-from sebastian.protocols.google_task.models import TaskListIds
 from sebastian.shared.dates import is_at_most_one_day_old
 
 
@@ -58,5 +58,5 @@ def _map_to_create_task(manga: MangaChapter) -> CreateTask:
     return CreateTask(
         title=f"{manga.title} Chapter {manga.chapter}",
         notes=manga.url,
-        task_list_id=TaskListIds.Mangas,
+        tasklist=TaskLists.Mangas,
     )

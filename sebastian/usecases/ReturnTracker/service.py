@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
+from sebastian.protocols.google_task.models import TaskLists
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
-from sebastian.protocols.google_task.models import TaskListIds
 
 from .models import ReturnData
 from .parsing import parse_return_email_html
@@ -63,4 +63,4 @@ def _map_to_create_task(return_data: ReturnData) -> CreateTask:
         f"Retoure bis: {return_data.return_date}\n"
         f"Order: {return_data.order_number}"
     )
-    return CreateTask(title=title, notes=notes, task_list_id=TaskListIds.Default)
+    return CreateTask(title=title, notes=notes, tasklist=TaskLists.Default)

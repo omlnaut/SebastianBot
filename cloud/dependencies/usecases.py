@@ -5,8 +5,6 @@ from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
-from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
-from sebastian.usecases.AllHandler.service import AllHandlerService
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
@@ -77,26 +75,6 @@ def resolve_return_tracker_service(
     return ReturnTrackerService(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
-    )
-
-
-def resolve_allhandler_service(
-    gmail_client: IGmailClient | None = None,
-    gemini_client: IGeminiClient | None = None,
-) -> AllHandlerService:
-    return AllHandlerService(
-        gmail=gmail_client or resolve_gmail_client(),
-        gemini=gemini_client or resolve_gemini_client(),
-    )
-
-
-def resolve_allhandler_mail_service(
-    gmail_client: IGmailClient | None = None,
-    allhandler_service: AllHandlerService | None = None,
-) -> "MailToAllHandler":
-    return MailToAllHandler(
-        mail_client=gmail_client or resolve_gmail_client(),
-        all_handler_service=allhandler_service or resolve_allhandler_service(),
     )
 
 

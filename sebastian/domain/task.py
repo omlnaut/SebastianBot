@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, auto
+
+from pydantic import BaseModel, Field
 
 
 class TaskLists(Enum):
@@ -8,10 +9,9 @@ class TaskLists(Enum):
     Mangas = auto()
 
 
-@dataclass
-class Task:
-    title: str
+class Task(BaseModel):
     tasklist: TaskLists
+    title: str = Field(..., min_length=1)
     due: datetime | None = None
     notes: str | None = None
     link: str | None = None

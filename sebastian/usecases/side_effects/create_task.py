@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Protocol
 
 from sebastian.protocols.models import AllActor
-from sebastian.protocols.google_task.models import Task, TaskListIds
+from sebastian.protocols.google_task.models import Task, TaskLists
 from sebastian.protocols.models import SendMessage
 from sebastian.shared import Result
 from sebastian.shared.dates import get_end_of_day
@@ -11,7 +11,7 @@ from sebastian.shared.dates import get_end_of_day
 
 @dataclass
 class Request:
-    tasklist_id: TaskListIds
+    tasklist: TaskLists
     title: str
     notes: str
     due_date: Optional[datetime] = None
@@ -20,7 +20,7 @@ class Request:
 class TaskClient(Protocol):
     def create_task_with_notes(
         self,
-        tasklist_id: TaskListIds,
+        tasklist: TaskLists,
         title: str,
         notes: str,
         due_date: datetime,
@@ -38,7 +38,7 @@ class Handler:
         try:
             # todo: move try except to client
             created_task = self._client.create_task_with_notes(
-                tasklist_id=request.tasklist_id,
+                tasklist=request.tasklist,
                 title=request.title,
                 notes=request.notes,
                 due_date=due_date,
@@ -52,7 +52,7 @@ class Handler:
 
 def _build_message(created_task: Task) -> str:
     message = f"TASK created: {created_task.title}"
-    if created_task.tasklist.name != TaskListIds.Default.name:
+    if created_task.tasklist.name != TaskLists.Default.name:
         message += f" in {created_task.tasklist.name}"
     if created_task.due:
         message += f" ({created_task.due.date()})"

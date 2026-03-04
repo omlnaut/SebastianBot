@@ -5,7 +5,8 @@ import pytest
 import azure.functions as func
 
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
-from sebastian.protocols.google_task.models import TaskListIds
+from sebastian.clients.google.task.client.taskslists import to_id
+from sebastian.protocols.google_task.models import TaskLists
 
 
 @pytest.fixture
@@ -30,7 +31,7 @@ def _assert_base_fields(
 
 def test_to_output_with_minimal_fields(test_start: datetime):
     """Test to_output with only required fields."""
-    event = CreateTaskEventGrid(title="Test Task")
+    event = CreateTaskEventGrid(title="Test Task", tasklist=TaskLists.Default)
     result = event.to_output()
 
     _assert_base_fields(result, test_start)
@@ -38,7 +39,7 @@ def test_to_output_with_minimal_fields(test_start: datetime):
     assert data["title"] == "Test Task"
     assert data["notes"] is None
     assert data["due"] is None
-    assert data["task_list_id"] == TaskListIds.Default.value
+    assert data["task_list_id"] == to_id(TaskLists.Default)
 
 
 def test_to_output_with_all_fields(test_start: datetime):
@@ -47,7 +48,7 @@ def test_to_output_with_all_fields(test_start: datetime):
         title="Test Task",
         notes="Test notes",
         due=datetime(2026, 1, 20, 10, 30),
-        task_list_id=TaskListIds.Mangas,
+        tasklist=TaskLists.Mangas,
     )
     result = event.to_output()
 
@@ -57,13 +58,13 @@ def test_to_output_with_all_fields(test_start: datetime):
     assert data["title"] == "Test Task"
     assert data["notes"] == "Test notes"
     assert data["due"] == "2026-01-20T10:30:00"  # ISO format from mode='json'
-    assert data["task_list_id"] == TaskListIds.Mangas.value
+    assert data["task_list_id"] == TaskLists.Mangas.value
 
 
 def test_to_output_with_different_task_lists(test_start: datetime):
     """Test to_output with different task list IDs."""
-    for task_list_id in TaskListIds:
-        event = CreateTaskEventGrid(title="Test", task_list_id=task_list_id)
+    for task_list_id in TaskLists:
+        event = CreateTaskEventGrid(title="Test", tasklist=task_list_id)
         result = event.to_output()
 
         _assert_base_fields(result, test_start)
@@ -77,7 +78,7 @@ def test_to_output_data_is_model_dump(test_start: datetime):
         title="Test Task",
         notes="Test notes",
         due=datetime(2026, 1, 20, 10, 30),
-        task_list_id=TaskListIds.Mangas,
+        tasklist=TaskLists.Mangas,
     )
     result = event.to_output()
     expected_data = event.model_dump(mode="json")
@@ -92,7 +93,7 @@ def test_event_is_json_serializable(test_start: datetime):
         title="Test Task",
         notes="Test notes",
         due=datetime(2026, 1, 20, 10, 30),
-        task_list_id=TaskListIds.Mangas,
+        tasklist=TaskLists.Mangas,
     )
     result = event.to_output()
 
@@ -103,14 +104,14 @@ def test_event_is_json_serializable(test_start: datetime):
     # Verify we can deserialize it back and fields are correctly serialized
     parsed = json.loads(json_string)
     assert isinstance(parsed["task_list_id"], str)
-    assert parsed["task_list_id"] == TaskListIds.Mangas.value
+    assert parsed["task_list_id"] == to_id(TaskLists.Mangas)
     assert isinstance(parsed["due"], str)
     assert parsed["due"] == "2026-01-20T10:30:00"
 
 
 def test_unique_event_ids():
     """Test that each to_output call generates a unique ID."""
-    event = CreateTaskEventGrid(title="Test Task")
+    event = CreateTaskEventGrid(title="Test Task", tasklist=TaskLists.Default)
     result1 = event.to_output()
     result2 = event.to_output()
 

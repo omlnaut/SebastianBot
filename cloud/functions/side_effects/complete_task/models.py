@@ -1,22 +1,22 @@
 from typing import Self, override
 
-from sebastian.protocols.google_task import TaskListIds
-
 
 from cloud.helper.event_grid import EventGridModel
 
 
+from sebastian.clients.google.task.client.taskslists import to_id
+from sebastian.protocols.google_task.models import TaskLists
 from sebastian.protocols.models import CompleteTask
 
 
 class CompleteTaskEventGrid(EventGridModel):
-    tasklist_id: TaskListIds
+    tasklist: TaskLists
     task_id: str
 
     @classmethod
     @override
     def from_application(cls, app_event: CompleteTask) -> Self:
         return cls(
-            tasklist_id=app_event.tasklist_id,
+            tasklist=app_event.tasklist,
             task_id=app_event.task_id,
         )

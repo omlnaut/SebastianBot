@@ -1,15 +1,13 @@
 from datetime import datetime
 
 from sebastian.clients.google.task.client._models import TaskResponse
-from sebastian.protocols.google_task import TaskListIds
+from sebastian.clients.google.task.client.taskslists import to_id
+from sebastian.protocols.google_task.models import TaskLists
 
 
-def post_create_task(
-    service, tasklist_id: TaskListIds, task_body: dict
-) -> TaskResponse:
-    created = (
-        service.tasks().insert(tasklist=tasklist_id.value, body=task_body).execute()
-    )
+def post_create_task(service, task_list: TaskLists, task_body: dict) -> TaskResponse:
+    task_list_id = to_id(task_list)
+    created = service.tasks().insert(tasklist=task_list_id, body=task_body).execute()
     return TaskResponse(**created)
 
 

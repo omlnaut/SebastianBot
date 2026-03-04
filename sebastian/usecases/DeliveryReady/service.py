@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
 import logging
 
-from sebastian.protocols.google_task.models import TaskListIds
+from sebastian.protocols.google_task.models import TaskLists
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.protocols.gmail import IGmailClient
-from sebastian.shared import Result
 
 from .models import PickupData
 from .parsing import parse_dhl_pickup_email_html
@@ -61,4 +60,4 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
     if pickup.tracking_number:
         notes += f"\nTracking: {pickup.tracking_number}"
 
-    return CreateTask(title=title, notes=notes, task_list_id=TaskListIds.Default)
+    return CreateTask(title=title, notes=notes, tasklist=TaskLists.Default)
