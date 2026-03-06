@@ -1,7 +1,7 @@
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Self, TypeVar
+from typing import Self, TypeVar
 
 import azure.functions as func
 from azure.eventgrid import EventGridEvent

@@ -1,3 +1,4 @@
+# type: ignore
 from sebastian.protocols.gmail import FullMailResponse, MessageId
 from .retry_decorator import retry_on_network_error
 

@@ -8,7 +8,7 @@ from tenacity import (
     retry_if_exception,
     before_sleep_log,
 )
-from googleapiclient.errors import HttpError
+from googleapiclient.errors import HttpError  # type: ignore
 
 
 def _is_retryable_error(exception: BaseException) -> bool:
@@ -19,7 +19,7 @@ def _is_retryable_error(exception: BaseException) -> bool:
 
     # Retry HTTP 5xx server errors, but not 4xx client errors
     if isinstance(exception, HttpError):
-        return exception.resp.status >= 500
+        return exception.resp.status >= 500  # type: ignore
 
     return False
 

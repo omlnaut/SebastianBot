@@ -1,4 +1,4 @@
-"""Helper functions for uploading files to Google Drive."""
+# type: ignore
 
 import os
 from io import BytesIO

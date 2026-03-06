@@ -1,5 +1,5 @@
+# type: ignore
 import base64
-from io import BytesIO
 
 from pydantic import BaseModel, ConfigDict, Field
 

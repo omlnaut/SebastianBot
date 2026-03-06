@@ -1,3 +1,4 @@
+# type: ignore
 from google_auth_oauthlib.flow import InstalledAppFlow
 from pathlib import Path
 

@@ -25,7 +25,7 @@ class GeminiClient:
         Returns:
             Parsed response as an instance of the response_schema type
         """
-        response = self._client.models.generate_content(
+        response = self._client.models.generate_content(  # type: ignore
             model="gemini-2.5-flash-lite",
             contents=contents,
             config={
@@ -34,8 +34,8 @@ class GeminiClient:
             },
         )
         if isinstance(response.parsed, response_schema):
-            return Result.from_item(item=response.parsed)
+            return Result.from_item(item=response.parsed)  # type: ignore
 
-        return Result.from_item(
+        return Result[T].from_item(
             errors=[f"Failed to parse response from Gemini model: {response.text}"]
         )

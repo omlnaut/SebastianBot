@@ -29,7 +29,7 @@ def check_winsim_invoices(
         logging.info("Checking for recent WinSim invoices")
         result = service.process_recent_invoices(hours_back=24)
 
-        messages = []
+        messages: list[SendTelegramMessageEventGrid] = []
         if result.item:
             logging.info(
                 f"Successfully uploaded {len(result.item)} WinSim invoice(s) to Google Drive"

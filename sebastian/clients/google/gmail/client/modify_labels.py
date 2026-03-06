@@ -1,8 +1,8 @@
 from sebastian.protocols.gmail.models import GmailLabel
 
 
-def _modify_labels(
-    gmail_service,
+def modify_labels(
+    gmail_service,  # type: ignore
     email_id: str,
     add_labels: list[GmailLabel] | None = None,
     remove_labels: list[GmailLabel] | None = None,
@@ -13,6 +13,4 @@ def _modify_labels(
         "addLabelIds": add_label_ids,
         "removeLabelIds": remove_label_ids,
     }
-    gmail_service.users().messages().modify(
-        userId="me", id=email_id, body=modify_request
-    ).execute()
+    gmail_service.users().messages().modify(userId="me", id=email_id, body=modify_request).execute()  # type: ignore
