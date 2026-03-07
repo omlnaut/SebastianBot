@@ -44,5 +44,4 @@ source = ["sebastian/shared", "sebastian/usecases"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
-include = ["**/*.py"]
-ignore = ["**/*.ipynb*"]
+reportPrivateUsage = false

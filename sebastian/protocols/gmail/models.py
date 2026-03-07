@@ -1,7 +1,6 @@
 import base64
 from dataclasses import dataclass
 from enum import Enum
-from io import BytesIO
 
 from pydantic import BaseModel
 
@@ -22,7 +21,6 @@ class PdfAttachment:
 
 class MessageId(BaseModel):
     id: str
-    thread_id: str
 
     @staticmethod
     def from_response(response: dict) -> "MessageId":
