@@ -1,7 +1,7 @@
 from google.oauth2.credentials import Credentials
 
-from sebastian.clients.google.gmail.client.modify_labels import modify_labels
-from sebastian.clients.google.gmail.client.service_wrapper import GmailServiceWrapper
+from .modify_labels import modify_labels
+from .service_wrapper import GmailServiceWrapper
 from sebastian.domain.gmail import FullMailResponse, GmailLabel, PdfAttachment
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
