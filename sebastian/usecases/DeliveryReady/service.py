@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta, timezone
 import logging
 
+
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
-from sebastian.protocols.gmail import IGmailClient
 
 from .models import PickupData
 from .parsing import parse_dhl_pickup_email_html
+from .protocols import GmailClient
 
 
 class DeliveryReadyService:
-    def __init__(self, gmail_client: IGmailClient):
+    def __init__(self, gmail_client: GmailClient):
         self.gmail_client = gmail_client
 
     def get_recent_dhl_pickups(self, hours_back: int = 720) -> AllActor:
@@ -40,7 +41,7 @@ class DeliveryReadyService:
 
         for mail in mails:
             try:
-                pickup_data = parse_dhl_pickup_email_html(mail.payload)
+                pickup_data = parse_dhl_pickup_email_html(mail.content)
                 pickups.append(_map_to_create_task(pickup_data))
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))

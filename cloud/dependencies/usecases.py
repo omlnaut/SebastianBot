@@ -1,10 +1,9 @@
 from cloud.functions.side_effects.shared import UseCaseHandler
 from sebastian.protocols.gemini import IGeminiClient
-from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
+from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMailHandler
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
@@ -15,6 +14,10 @@ from sebastian.usecases.side_effects import (
     create_task,
     send_telegram_message,
 )
+import sebastian.usecases.DeliveryReady as DeliveryReady
+import sebastian.usecases.WinSim as WinSim
+import sebastian.usecases.ReturnTracker as ReturnTracker
+import sebastian.usecases.AddLabelToMail as AddLabelToMail
 
 
 from .clients import (
@@ -49,7 +52,7 @@ def resolve_mangaupdate_service(
 
 
 def resolve_delivery_ready_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: DeliveryReady.GmailClient | None = None,
 ) -> DeliveryReadyService:
     return DeliveryReadyService(
         gmail_client=gmail_client or resolve_gmail_client(),
@@ -57,7 +60,7 @@ def resolve_delivery_ready_service(
 
 
 def resolve_winsim_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: WinSim.GmailClient | None = None,
     drive_client: IGoogleDriveClient | None = None,
 ) -> WinSimService:
     winsim_folder_id = "1VGX5Wt8D3huZm3vVemjI3C6zz6W38PJr"
@@ -69,7 +72,7 @@ def resolve_winsim_service(
 
 
 def resolve_return_tracker_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: ReturnTracker.GmailClient | None = None,
     gemini_client: IGeminiClient | None = None,
 ) -> ReturnTrackerService:
     return ReturnTrackerService(
@@ -79,9 +82,9 @@ def resolve_return_tracker_service(
 
 
 def resolve_add_label_to_mail_service(
-    gmail_client: IGmailClient | None = None,
-) -> AddLabelToMail:
-    return AddLabelToMail(gmail_client=gmail_client or resolve_gmail_client())
+    gmail_client: AddLabelToMail.GmailClient | None = None,
+) -> AddLabelToMailHandler:
+    return AddLabelToMailHandler(gmail_client=gmail_client or resolve_gmail_client())
 
 
 def resolve_complete_task(

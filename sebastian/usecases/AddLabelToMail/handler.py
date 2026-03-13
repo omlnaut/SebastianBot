@@ -1,11 +1,13 @@
 import logging
 
-from sebastian.protocols.gmail import IGmailClient, GmailLabel
+from sebastian.domain.gmail import GmailLabel
 from sebastian.shared import Result
+
+from .protocols import GmailClient
 
 
 class Handler:
-    def __init__(self, gmail_client: IGmailClient):
+    def __init__(self, gmail_client: GmailClient):
         self.gmail_client = gmail_client
 
     def add_label(self, email_id: str, label: GmailLabel) -> Result[str]:

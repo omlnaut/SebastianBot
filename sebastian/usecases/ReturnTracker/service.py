@@ -2,16 +2,16 @@ from datetime import datetime, timedelta, timezone
 
 from sebastian.domain.task import TaskLists
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
-from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
 
 from .models import ReturnData
 from .parsing import parse_return_email_html
+from .protocols import GmailClient
 
 
 class ReturnTrackerService:
-    def __init__(self, gmail_client: IGmailClient, gemini_client: IGeminiClient):
+    def __init__(self, gmail_client: GmailClient, gemini_client: IGeminiClient):
         self.gmail_client = gmail_client
         self.gemini_client = gemini_client
 
