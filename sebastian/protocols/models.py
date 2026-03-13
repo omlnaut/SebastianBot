@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from sebastian.domain.gmail import GmailLabel
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.gmail import GmailLabel
 
 
 class CreateTask(BaseModel):

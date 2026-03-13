@@ -1,12 +1,11 @@
 from datetime import datetime
 
-from sebastian.protocols.gmail import GmailLabel
-from sebastian.protocols.gmail.IClient import IGmailClient
-from sebastian.protocols.gmail.models import FullMailResponse
+from sebastian.domain.gmail import FullMailResponse, GmailLabel
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.clients.google.gmail.client import GmailClient
 
 
-def test_modify_labels(gmail_client: IGmailClient):
+def test_modify_labels(gmail_client: GmailClient):
     """Test adding and removing labels from an email"""
 
     def fetch_mail() -> FullMailResponse:

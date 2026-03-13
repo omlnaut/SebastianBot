@@ -43,7 +43,7 @@ class ReturnTrackerService:
 
         for mail in mails:
             try:
-                result = parse_return_email_html(mail.payload, self.gemini_client)
+                result = parse_return_email_html(mail.content, self.gemini_client)
                 if result.item:
                     tasks.append(_map_to_create_task(result.item))
                 if result.errors:

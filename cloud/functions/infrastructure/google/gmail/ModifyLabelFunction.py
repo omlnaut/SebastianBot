@@ -9,7 +9,7 @@ from cloud.functions.side_effects.send_message.models import (
 from cloud.functions.side_effects.shared import send_eventgrid_events
 from cloud.helper import parse_payload
 from function_app import app
-from sebastian.protocols.gmail import GmailLabel
+from sebastian.domain.gmail import GmailLabel
 
 from .models import ModifyMailLabelEventGrid
 

@@ -3,7 +3,7 @@ from typing import Self, override
 from pydantic import BaseModel, Field
 
 from cloud.helper.event_grid import EventGridModel
-from sebastian.protocols.gmail import GmailLabel
+from sebastian.domain.gmail import GmailLabel
 from sebastian.protocols.models import ModifyMailLabel
 
 

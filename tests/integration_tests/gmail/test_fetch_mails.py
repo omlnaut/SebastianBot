@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
-from sebastian.protocols.gmail.IClient import IGmailClient
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.clients.google.gmail.client import GmailClient
 
 
-def test_fetch_mails(gmail_client: IGmailClient):
+def test_fetch_mails(gmail_client: GmailClient):
     date_24h_ago = datetime.now() - timedelta(hours=24)
     query = GmailQueryBuilder().after_date(date_24h_ago).build()
 
@@ -14,7 +14,7 @@ def test_fetch_mails(gmail_client: IGmailClient):
     assert len(emails) > 0
 
 
-def test_query_builder_on_date(gmail_client: IGmailClient):
+def test_query_builder_on_date(gmail_client: GmailClient):
     query = (
         GmailQueryBuilder()
         .from_email("azure-noreply@microsoft.com")
@@ -26,7 +26,7 @@ def test_query_builder_on_date(gmail_client: IGmailClient):
     assert len(mails) >= 1, "No emails found on the specific date"
 
 
-def test_query_builder_exclude_me(gmail_client: IGmailClient):
+def test_query_builder_exclude_me(gmail_client: GmailClient):
     base_query = (
         GmailQueryBuilder()
         .subject("Take a look!", exact=False)
