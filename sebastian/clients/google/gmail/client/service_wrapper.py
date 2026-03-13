@@ -5,10 +5,10 @@ from typing import Self
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from sebastian.clients.google.gmail.client.retry_decorator import retry_on_network_error
-from sebastian.domain.gmail import FullMailResponse
+from sebastian.domain.gmail import FullMailResponse, PdfMessagePart
 
 
 class MessageId(BaseModel):
@@ -90,6 +90,17 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
 
         return ""
 
+    def _extract_pdf_parts(payload: dict) -> list[PdfMessagePart]:
+        """Extract PDF attachment parts from a message"""
+        if "parts" not in payload:
+            return []
+
+        parts = payload["parts"]
+        pdf_parts = [
+            part for part in parts if part.get("mimeType") == "application/pdf"
+        ]
+        return [PdfMessagePart.model_validate(part) for part in pdf_parts]
+
     return FullMailResponse(
         id=response["id"],
         threadId=response["threadId"],
@@ -97,7 +108,7 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
         snippet=response["snippet"],
         historyId=response["historyId"],
         internalDate=response["internalDate"],
-        raw_payload=response["payload"],
         sizeEstimate=response["sizeEstimate"],
         content=_extract_email_body(response["payload"]),
+        pdf_parts=_extract_pdf_parts(response["payload"]),
     )

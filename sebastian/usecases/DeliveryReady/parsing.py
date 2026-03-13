@@ -38,7 +38,7 @@ def parse_dhl_pickup_email_html(html: str) -> PickupData:
     )
 
 
-def _find_due_date(text_content):
+def _find_due_date(text_content: str) -> str | None:
     due_date_match = re.search(
         r"ABHOLUNG BIS ZUM\s*\n\s*([^,\n]+),\s*(\d+\.\s*([^\n]+))",
         text_content,
@@ -73,7 +73,7 @@ def _find_due_date(text_content):
     return due_date
 
 
-def _find_tracking_number(text_content):
+def _find_tracking_number(text_content: str) -> str | None:
     tracking_match = re.search(r"Tracking-Nummer lautet:\s*([A-Z0-9]+)", text_content)
     tracking_number = str(tracking_match.group(1)) if tracking_match else None
     return tracking_number

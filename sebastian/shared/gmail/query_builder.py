@@ -7,7 +7,7 @@ class GmailQueryBuilder:
     """Helper class to build Gmail search queries"""
 
     def __init__(self):
-        self._query_parts = []
+        self._query_parts: list[str] = []
 
     def has_attachment(self, filetype: str | None = None) -> "GmailQueryBuilder":
         """Add has:attachment filter, optionally filtering by file type"""
