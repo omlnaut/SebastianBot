@@ -28,7 +28,7 @@ class TaskServiceWrapper:
     def set_task_to_complete(self, tasklist_id: str, task_id: str) -> TaskResponse:
         updated = (
             self._service.tasks()
-            .update(tasklist=tasklist_id, task=task_id, body={"status": "completed"})
+            .patch(tasklist=tasklist_id, task=task_id, body={"status": "completed"})
             .execute()
         )
         return TaskResponse(**updated)
