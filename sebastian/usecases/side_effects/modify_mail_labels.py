@@ -25,12 +25,12 @@ class Request:
 
 class Handler(UseCaseHandler[Request]):
     def __init__(self, gmail_client: GmailClient):
-        self.gmail_client = gmail_client
+        self._gmail_client = gmail_client
 
     def handle(self, request: Request) -> AllActor:
         _log_operation(request.email_id, request.add_labels, request.remove_labels)
 
-        self.gmail_client.modify_labels(
+        self._gmail_client.modify_labels(
             request.email_id,
             add_labels=request.add_labels,
             remove_labels=request.remove_labels,
