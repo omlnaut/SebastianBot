@@ -29,7 +29,8 @@
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
 				"python.pythonPath": "/usr/local/bin/python",
 				"python.testing.autoTestDiscoverOnSaveEnabled": false,
-				"jupyter.useDefaultConfigForJupyter": true
+				"jupyter.useDefaultConfigForJupyter": true,
+				"python.analysis.diagnosticMode": "workspace"
 			}
 		}
 	},

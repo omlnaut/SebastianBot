@@ -19,8 +19,8 @@ class SendMessage(BaseModel):
 
 class ModifyMailLabel(BaseModel):
     email_id: str = Field(min_length=1)
-    add_labels: list[GmailLabel] | None = None
-    remove_labels: list[GmailLabel] | None = None
+    add_labels: list[GmailLabel] = Field(default_factory=list[GmailLabel])
+    remove_labels: list[GmailLabel] = Field(default_factory=list[GmailLabel])
 
 
 class CompleteTask(BaseModel):

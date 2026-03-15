@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import AllActor, SendMessage
+from sebastian.protocols.models import AllActor
 
 
 @dataclass

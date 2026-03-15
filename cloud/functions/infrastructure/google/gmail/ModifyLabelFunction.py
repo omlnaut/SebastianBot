@@ -2,14 +2,11 @@ import logging
 
 import azure.functions as func
 
-from cloud.dependencies.usecases import resolve_add_label_to_mail_service
-from cloud.functions.side_effects.send_message.models import (
-    SendTelegramMessageEventGrid,
-)
-from cloud.functions.side_effects.shared import send_eventgrid_events
-from cloud.helper import parse_payload
+from cloud.dependencies.usecases import resolve_modify_mail_label
+from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
 from function_app import app
 from sebastian.domain.gmail import GmailLabel
+from sebastian.usecases.side_effects import modify_mail_labels
 
 from .models import ModifyMailLabelEventGrid
 
@@ -33,26 +30,11 @@ def test_modify_mail_label(
 def modify_mail_label(
     azeventgrid: func.EventGridEvent,
 ):
-    try:
-        logging.info("EventGrid modify_mail_label triggered")
-        event = parse_payload(azeventgrid, ModifyMailLabelEventGrid)
-
-        logging.info(
-            f"Modifying labels for email: {event.email_id}. Adding: {event.add_labels}, Removing: {event.remove_labels}"
-        )
-
-        service = resolve_add_label_to_mail_service()
-        _ = service.modify_labels(
+    def _create_request(event: ModifyMailLabelEventGrid) -> modify_mail_labels.Request:
+        return modify_mail_labels.Request(
             email_id=event.email_id,
             add_labels=event.add_labels,
             remove_labels=event.remove_labels,
         )
 
-        logging.info(
-            f"Successfully modified labels for email: {event.email_id}. Added: {event.add_labels}, Removed: {event.remove_labels}"
-        )
-
-    except Exception as e:
-        error_msg = f"Error in modify_mail_label: {str(e)}"
-        logging.error(error_msg)
-        send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
+    perform_usecase(_create_request, resolve_modify_mail_label, azeventgrid)
