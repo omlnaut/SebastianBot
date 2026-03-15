@@ -41,6 +41,16 @@ class MangaUpdateClient:
 
         return {"Authorization": f"Bearer {self.session_token}"}
 
+    def _build_payload(self, manga: MangaUpdateManga) -> dict[str, str | bool | int]:
+        """Build payload for MangaUpdate API request"""
+        return {
+            "search": str(manga.series_id),
+            "search_type": "series",
+            "asc": "desc",  # Get newest first
+            "group_id": manga.publisher.value,
+            "include_metadata": False,
+        }
+
     def get_latest_chapter(self, manga: MangaUpdateManga) -> MangaChapter:
         """Get the latest chapter for a manga from a specific publisher"""
         releases_endpoint = f"{self.api_url}/releases/search"

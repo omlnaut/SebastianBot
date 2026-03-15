@@ -1,22 +1,24 @@
+# type: ignore
 import azure.functions as func
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 from cloud.functions.DeliveryReadyFunction import check_delivery_ready
 from cloud.functions.infrastructure.AllActor.function import all_actor_handler
-from cloud.functions.infrastructure.google.task.function import (
+from cloud.functions.side_effects.complete_task.function import complete_task
+from cloud.functions.side_effects.create_task.function import (
     create_task,
     test_create_task,
 )
-from cloud.functions.infrastructure.telegram.function import (
+from cloud.functions.side_effects.send_message.function import (
     send_telegram_message,
     test_send_telegram_message,
 )
+
 from cloud.functions.infrastructure.google.gmail.ModifyLabelFunction import (
     modify_mail_label,
     test_modify_mail_label,
 )
-from cloud.functions.infrastructure.AllHandler.function import all_handler
 from cloud.functions.MangaUpdateFunction import check_manga_update
 from cloud.functions.MietplanFunction import check_mietplan
 from cloud.functions.WinSimFunction import check_winsim_invoices

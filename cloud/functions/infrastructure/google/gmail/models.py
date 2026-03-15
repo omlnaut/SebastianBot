@@ -1,11 +1,10 @@
-import uuid
-from datetime import datetime
+from typing import Self, override
 
-import azure.functions as func
 from pydantic import BaseModel, Field
 
-from cloud.helper.EventGridMixin import EventGridMixin
-from sebastian.protocols.gmail import GmailLabel
+from cloud.helper.event_grid import EventGridModel
+from sebastian.domain.gmail import GmailLabel
+from sebastian.protocols.models import ModifyMailLabel
 
 
 class ArchiveEmailEventGrid(BaseModel):
@@ -22,7 +21,7 @@ class PutEmailInToReadEventGrid(BaseModel):
     )
 
 
-class ModifyMailLabelEventGrid(EventGridMixin, BaseModel):
+class ModifyMailLabelEventGrid(EventGridModel[ModifyMailLabel]):
     email_id: str = Field(
         ...,
         description="Gmail message ID to modify",
@@ -35,3 +34,12 @@ class ModifyMailLabelEventGrid(EventGridMixin, BaseModel):
         default=None,
         description="List of GmailLabels to remove",
     )
+
+    @classmethod
+    @override
+    def from_application(cls, app_event: ModifyMailLabel) -> Self:
+        return cls(
+            email_id=app_event.email_id,
+            add_labels=app_event.add_labels,
+            remove_labels=app_event.remove_labels,
+        )

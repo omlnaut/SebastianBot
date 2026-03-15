@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
-from sebastian.protocols.gmail.IClient import IGmailClient
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.clients.google.gmail.client import GmailClient
 
 
-def test_download_pdf_attachments(gmail_client: IGmailClient):
+def test_download_pdf_attachments(gmail_client: GmailClient):
     today_last_year = datetime.now() - timedelta(days=365)
     query = (
         GmailQueryBuilder()

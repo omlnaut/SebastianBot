@@ -1,9 +1,9 @@
 from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build  # type: ignore
 
 from sebastian.protocols.google_drive import UploadFileRequest, UploadFileResponse
 
-from .upload_file import upload_file_with_path
+from .upload_file import upload_file_with_path  # type: ignore
 
 
 class GoogleDriveClient:
@@ -16,9 +16,7 @@ class GoogleDriveClient:
             credentials: Google OAuth2 credentials for authentication
         """
         self._credentials = credentials
-        self._service = build(
-            "drive", "v3", credentials=credentials, cache_discovery=False
-        )
+        self._service = build("drive", "v3", credentials=credentials, cache_discovery=False)  # type: ignore
 
     def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
         """Upload a file to Google Drive.
@@ -33,7 +31,7 @@ class GoogleDriveClient:
             UploadFileResponse containing the uploaded file's ID
         """
         file_id = upload_file_with_path(
-            service=self._service,
+            service=self._service,  # type: ignore
             filename_with_path=request.filename,
             content=request.content,
             base_folder_id=request.folder_id,

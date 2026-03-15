@@ -1,14 +1,11 @@
 from bs4 import BeautifulSoup
 
 from sebastian.protocols.gemini import IGeminiClient
-from sebastian.shared.Result import Result
 
 from .models import ReturnData
 
 
-def parse_return_email_html(
-    html: str, gemini_client: IGeminiClient
-) -> Result[ReturnData]:
+def parse_return_email_html(html: str, gemini_client: IGeminiClient) -> ReturnData:
     """Parse return email HTML using Gemini to extract structured data.
 
     Args:
@@ -16,7 +13,7 @@ def parse_return_email_html(
         gemini_client: Gemini client for AI-powered parsing
 
     Returns:
-        Result containing parsed ReturnData or error messages
+        Parsed ReturnData
     """
     # Extract visible text from HTML
     soup = BeautifulSoup(html, "html.parser")

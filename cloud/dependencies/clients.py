@@ -1,11 +1,6 @@
 from functools import lru_cache
 
 from cloud.functions.infrastructure.google.helper import load_google_credentials
-from cloud.functions.infrastructure.telegram.config import (
-    TelegramChat,
-    TelegramConfig as CloudTelegramConfig,
-    TelegramToken,
-)
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gemini.client import GeminiClient
@@ -33,11 +28,7 @@ def resolve_mangaupdate_client() -> MangaUpdateClient:
 
 @lru_cache()
 def resolve_telegram_client() -> TelegramClient:
-    cloud_config = get_secret(SecretKeys.TelegramSebastianToken, CloudTelegramConfig)
-    config = TelegramConfig(
-        token=cloud_config.tokens[TelegramToken.Sebastian].token,
-        chat_id=cloud_config.chats[TelegramChat.MainChat].id,
-    )
+    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
     return TelegramClient(config)
 
 

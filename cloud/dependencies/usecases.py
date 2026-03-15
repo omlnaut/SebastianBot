@@ -1,18 +1,23 @@
-from sebastian.infrastructure.google.task.service import TaskService
+from cloud.functions.side_effects.shared import UseCaseHandler
 from sebastian.protocols.gemini import IGeminiClient
-from sebastian.protocols.gmail import IGmailClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
-from sebastian.protocols.google_task import IGoogleTaskClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMail
-from sebastian.usecases.AllHandler.MailToAllHandler.service import MailToAllHandler
-from sebastian.usecases.AllHandler.service import AllHandlerService
+from sebastian.usecases.AddLabelToMail.handler import Handler as AddLabelToMailHandler
 from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
+from sebastian.usecases.side_effects import (
+    complete_task,
+    create_task,
+    send_telegram_message,
+)
+import sebastian.usecases.DeliveryReady as DeliveryReady
+import sebastian.usecases.WinSim as WinSim
+import sebastian.usecases.ReturnTracker as ReturnTracker
+import sebastian.usecases.AddLabelToMail as AddLabelToMail
 
 
 from .clients import (
@@ -22,6 +27,7 @@ from .clients import (
     resolve_google_task_client,
     resolve_mangaupdate_client,
     resolve_mietplan_client,
+    resolve_telegram_client,
 )
 
 
@@ -46,23 +52,15 @@ def resolve_mangaupdate_service(
 
 
 def resolve_delivery_ready_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: DeliveryReady.GmailClient | None = None,
 ) -> DeliveryReadyService:
     return DeliveryReadyService(
         gmail_client=gmail_client or resolve_gmail_client(),
     )
 
 
-def resolve_google_task_service(
-    task_client: IGoogleTaskClient | None = None,
-) -> TaskService:
-    return TaskService(
-        client=task_client or resolve_google_task_client(),
-    )
-
-
 def resolve_winsim_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: WinSim.GmailClient | None = None,
     drive_client: IGoogleDriveClient | None = None,
 ) -> WinSimService:
     winsim_folder_id = "1VGX5Wt8D3huZm3vVemjI3C6zz6W38PJr"
@@ -74,7 +72,7 @@ def resolve_winsim_service(
 
 
 def resolve_return_tracker_service(
-    gmail_client: IGmailClient | None = None,
+    gmail_client: ReturnTracker.GmailClient | None = None,
     gemini_client: IGeminiClient | None = None,
 ) -> ReturnTrackerService:
     return ReturnTrackerService(
@@ -83,27 +81,31 @@ def resolve_return_tracker_service(
     )
 
 
-def resolve_allhandler_service(
-    gmail_client: IGmailClient | None = None,
-    gemini_client: IGeminiClient | None = None,
-) -> AllHandlerService:
-    return AllHandlerService(
-        gmail=gmail_client or resolve_gmail_client(),
-        gemini=gemini_client or resolve_gemini_client(),
-    )
-
-
-def resolve_allhandler_mail_service(
-    gmail_client: IGmailClient | None = None,
-    allhandler_service: AllHandlerService | None = None,
-) -> "MailToAllHandler":
-    return MailToAllHandler(
-        mail_client=gmail_client or resolve_gmail_client(),
-        all_handler_service=allhandler_service or resolve_allhandler_service(),
-    )
-
-
 def resolve_add_label_to_mail_service(
-    gmail_client: IGmailClient | None = None,
-) -> AddLabelToMail:
-    return AddLabelToMail(gmail_client=gmail_client or resolve_gmail_client())
+    gmail_client: AddLabelToMail.GmailClient | None = None,
+) -> AddLabelToMailHandler:
+    return AddLabelToMailHandler(gmail_client=gmail_client or resolve_gmail_client())
+
+
+def resolve_complete_task(
+    task_client: complete_task.TaskClient | None = None,
+) -> UseCaseHandler[complete_task.Request]:
+    return complete_task.Handler(
+        task_client=task_client or resolve_google_task_client(),
+    )
+
+
+def resolve_create_task(
+    task_client: create_task.TaskClient | None = None,
+) -> UseCaseHandler[create_task.Request]:
+    return create_task.Handler(
+        task_client=task_client or resolve_google_task_client(),
+    )
+
+
+def resolve_send_telegram_message(
+    telegram_client: send_telegram_message.TelegramClient | None = None,
+) -> UseCaseHandler[send_telegram_message.Request]:
+    return send_telegram_message.Handler(
+        telegram_client=telegram_client or resolve_telegram_client(),
+    )

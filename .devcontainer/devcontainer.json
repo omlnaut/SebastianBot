@@ -8,6 +8,10 @@
 		"ghcr.io/devcontainers/features/azure-cli:1": {},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
 	},
+	"runArgs": [
+		"--env-file",
+		"${localWorkspaceFolder}/.env"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -24,6 +28,7 @@
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
 				"python.pythonPath": "/usr/local/bin/python",
+				"python.testing.autoTestDiscoverOnSaveEnabled": false,
 				"jupyter.useDefaultConfigForJupyter": true
 			}
 		}

@@ -11,5 +11,10 @@
         ".pytest_cache": true,
         "**/__azurite_db*.json": true,
         "**/__pycache__/": true
-    }
+    },
+    "chat.includeReferencedInstructions": true,
+    "markdown.preview.fontSize": 14,
+    "notebook.cellFailureDiagnostics": true,
+    "notebook.defaultFormatter": "ms-python.black-formatter",
+    "notebook.formatOnSave.enabled": true,
 }

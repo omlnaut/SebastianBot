@@ -29,20 +29,19 @@ def _get_files(session: requests.Session, folder_id: str) -> list[MietplanFile]:
     response = session.get(url)
     response.raise_for_status()
 
-    files = []
-    for file_json in response.json().values():
+    def json_to_mietplan_file(file_json: dict[str, str]) -> MietplanFile:
         date_format = "%d.%m.%Y"
         creation_date = datetime.strptime(file_json["filecrea"], date_format)
         download_path = html.unescape(file_json["filepath"])
         raw_filename = download_path.split("/")[-1]
         filename = html.unescape(raw_filename)
-        files.append(
-            MietplanFile(
-                creation_date=creation_date,
-                download_path=download_path,
-                filename=filename,
-            )
+        return MietplanFile(
+            creation_date=creation_date,
+            download_path=download_path,
+            filename=filename,
         )
+
+    files = [json_to_mietplan_file(file_json) for file_json in response.json().values()]
     return files
 
 

@@ -1,1 +1,1 @@
-from .client import MietplanClient
+from .client import MietplanClient as MietplanClient

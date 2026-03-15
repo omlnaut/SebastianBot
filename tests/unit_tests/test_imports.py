@@ -17,14 +17,15 @@ def test_sebastian_should_not_import_cloud():
     )
 
 
-def test_protocols_should_only_import_from_protocols():
+def test_protocols_should_only_import_from_protocols_or_domain():
     """Ensure protocol files only import from within protocols module or standard/external libraries."""
     (
-        archrule("protocols should only import from protocols")
+        archrule("protocols should only import from protocols or domain")
         .match("sebastian.protocols.*")
         .should_not_import("sebastian.*")
         .may_import("sebastian.protocols.*")
         .may_import("sebastian.shared.*")
+        .may_import("sebastian.domain.*")
         .check("sebastian")
     )
 
