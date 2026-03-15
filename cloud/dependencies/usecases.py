@@ -1,4 +1,3 @@
-from cloud.functions.side_effects.shared import UseCaseHandler
 from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
@@ -17,6 +16,7 @@ from sebastian.usecases.side_effects import (
 import sebastian.usecases.DeliveryReady as DeliveryReady
 import sebastian.usecases.WinSim as WinSim
 import sebastian.usecases.ReturnTracker as ReturnTracker
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 from .clients import (

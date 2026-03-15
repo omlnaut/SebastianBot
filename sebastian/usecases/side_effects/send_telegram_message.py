@@ -3,6 +3,7 @@ import logging
 from typing import Protocol
 
 from sebastian.protocols.models import AllActor
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 @dataclass
@@ -16,7 +17,7 @@ class TelegramClient(Protocol):
         ...
 
 
-class Handler:
+class Handler(UseCaseHandler[Request]):
     def __init__(self, telegram_client: TelegramClient):
         self._client = telegram_client
 

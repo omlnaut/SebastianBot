@@ -1,10 +1,10 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 import logging
 from typing import Protocol
 
 from sebastian.domain.gmail import GmailLabel
 from sebastian.protocols.models import AllActor
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 class GmailClient(Protocol):
@@ -21,11 +21,6 @@ class Request:
     email_id: str
     add_labels: list[GmailLabel] = field(default_factory=list[GmailLabel])
     remove_labels: list[GmailLabel] = field(default_factory=list[GmailLabel])
-
-
-class UseCaseHandler[TRequest](ABC):
-    @abstractmethod
-    def handle(self, request: TRequest) -> AllActor: ...
 
 
 class Handler(UseCaseHandler[Request]):
