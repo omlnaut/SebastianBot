@@ -1,3 +1,4 @@
+# pyright: basic
 import re
 from datetime import datetime
 

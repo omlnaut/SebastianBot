@@ -43,5 +43,6 @@ pythonpath = ["."]
 source = ["sebastian/shared", "sebastian/usecases"]
 
 [tool.pyright]
-typeCheckingMode = "basic"
+typeCheckingMode = "strict"
 reportPrivateUsage = false
+reportMissingTypeStubs = false

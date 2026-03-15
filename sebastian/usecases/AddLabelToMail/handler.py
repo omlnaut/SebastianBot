@@ -39,24 +39,10 @@ class Handler:
         Returns:
             The email_id on success
         """
+        add_labels = add_labels or []
+        remove_labels = remove_labels or []
         try:
-            # Skip if no operations requested
-            if not add_labels and not remove_labels:
-                logging.info(f"No label modifications requested for email {email_id}")
-                return email_id
-
-            # Build log message
-            operations = []
-            if add_labels:
-                operations.append(
-                    f"adding {', '.join(label.name for label in add_labels)}"
-                )
-            if remove_labels:
-                operations.append(
-                    f"removing {', '.join(label.name for label in remove_labels)}"
-                )
-            log_msg = f"Modifying labels for email {email_id}: {'; '.join(operations)}"
-            logging.info(log_msg)
+            log_operation(email_id, add_labels, remove_labels)
 
             self.gmail_client.modify_labels(
                 email_id, add_labels=add_labels, remove_labels=remove_labels
@@ -68,3 +54,19 @@ class Handler:
             error_msg = f"Failed to modify labels for email {email_id}: {str(e)}"
             logging.error(error_msg)
             raise
+
+
+def log_operation(
+    email_id: str,
+    add_labels: list[GmailLabel] | None,
+    remove_labels: list[GmailLabel] | None,
+):
+    operations: list[str] = []
+    if add_labels:
+        operations.append(f"adding {', '.join(label.name for label in add_labels)}")
+    if remove_labels:
+        operations.append(
+            f"removing {', '.join(label.name for label in remove_labels)}"
+        )
+    log_msg = f"Modifying labels for email {email_id}: {'; '.join(operations)}"
+    logging.info(log_msg)

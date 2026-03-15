@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from sebastian.domain.gmail import PdfAttachment
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 
@@ -35,7 +36,7 @@ class WinSimService:
 
         return uploaded_file_ids
 
-    def _try_upload_files(self, pdfs):
+    def _try_upload_files(self, pdfs: list[PdfAttachment]):
         uploaded_file_ids: list[str] = []
         errors: list[str] = []
 

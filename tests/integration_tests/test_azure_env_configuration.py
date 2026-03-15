@@ -55,7 +55,7 @@ def test_eventgrid_info_structure(
         """Extract all EventGridModel subclasses and their environment variable names."""
         base_path = Path("/workspaces/SebastianBot/cloud/functions")
         base_name = EventGridModel.__name__
-        env_names = []
+        env_names: list[str] = []
 
         def extract_inherited_classnames(
             node: astroid.nodes.ClassDef, base_name: str

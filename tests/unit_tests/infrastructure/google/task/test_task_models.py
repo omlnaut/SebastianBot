@@ -5,7 +5,6 @@ import pytest
 import azure.functions as func
 
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
-from sebastian.clients.google.task.client.taskslists import to_id
 from sebastian.domain.task import TaskLists
 
 

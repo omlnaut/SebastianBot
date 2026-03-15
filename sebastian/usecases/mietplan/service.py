@@ -30,7 +30,7 @@ class MietplanService:
         try:
             logging.info("Starting to process new mietplan files.")
 
-            newly_uploaded_files = []
+            newly_uploaded_files: list[str] = []
             for file, folder in self._get_all_file_folder_pairs():
                 if not self._is_new_file(file, max_file_age):
                     continue
