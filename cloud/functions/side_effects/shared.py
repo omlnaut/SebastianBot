@@ -4,7 +4,6 @@ import os
 from typing import Any, Callable, Sequence, TypeVar, get_type_hints
 
 from azure.eventgrid import EventGridPublisherClient
-from azure.eventgrid import EventGridPublisherClient
 import azure.functions as func
 from azure.core.credentials import AzureKeyCredential
 

@@ -29,7 +29,9 @@ def azure_function_app_settings() -> dict[str, str]:
     resource_group = os.environ.get("AZURE_RESOURCE_GROUP")
     function_app_name = os.environ.get("AZURE_FUNCTION_APP_NAME")
 
-    assert subscription_id and resource_group and function_app_name is not None
+    assert subscription_id is not None
+    assert resource_group is not None
+    assert function_app_name is not None
 
     # Authenticate using DefaultAzureCredential (supports Azure CLI, Managed Identity, etc.)
     credential = DefaultAzureCredential()

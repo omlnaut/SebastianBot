@@ -12,6 +12,11 @@ def google_task_client() -> GoogleTaskClient:
     return resolve_google_task_client()
 
 
+def test_get_tasklists(google_task_client: GoogleTaskClient):
+    tasklists = google_task_client._fetch_tasklists()
+    assert len(tasklists) > 0
+
+
 def test_google_task_client_integration(google_task_client: GoogleTaskClient):
     title = f"Integration Test Task {datetime.now().isoformat()}"
     notes = "This is a test task created by the integration test."

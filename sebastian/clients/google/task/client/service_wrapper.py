@@ -36,4 +36,4 @@ class TaskServiceWrapper:
     def get_tasklists(self) -> list[TaskList]:
         tasklists_response = self._service.tasklists().list().execute()
         items = tasklists_response.get("items", [])
-        return [TaskList.model_validate_json(item) for item in items]
+        return [TaskList.model_validate(item) for item in items]
