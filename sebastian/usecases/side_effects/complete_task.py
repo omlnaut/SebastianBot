@@ -22,10 +22,5 @@ class Handler:
         self._client = task_client
 
     def handle(self, request: Request) -> AllActor:
-        try:
-            self._client.set_task_to_completed(request.tasklist, request.task_id)
-            return AllActor()
-        except Exception as e:
-            return AllActor(
-                send_messages=[SendMessage(message=f"Error completing task: {str(e)}")]
-            )
+        self._client.set_task_to_completed(request.tasklist, request.task_id)
+        return AllActor()

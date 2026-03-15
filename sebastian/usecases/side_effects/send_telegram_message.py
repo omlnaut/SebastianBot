@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import asyncio
 import logging
 from typing import Protocol
 
@@ -12,7 +11,7 @@ class Request:
 
 
 class TelegramClient(Protocol):
-    async def send_message(self, message: str) -> None:
+    def send_message(self, message: str) -> None:
         """Should send a telegram message"""
         ...
 
@@ -23,7 +22,7 @@ class Handler:
 
     def handle(self, request: Request) -> AllActor:
         logging.info(f"Start to send telegram message: {request.message}")
-        asyncio.run(self._client.send_message(request.message))
+        self._client.send_message(request.message)
         logging.info(f"Finished sending telegram message: {request.message}")
 
         return AllActor()
