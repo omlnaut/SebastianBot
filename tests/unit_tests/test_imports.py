@@ -1,3 +1,4 @@
+# pyright: standard
 """
 Architecture tests to enforce import boundaries and separation of concerns.
 
