@@ -16,16 +16,12 @@ from cloud.helper.event_grid import EventGridInfo, EventGridModel
 
 
 from cloud.helper import parse_payload
-from typing import Protocol, TypeVar
+from typing import TypeVar
 
-from sebastian.protocols.models import AllActor
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 TRequest = TypeVar("TRequest")
-
-
-class UseCaseHandler[TRequest](Protocol):
-    def handle(self, request: TRequest) -> AllActor: ...
 
 
 TEventModel = TypeVar("TEventModel", bound=EventGridModel[Any])

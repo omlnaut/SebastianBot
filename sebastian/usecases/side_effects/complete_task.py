@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import AllActor, SendMessage
+from sebastian.protocols.models import AllActor
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 @dataclass
@@ -17,7 +18,7 @@ class TaskClient(Protocol):
         ...
 
 
-class Handler:
+class Handler(UseCaseHandler[Request]):
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 

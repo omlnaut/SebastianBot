@@ -6,6 +6,7 @@ from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import AllActor
 from sebastian.protocols.models import SendMessage
 from sebastian.shared.dates import get_end_of_day
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 @dataclass
@@ -28,7 +29,7 @@ class TaskClient(Protocol):
         ...
 
 
-class Handler:
+class Handler(UseCaseHandler[Request]):
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 

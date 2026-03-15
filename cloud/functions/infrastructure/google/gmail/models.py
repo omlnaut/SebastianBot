@@ -26,12 +26,12 @@ class ModifyMailLabelEventGrid(EventGridModel[ModifyMailLabel]):
         ...,
         description="Gmail message ID to modify",
     )
-    add_labels: list[GmailLabel] | None = Field(
-        default=None,
+    add_labels: list[GmailLabel] = Field(
+        default_factory=list[GmailLabel],
         description="List of GmailLabels to add (e.g., ['ToRead'])",
     )
-    remove_labels: list[GmailLabel] | None = Field(
-        default=None,
+    remove_labels: list[GmailLabel] = Field(
+        default_factory=list[GmailLabel],
         description="List of GmailLabels to remove",
     )
 
