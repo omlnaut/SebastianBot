@@ -27,24 +27,14 @@ def check_winsim_invoices(
 
         service = resolve_winsim_service()
         logging.info("Checking for recent WinSim invoices")
-        result = service.process_recent_invoices(hours_back=24)
+        uploads = service.process_recent_invoices(hours_back=24)
 
-        messages: list[SendTelegramMessageEventGrid] = []
-        if result.item:
-            logging.info(
-                f"Successfully uploaded {len(result.item)} WinSim invoice(s) to Google Drive"
-            )
-            success_msg = (
-                f"📄 WinSim: Uploaded {len(result.item)} invoice(s) to Google Drive"
-            )
-            messages.append(SendTelegramMessageEventGrid(message=success_msg))
+        logging.info(
+            f"Successfully uploaded {len(uploads)} WinSim invoice(s) to Google Drive"
+        )
+        success_msg = f"📄 WinSim: Uploaded {len(uploads)} invoice(s) to Google Drive"
 
-        if result.errors:
-            logging.error(f"Errors occurred: {result.errors_string}")
-            messages.append(SendTelegramMessageEventGrid(message=result.errors_string))
-
-        if messages:
-            send_eventgrid_events(messages)
+        send_eventgrid_events([SendTelegramMessageEventGrid(message=success_msg)])
 
     except Exception as e:
         error_msg = f"Error in check_winsim_invoices: {str(e)}"

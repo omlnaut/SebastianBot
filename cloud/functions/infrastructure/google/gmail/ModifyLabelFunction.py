@@ -42,20 +42,15 @@ def modify_mail_label(
         )
 
         service = resolve_add_label_to_mail_service()
-        result = service.modify_labels(
+        _ = service.modify_labels(
             email_id=event.email_id,
             add_labels=event.add_labels,
             remove_labels=event.remove_labels,
         )
 
-        if result.has_errors():
-            error_msg = f"Error modifying labels: {result.errors_string}"
-            logging.error(error_msg)
-            send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
-        else:
-            logging.info(
-                f"Successfully modified labels for email: {event.email_id}. Added: {event.add_labels}, Removed: {event.remove_labels}"
-            )
+        logging.info(
+            f"Successfully modified labels for email: {event.email_id}. Added: {event.add_labels}, Removed: {event.remove_labels}"
+        )
 
     except Exception as e:
         error_msg = f"Error in modify_mail_label: {str(e)}"

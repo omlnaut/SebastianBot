@@ -4,7 +4,6 @@ from google import genai
 from pydantic import BaseModel
 
 from sebastian.clients.google.gemini.credentials import GeminiApiKey
-from sebastian.shared.Result import Result
 
 
 T = TypeVar("T", bound=BaseModel)
@@ -14,7 +13,7 @@ class GeminiClient:
     def __init__(self, credentials: GeminiApiKey) -> None:
         self._client = genai.Client(api_key=credentials.api_key)
 
-    def get_response(self, contents: str, response_schema: type[T]) -> Result[T]:
+    def get_response(self, contents: str, response_schema: type[T]) -> T:
         """
         Generate content using Gemini model with structured output.
 
@@ -34,8 +33,6 @@ class GeminiClient:
             },
         )
         if isinstance(response.parsed, response_schema):
-            return Result.from_item(item=response.parsed)  # type: ignore
+            return response.parsed
 
-        return Result[T].from_item(
-            errors=[f"Failed to parse response from Gemini model: {response.text}"]
-        )
+        raise Exception(f"Failed to parse response from Gemini model: {response.text}")

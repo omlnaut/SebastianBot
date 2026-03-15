@@ -2,14 +2,12 @@ from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
-from sebastian.shared.Result import Result
-
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class IGeminiClient(Protocol):
-    def get_response(self, contents: str, response_schema: type[T]) -> Result[T]:
+    def get_response(self, contents: str, response_schema: type[T]) -> T:
         """
         Generate content using Gemini model with structured output.
 

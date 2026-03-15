@@ -7,7 +7,6 @@ from sebastian.clients.google.task.client.service_wrapper import TaskServiceWrap
 from sebastian.clients.google.task.client.taskslists import to_id
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.shared.Result import Result
 
 from .create_task_with_notes import build_task_body, post_create_task
 
@@ -32,18 +31,9 @@ class GoogleTaskClient:
             link=parsed.webViewLink,
         )
 
-    def get_tasks(
-        self, tasklist: TaskLists = TaskLists.Default
-    ) -> Result[list[TaskResponse]]:
-        try:
-            tasks_response = self._service.get_tasks(to_id(tasklist))
-            return Result.from_item(item=tasks_response)
-        except Exception as e:
-            return Result.from_item(errors=[str(e)])
+    def get_tasks(self, tasklist: TaskLists = TaskLists.Default) -> list[TaskResponse]:
+        tasks_response = self._service.get_tasks(to_id(tasklist))
+        return tasks_response
 
-    def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> Result[None]:
-        try:
-            self._service.set_task_to_complete(to_id(tasklist), task_id)
-            return Result.from_item(item=None)
-        except Exception as e:
-            return Result.from_item(errors=[str(e)])
+    def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:
+        self._service.set_task_to_complete(to_id(tasklist), task_id)

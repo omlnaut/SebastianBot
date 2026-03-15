@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
-from sebastian.shared import Result
 
 from .protocols import GmailClient
 
@@ -20,7 +19,7 @@ class WinSimService:
         self.drive_client = drive_client
         self.winsim_folder_id = winsim_folder_id
 
-    def process_recent_invoices(self, hours_back: int = 24) -> Result[list[str]]:
+    def process_recent_invoices(self, hours_back: int = 24) -> list[str]:
         """
         Fetch recent WinSim invoices and upload them to Google Drive.
 
@@ -28,17 +27,13 @@ class WinSimService:
             hours_back: Number of hours to look back for new invoices (default: 24)
 
         Returns:
-            Result containing list of uploaded file IDs and any errors encountered
+            List of uploaded file IDs
         """
-        try:
-            pdfs = self._download_pdf_attachments(hours_back)
+        pdfs = self._download_pdf_attachments(hours_back)
 
-            uploaded_file_ids, errors = self._try_upload_files(pdfs)
+        uploaded_file_ids, _ = self._try_upload_files(pdfs)
 
-            return Result.from_item(item=uploaded_file_ids, errors=errors)
-
-        except Exception as e:
-            raise Exception(f"Failed to process WinSim invoices: {str(e)}")
+        return uploaded_file_ids
 
     def _try_upload_files(self, pdfs):
         uploaded_file_ids: list[str] = []

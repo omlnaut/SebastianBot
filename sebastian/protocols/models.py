@@ -29,7 +29,7 @@ class CompleteTask(BaseModel):
 
 
 class AllActor(BaseModel):
-    create_tasks: list[CreateTask] = Field(default_factory=list)
-    complete_tasks: list[CompleteTask] = Field(default_factory=list)
-    send_messages: list[SendMessage] = Field(default_factory=list)
-    modify_labels: list[ModifyMailLabel] = Field(default_factory=list)
+    create_tasks: list[CreateTask] = Field(default_factory=list[CreateTask])
+    complete_tasks: list[CompleteTask] = Field(default_factory=list[CompleteTask])
+    send_messages: list[SendMessage] = Field(default_factory=list[SendMessage])
+    modify_labels: list[ModifyMailLabel] = Field(default_factory=list[ModifyMailLabel])

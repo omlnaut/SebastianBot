@@ -43,12 +43,8 @@ class ReturnTrackerService:
 
         for mail in mails:
             try:
-                result = parse_return_email_html(mail.content, self.gemini_client)
-                if result.item:
-                    tasks.append(_map_to_create_task(result.item))
-                if result.errors:
-                    for error in result.errors:
-                        errors.append(SendMessage(message=error))
+                return_data = parse_return_email_html(mail.content, self.gemini_client)
+                tasks.append(_map_to_create_task(return_data))
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
