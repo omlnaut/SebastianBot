@@ -34,16 +34,12 @@ class Handler:
 
     def handle(self, request: Request) -> AllActor:
         due_date = request.due_date or get_end_of_day()
-        try:
-            # todo: move try except to client
-            created_task = self._client.create_task_with_notes(
-                tasklist=request.tasklist,
-                title=request.title,
-                notes=request.notes,
-                due_date=due_date,
-            )
-        except Exception as e:
-            return AllActor(send_messages=[SendMessage(message=str(e))])
+        created_task = self._client.create_task_with_notes(
+            tasklist=request.tasklist,
+            title=request.title,
+            notes=request.notes,
+            due_date=due_date,
+        )
 
         message = _build_message(created_task)
         return AllActor(send_messages=[SendMessage(message=message)])
