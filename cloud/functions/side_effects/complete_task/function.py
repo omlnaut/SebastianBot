@@ -1,7 +1,7 @@
 import azure.functions as func
 
 from cloud.dependencies import usecases
-from cloud.functions.side_effects.shared import perform_usecase
+from cloud.functions.side_effects.shared import perform_usecase_from_eventgrid
 
 from .models import CompleteTaskEventGrid
 from function_app import app
@@ -16,7 +16,7 @@ def complete_task(
             tasklist=event.tasklist, task_id=event.task_id
         )
 
-    perform_usecase(
+    perform_usecase_from_eventgrid(
         create_request,
         usecases.resolve_complete_task,
         azeventgrid,

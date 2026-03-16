@@ -3,7 +3,10 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies import usecases
-from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
+from cloud.functions.side_effects.shared import (
+    perform_usecase_from_eventgrid,
+    send_eventgrid_events,
+)
 from sebastian.domain.task import TaskLists
 
 
@@ -34,7 +37,7 @@ def create_task(
             due_date=event.due,
         )
 
-    perform_usecase(
+    perform_usecase_from_eventgrid(
         create_request,
         usecases.resolve_create_task,
         azeventgrid,

@@ -27,7 +27,7 @@ TRequest = TypeVar("TRequest")
 TEventModel = TypeVar("TEventModel", bound=EventGridModel[Any])
 
 
-def perform_usecase(
+def perform_usecase_from_eventgrid(
     create_request: Callable[[TEventModel], TRequest],
     resolve_handler: Callable[[], UseCaseHandler[TRequest]],
     az_event: func.EventGridEvent,

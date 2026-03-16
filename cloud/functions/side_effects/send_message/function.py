@@ -4,7 +4,10 @@ import azure.functions as func
 
 from cloud.dependencies import usecases
 from .models import SendTelegramMessageEventGrid
-from cloud.functions.side_effects.shared import send_eventgrid_events, perform_usecase
+from cloud.functions.side_effects.shared import (
+    send_eventgrid_events,
+    perform_usecase_from_eventgrid,
+)
 from function_app import app
 
 
@@ -25,7 +28,7 @@ def send_telegram_message(azeventgrid: func.EventGridEvent):
     ) -> usecases.send_telegram_message.Request:
         return usecases.send_telegram_message.Request(message=event.message)
 
-    perform_usecase(
+    perform_usecase_from_eventgrid(
         create_request,
         usecases.resolve_send_telegram_message,
         azeventgrid,
