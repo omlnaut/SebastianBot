@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
 
@@ -5,18 +6,27 @@ import logging
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
-from .models import PickupData
-from .parsing import parse_dhl_pickup_email_html
+from .parsing import PickupData, parse_dhl_pickup_email_html
 from .protocols import GmailClient
 
+__all__ = ["Request", "Handler", "GmailClient"]
 
-class DeliveryReadyService:
+
+@dataclass
+class Request:
+    hours_back: int = 720
+
+
+class Handler(UseCaseHandler[Request]):
     def __init__(self, gmail_client: GmailClient):
         self.gmail_client = gmail_client
 
-    def get_recent_dhl_pickups(self, hours_back: int = 720) -> AllActor:
-        time_threshold = datetime.now(timezone.utc) - timedelta(hours=hours_back)
+    def handle(self, request: Request) -> AllActor:
+        time_threshold = datetime.now(timezone.utc) - timedelta(
+            hours=request.hours_back
+        )
 
         query = (
             GmailQueryBuilder()
@@ -26,15 +36,8 @@ class DeliveryReadyService:
             .build()
         )
 
-        try:
-            # todo make client call safe, return Result type
-            mails = self.gmail_client.fetch_mails(query)
-            logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
-        except Exception as e:
-            return AllActor(
-                create_tasks=[],
-                send_messages=[SendMessage(message=f"Error fetching emails: {str(e)}")],
-            )
+        mails = self.gmail_client.fetch_mails(query)
+        logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
         pickups: list[CreateTask] = []
         errors: list[SendMessage] = []

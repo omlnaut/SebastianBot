@@ -1,10 +1,18 @@
 # pyright: basic
+from dataclasses import dataclass
 import re
 from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-from .models import PickupData
+
+@dataclass
+class PickupData:
+    tracking_number: str | None
+    pickup_location: str
+    due_date: str | None
+    preview: str | None
+
 
 _GERMAN_MONTHS: dict[str, int] = {
     "Januar": 1,
