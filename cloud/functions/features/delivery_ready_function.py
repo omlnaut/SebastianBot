@@ -3,11 +3,13 @@ import logging
 from azure.functions import TimerRequest
 
 from cloud.dependencies.usecases import resolve_delivery_ready
-from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
-from cloud.functions.side_effects.shared import send_eventgrid_events
+from cloud.functions.side_effects.shared import (
+    perform_usecase_from_request,
+)
 from function_app import app
+from sebastian.usecases.features import delivery_ready
 
-from .TriggerTimes import TriggerTimes
+from ..TriggerTimes import TriggerTimes
 
 
 @app.timer_trigger(
@@ -21,9 +23,6 @@ def check_delivery_ready(
 ) -> None:
     logging.info("DeliveryReady timer function processed a request.")
 
-    service = resolve_delivery_ready()
-
-    logging.info("Checking for recent DHL pickups")
-    actor_result = service.get_recent_dhl_pickups(hours_back=1)
-
-    send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
+    perform_usecase_from_request(
+        delivery_ready.Request(hours_back=1), resolve_delivery_ready
+    )
