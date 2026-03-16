@@ -3,7 +3,10 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies.usecases import resolve_modify_mail_label
-from cloud.functions.side_effects.shared import perform_usecase, send_eventgrid_events
+from cloud.functions.side_effects.shared import (
+    perform_usecase_from_eventgrid,
+    send_eventgrid_events,
+)
 from function_app import app
 from sebastian.domain.gmail import GmailLabel
 from sebastian.usecases.side_effects import modify_mail_labels
@@ -37,4 +40,6 @@ def modify_mail_label(
             remove_labels=event.remove_labels,
         )
 
-    perform_usecase(_create_request, resolve_modify_mail_label, azeventgrid)
+    perform_usecase_from_eventgrid(
+        _create_request, resolve_modify_mail_label, azeventgrid
+    )

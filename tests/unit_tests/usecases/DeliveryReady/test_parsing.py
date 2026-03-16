@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from sebastian.usecases.DeliveryReady.parsing import parse_dhl_pickup_email_html
+from sebastian.usecases.features.delivery_ready.parsing import (
+    parse_dhl_pickup_email_html,
+)
 
 
 def test_parsing():

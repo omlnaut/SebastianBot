@@ -1,9 +1,9 @@
-# type: ignore
+# pyright: standard
 import azure.functions as func
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-from cloud.functions.DeliveryReadyFunction import check_delivery_ready
+from cloud.functions.features.delivery_ready_function import check_delivery_ready
 from cloud.functions.infrastructure.AllActor.function import all_actor_handler
 from cloud.functions.side_effects.complete_task.function import complete_task
 from cloud.functions.side_effects.create_task.function import (
@@ -15,7 +15,7 @@ from cloud.functions.side_effects.send_message.function import (
     test_send_telegram_message,
 )
 
-from cloud.functions.infrastructure.google.gmail.ModifyLabelFunction import (
+from cloud.functions.side_effects.modify_mail_label.function import (
     modify_mail_label,
     test_modify_mail_label,
 )

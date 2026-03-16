@@ -27,7 +27,7 @@ TRequest = TypeVar("TRequest")
 TEventModel = TypeVar("TEventModel", bound=EventGridModel[Any])
 
 
-def perform_usecase(
+def perform_usecase_from_eventgrid(
     create_request: Callable[[TEventModel], TRequest],
     resolve_handler: Callable[[], UseCaseHandler[TRequest]],
     az_event: func.EventGridEvent,
@@ -69,6 +69,28 @@ def perform_usecase(
         )
 
     logging.info(f"EventGrid {event_model.base_name} completed")
+
+
+def perform_usecase_from_request(
+    request: TRequest, resolve_handler: Callable[[], UseCaseHandler[TRequest]]
+) -> None:
+    """
+    Perform a usecase by resolving the handler and handling the request.
+    """
+    try:
+        handler = resolve_handler()
+        actor_result = handler.handle(request)
+        send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
+    except Exception as e:
+        error_msg = f"Error performing usecase: {str(e)}"
+        logging.error(error_msg)
+        send_eventgrid_events(
+            [
+                AllActorEventGrid(
+                    send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
+                )
+            ]
+        )
 
 
 def send_eventgrid_events(events: Sequence[TEventModel]) -> None:

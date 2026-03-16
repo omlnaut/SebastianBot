@@ -2,7 +2,6 @@ from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.DeliveryReady.service import DeliveryReadyService
 from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
@@ -13,7 +12,7 @@ from sebastian.usecases.side_effects import (
     send_telegram_message,
     modify_mail_labels,
 )
-import sebastian.usecases.DeliveryReady as DeliveryReady
+from sebastian.usecases.features import delivery_ready
 import sebastian.usecases.WinSim as WinSim
 import sebastian.usecases.ReturnTracker as ReturnTracker
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -50,10 +49,10 @@ def resolve_mangaupdate_service(
     )
 
 
-def resolve_delivery_ready_service(
-    gmail_client: DeliveryReady.GmailClient | None = None,
-) -> DeliveryReadyService:
-    return DeliveryReadyService(
+def resolve_delivery_ready(
+    gmail_client: delivery_ready.GmailClient | None = None,
+) -> UseCaseHandler[delivery_ready.Request]:
+    return delivery_ready.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
     )
 
