@@ -16,7 +16,7 @@ __all__ = ["Request", "Handler", "GmailClient"]
 
 @dataclass
 class Request:
-    hours_back: int = 720
+    hours_back: timedelta = timedelta(hours=1)
 
 
 class Handler(UseCaseHandler[Request]):
@@ -24,9 +24,7 @@ class Handler(UseCaseHandler[Request]):
         self.gmail_client = gmail_client
 
     def handle(self, request: Request) -> AllActor:
-        time_threshold = datetime.now(timezone.utc) - timedelta(
-            hours=request.hours_back
-        )
+        time_threshold = datetime.now(timezone.utc) - request.hours_back
 
         query = (
             GmailQueryBuilder()

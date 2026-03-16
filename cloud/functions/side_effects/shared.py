@@ -75,8 +75,7 @@ def perform_usecase_from_request(
     request: TRequest, resolve_handler: Callable[[], UseCaseHandler[TRequest]]
 ) -> None:
     """
-    Perform a usecase by creating a request from the EventGrid event,
-    resolving the handler, and handling the request.
+    Perform a usecase by resolving the handler and handling the request.
     """
     try:
         handler = resolve_handler()
