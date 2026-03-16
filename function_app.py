@@ -1,4 +1,4 @@
-# type: ignore
+# pyright: standard
 import azure.functions as func
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -15,7 +15,7 @@ from cloud.functions.side_effects.send_message.function import (
     test_send_telegram_message,
 )
 
-from cloud.functions.infrastructure.google.gmail.ModifyLabelFunction import (
+from cloud.functions.side_effects.modify_mail_label.function import (
     modify_mail_label,
     test_modify_mail_label,
 )
