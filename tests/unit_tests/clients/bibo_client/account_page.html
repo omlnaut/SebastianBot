@@ -1,0 +1,1308 @@
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- START jsp/common/metaHeader.jsp -->
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+ xml:lang="de" 
+ lang="de"
+> 
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta http-equiv="cache-control" content="no-cache" />
+
+<!--  <link rel="stylesheet" href="/webOPACClient/jsp/common/infoguide.css"  type="text/css" /> -->
+
+  <link rel="shortcut icon" href="/webOPACClient/images/SBD.ico" />
+  <link rel="icon" type="image/png" sizes="196x196" href="/webOPACClient/images/android-icon.png"/>
+  <link rel="apple-touch-icon" href="/webOPACClient/images/apple-touch-icon.png"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/webOPACClient/images/apple-touch-icon-57.png"/>
+  <link rel="apple-touch-icon" sizes="72x72" href="/webOPACClient/images/apple-touch-icon-72.png"/>
+  <link rel="apple-touch-icon" sizes="76x76" href="/webOPACClient/images/apple-touch-icon-76.png"/>
+  <link rel="apple-touch-icon" sizes="114x114" href="/webOPACClient/images/apple-touch-icon-114.png"/>
+  <link rel="apple-touch-icon" sizes="120x120" href="/webOPACClient/images/apple-touch-icon-120.png"/>
+  <link rel="apple-touch-icon" sizes="144x144" href="/webOPACClient/images/apple-touch-icon-144.png"/>
+  <link rel="apple-touch-icon" sizes="152x152" href="/webOPACClient/images/apple-touch-icon-152.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="/webOPACClient/images/apple-touch-icon-180.png"/>
+  <link rel="stylesheet" href="/webOPACClient/js/jquery/jquery.all.css"/>
+  <link rel="stylesheet" href="/webOPACClient/jsp/common/alerts.css"/>
+  
+  <script src="/webOPACClient/js/jquery/jquery-1.4.2-min.js" type="text/javascript"><!-- --></script>
+  <!-- AjaxQ is a jQuery plugin that implements AJAX request queueing mechanism.  -->
+  <script src="/webOPACClient/js/jquery.ajaxq-0.0.1.js" type="text/javascript"><!-- --></script>
+  <script src="/webOPACClient/js/jquery/jquery-ui-1.7.2.js" type="text/javascript"><!--  --></script>
+  <script src="/webOPACClient/js/jquery/extensions/jquery.infoguide.js" type="text/javascript"><!-- --></script>
+  <script src="/webOPACClient/js/ig.utils.js" type="text/javascript"><!-- --></script>
+  <script src="/webOPACClient/js/jquery/extensions/jquery.autocomplete.js" type="text/javascript"><!-- --></script>
+  <script src="/webOPACClient/js/jstorage.js" type="text/javascript"><!-- --></script>
+  <script src="/webOPACClient/js/common.js" type="text/javascript"><!-- --></script>
+
+
+  <script type="text/javascript">/* <![CDATA[ */
+if (!(typeof globalSettings == "object" && globalSettings instanceof Map)) globalSettings = new Map();
+globalSettings.add({
+"imagePath": "/webOPACClient/images"
+});
+if (!(typeof i18n == "object" && i18n instanceof Map)) i18n = new Map();
+i18n.add({
+"common.header.loading.icon.alt": "Laden",
+"search.searchfield.suggestion.hits": "???de.search.searchfield.suggestion.hits???"
+});
+/* ]]> */</script>
+ 
+
+  
+
+
+
+
+
+
+
+
+
+        
+        
+           <!-- SBD 23.08.2011/09.03.2015 ohne media="screen" sonst Ausdruck ohne CSS, da kein media="print" vorhanden  -->
+           <!-- <link media="screen" rel="stylesheet" href="/webOPACClient/jsp/common/infoguide.css"  type="text/css" /> -->
+            <link rel="stylesheet" href="/webOPACClient/jsp/common/infoguide.css"  type="text/css" />
+            <!--[if IE]>  <link rel="stylesheet" href="/webOPACClient/jsp/common/infoguide.css"  type="text/css" />  <![endif]-->
+            <!--[if IE 7]>
+            <style type="text/css">
+              #tab-content{margin-top:5px;}
+              select {height:auto;}
+              #searchfield input#f1 {width:10em;}
+            </style>
+            <![endif]-->
+        
+  
+  
+
+
+
+
+  
+  
+  <title>
+    
+      Online-Katalog der Städtischen Bibliotheken Dresden
+    
+  </title>
+<!-- Matomo -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//webtracker.dresden.de/";
+    _paq.push(['setTrackerUrl', u+'piwik.php']);
+    _paq.push(['setSiteId', '6']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+</head>
+<!-- END of jsp/common/metaHeader.jsp -->
+<!-- START jsp/useraccount/accountdata/Layout.jsp --> 	
+
+
+
+<body onunload="unBlockAction();">
+
+<script language="javascript" type="text/javascript"
+ src="/webOPACClient/js/stdButton.js">
+</script>
+
+<script language="javascript" type="text/javascript">
+setStdButtonForm("AdvancedSearchForm");
+</script>
+
+
+	<div id="pageContainer">
+	  
+		
+		
+ 		
+
+
+
+
+<!-- START jsp/common/header.jsp -->
+
+
+  
+<!-- BEGIN /bsb/mobileOPAC/addMobileFunctionality.jsp -->
+
+
+
+
+
+
+<!-- END /bsb/mobileOPAC/addMobileFunctionality.jsp -->
+
+
+
+
+<div id="branding">
+  <span id="logo">
+    
+    
+      <!-- <img src="/webOPACClient/images/customer.gif" width="84" height="16" alt="webOPAC" title="webOPAC" /> -->
+      <!-- webOPAC -->
+      <p id="logotext-extern"><img src="/webOPACClient/images/sbd_logo.gif" alt="Logo der St&auml;dtischen Bibliotheken Dresden" />&nbsp;&nbsp;Online-Katalog der <a href="http://www.bibo-dresden.de/" title="Zur Website der St&auml;dtischen Bibliotheken Dresden" target="_blank">St&auml;dtischen Bibliotheken Dresden</a></p>
+    
+  </span>
+  <div class="info"> 
+    <div>
+      Diese Seite verwendet Cookies. 
+      <a href="#" onclick="return cookieHelp('/webOPACClient');">
+         Weitere Informationen.</a>
+    </div> 
+    <div id="timer" class="textrot">&nbsp;</div>
+  </div>
+</div>
+<!-- 
+<div id="ajaxAutoCompletion">solr</div>
+-->
+
+<div id="ajaxUrlSolrAutoCompletion">SolrQueryCompletionProxy</div>
+
+
+
+
+
+
+<!-- START jsp/common/timer.jsp -->
+
+
+<script type="text/javascript" language="javascript">
+//<![CDATA[
+
+var timeout=(20 * 60 * 1000)  + new Date().getTime();
+timeout-=2000;
+
+var mesg="Diese Sitzung läuft in %VAR% Sek. ab!";
+var toFront=false;
+
+if(mesg.length <= 0 || mesg.indexOf("???") >= 0)
+	mesg="Diese Sitzung läuft in %VAR% Sek. ab!";
+ticker(); 
+
+function ticker()
+{
+  var timeoutID;
+  var s; 
+  var t=timeout - new Date().getTime();
+  t=(t<0)?0:Math.round(t/1000);
+  s=""+ ((t>60)?"":t.toFixed(0));
+ 	if(t <= 60)
+ 	{
+ 		if(toFront == false)
+ 		{
+ 			toFront=true;
+ 			window.focus();
+ 		}
+ 		var msg = mesg.replace("%VAR%", s);
+    document.getElementById("timer").innerHTML = msg;
+ 	}
+  if(t == 0)
+  {
+    window.clearTimeout(timeoutID);
+    window.location.replace("/webOPACClient/jsp/common/timeout.jsp");
+  } 
+  else
+    timeoutID = window.setTimeout("ticker()",(t>60) ? 6000 : 1000);
+}
+//]]>
+</script>
+
+
+<!-- END of jsp/common/timer.jsp --> 
+<!-- END of jsp/common/header.jsp -->
+
+
+		<div id="mainnav">
+			
+
+
+
+
+<!-- START jsp/navigation/mainNavi.jsp --> 
+
+
+<!-- Actual Tiles Context 756 -->
+
+<ul>
+
+
+	<li><a href="/webOPACClient/search.do?methodToCall=start">Suche</a>
+	
+	</li>
+
+
+
+	<li><a href="/webOPACClient/memorizelist.do?methodToCall=show">Merkliste</a></li>
+
+
+
+
+
+
+
+
+
+	<li id="current"><div id="active">Konto</div>
+		
+		<ul>
+			
+					<li id="current2">Kontostand</li>
+			
+			
+			
+			
+					<li><a href="/webOPACClient/userdata.do?methodToCall=showUserData">Benutzerdaten</a></li>
+			
+			
+			
+					<li><a href="/webOPACClient/searchpreferences.do?methodToCall=showSearchpreferences">Sucheinstellungen</a></li>
+			
+	    
+    </ul>
+		
+	</li>
+
+
+
+
+
+
+	<li><a href="/webOPACClient/additional.do?methodToCall=show">weitere Angebote</a></li>
+
+
+
+</ul>
+<!-- END of jsp/navigation/mainNavi.jsp --> 
+
+			
+
+
+
+
+
+
+<!-- START jsp/navigation/loginnavi.jsp --> 
+
+<div id="login">
+  
+  
+    <a href="/webOPACClient/login.do?methodToCall=logout">Abmelden</a>
+       <div id="username">
+         <strong class="c1">Benutzernummer</strong> 00055353913 
+       </div>
+  
+</div>
+<!-- END of jsp/navigation/loginnavi.jsp --> 
+
+		</div> 
+		<br class="cleaner" />
+ 		
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- START jsp/navigation/bgnavi.jsp --> 
+<script 
+ src="/webOPACClient/help/help.js">
+</script>
+
+<div id="bgmainnav">
+<div>
+	<div id="nav2">
+		<ul>
+<!-- activate when myGDPRInfo is replaced by your GDPR link
+     label of menu entry is configured by tag navigation.bgNavi.GDPRInfo.title in application*.properties 
+		<li>
+        <a href="myGDPRInfo" target="GDPRInfo">GDPR Information</a>
+        </li>
+  -->
+      
+   		
+          <li id="onleihe_active">
+          </li>
+        
+      
+      
+			
+			
+			<li>
+			  <a href="#" title="Hilfe&nbsp;(neuer Tab)" onclick="return openHelp('/webOPACClient');">
+			   Hilfe</a>
+		  </li>
+  		
+	    	
+		  	
+			   	<li><a href="/webOPACClient/actual.do?methodToCall=show">Neu im Bestand</a></li>
+    		
+    	
+		</ul>
+	</div> 
+  </div> 
+</div>
+
+
+
+          
+
+<!-- END of jsp/navigation/bgnavi.jsp --> 
+
+ 		<br class="cleaner" />
+		
+
+
+
+
+
+
+
+
+
+
+<!-- START jsp/search/searchbar.jsp --> 
+ 
+<div id="searchfield">
+  <form id="AdvancedSearchForm" method="post" action="/webOPACClient/search.do">
+    <input type="hidden" name="methodToCall" value="submit" />
+    <input type="hidden" name="searchCategories[0]" value="-1" />
+    <input type="hidden" name="CSId" value="5624N65S0bc1542720a0a64bf5c32c059933109cfd6234df" />
+    <input type="hidden" name="searchHistory" value="" />
+    <input type="hidden" name="queryString" value="" />
+    <input type="hidden" name="methodToCallParameter" value="submitSearch" />
+
+    
+      
+    
+      
+        <input type="hidden" name="searchString[1]" value="" />
+      
+    
+      
+        <input type="hidden" name="searchString[2]" value="" />
+      
+    
+      
+        <input type="hidden" name="searchString[3]" value="" />
+      
+    
+      
+        <input type="hidden" name="searchString[4]" value="" />
+      
+    
+
+    <div class="input-group">
+        <label class="hide-content" for="f1">Suchbegriff</label>
+		<input class="form-control" placeholder="Sucheingabe" type="text" id="f1" name="searchString[0]" />
+		  <a href="#" aria-label="Suchen" onclick="document.forms['AdvancedSearchForm'].submit();return false;" class="input-group-addon"><i class="ig-ico ig-ico-search" aria-hidden="true"></i></a>      
+	  </div>
+	  <input type="submit" style="display: none" />
+  </form>  
+</div>
+
+<!-- END of jsp/search/searchbar.jsp -->
+ 
+
+	<form name="UserAccountForm" method="GET" action="/webOPACClient/userAccount.do">		
+    
+
+
+
+
+
+
+
+
+
+
+
+<!-- START jsp/useraccount/accountdata/actionbar.jsp --> 
+
+
+
+
+
+
+
+<div id="outputActions">
+ <input type="hidden" name="accountTyp" value="AUSLEIHEN" />
+ <input type="hidden" name="anzPos" value="1" />
+ <input type="hidden" name="methodToCall" value="showAccount" />
+ <input type="hidden" name="CSId" value="5624N65S0bc1542720a0a64bf5c32c059933109cfd6234df" />
+ 
+
+
+  
+  <a href="#" id="renewSelect" title="Ausgewählte&nbsp;Einträge verlängern" onclick="return renewSelected();"><i class="ig-ico ig-ico-ca" aria-hidden="true"></i>Ausgewählte verlängern</a>
+  <a href="/webOPACClient/userAccount.do?methodToCall=renewalPossible&amp;renewal=account" id="renewal" title="Konto verlängern" onclick="return blockAction();"><i class="ig-ico ig-ico-ca" aria-hidden="true"></i>Alle&nbsp;verlängern</a>
+
+
+
+
+      
+    <a href="#" id="print" title="Eintr&auml;ge drucken" onclick="return printSubmit();"><i class="ig-ico ig-ico-print" aria-hidden="true"></i>Drucken</a>
+  
+  
+    <a href="#" id="save" title="Eintr&auml;ge lokal speichern" onclick="return saveSubmit();"><i class="ig-ico ig-ico-save" aria-hidden="true"></i>Speichern</a>
+  
+  
+    <a href="/webOPACClient/userAccount.do?methodToCall=mail" id="mail_userAccount" title="Einträge versenden"><i class="ig-ico ig-ico-send" aria-hidden="true"></i>Versenden</a>
+  
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+      
+  
+
+
+
+
+
+</div>
+
+<br class="cleaner" />
+<script src="js/exportdialogs.js" type="text/javascript"><!--  --></script>
+
+<script language="javascript" type="text/javascript">
+/* <![CDATA[ */
+
+
+if(1 == 10)
+{
+	document.forms['UserAccountForm'].action="/webOPACClient/userNCIPAccount.do";
+}
+
+function renewSelected()
+{
+	   document.forms['UserAccountForm'].methodToCall.value="renewSelected";
+	   document.forms['UserAccountForm'].submit();
+	   return false;
+}
+
+
+function renewSortHistory()
+{
+	   document.forms['UserAccountForm'].methodToCall.value="sortHistory";
+	   document.forms['UserAccountForm'].anzPos.value="1";
+	   document.forms['UserAccountForm'].submit();
+	   return false;
+}
+
+function allowFunction()
+{
+	if((true) ||
+		 (false) ||
+		 (false) ||
+		 (false) ||
+		 (false) ||
+		 (false))
+		return true;
+	return false;
+}
+
+function printSubmit()
+{
+	if(!allowFunction())
+		return false;
+   document.forms['UserAccountForm'].methodToCall.value="print";
+   document.forms['UserAccountForm'].target="_blank";
+   document.forms['UserAccountForm'].submit();
+   return false;
+ }
+
+function saveSubmit()
+{
+	  if(!allowFunction())
+		    return false;
+   document.forms['UserAccountForm'].methodToCall.value="save";
+   document.forms['UserAccountForm'].submit();
+   return false;
+ }
+ 
+function deleteHistory()
+{
+	  if(!allowFunction())
+		    return false;
+	  
+	  
+	   deleteList = confirm("Soll die Ausleihhistorie wirklich gelöscht werden?");
+	   if (deleteList == false)
+	       return false;
+	   
+       document.forms['UserAccountForm'].methodToCall.value="deleteHistory";
+       document.forms['UserAccountForm'].submit();
+       return false;
+ }
+/* ]]> */
+</script>
+<!-- END of jsp/useraccount/actionbar.jsp --> 
+
+
+ 	 	<div id="main"> 
+    	<div id="SOWrap"> 
+			  <div id="middle"> 
+	 				
+
+
+
+
+
+
+
+
+
+
+<input type="hidden" name="typ" value="" />
+
+<style type="text/css">
+#bgtab {
+	width: auto; /*44.9em*/
+	height: 2em;
+	border-top: 1px solid #bbbcbc;
+}
+
+* html #bgtab {
+	margin-top: -1px;
+}
+/* wichtig bei Angabe in em: width:44.9em und nicht 45em, da sonst Verschiebungen (Abstand zw.Hauptnavi und Unternavi!) im Firefox!, zusätzlich keine einheitliche re border */
+#tab-content {
+	border-top: 0;
+}
+
+table.data {
+	width: 100%;
+	border-top: 0;
+}
+</style>
+
+<!--[if IE 7]>
+    <style type="text/css">#bgtab {margin-top:5px;}</style>
+  <![endif]-->
+
+<!-- START jsp/useraccount/accountdata/accountNavi.jsp -->
+
+
+
+
+
+<div id="tab">
+	<ul>
+		
+			<li id="tab1">
+				<div id="label1">
+					<a href="#" onclick="return showAccount(1);">Ausleihen
+    			 (6)</a>
+				</div> 
+					<ul>
+						<li id="typ1"><a href="#" onclick="return showAccount(1);">Übersicht</a></li>
+						<li id="typ2"><a href="#" onclick="return showAccount(2)">Gemahnte Medien</a></li>
+						<li id="typ3"><a href="#" onclick="return showAccount(3)">Rückgeforderte Medien</a></li>
+						<li id="typ4"><a href="#" onclick="return showAccount(4)">Verlängerte Medien</a></li>
+						<li id="typ5"><a href="#" onclick="return showAccount(5)">Fernleihen</a></li>
+					</ul>
+				
+			</li>
+		
+		
+			<li id="tab6">
+				<div id="label6">
+					<a href="#" onclick="return showAccount(6)">Bestellungen
+		          (0)</a>
+				</div>
+			</li>
+		
+		
+			<li id="tab7">
+				<div id="label7">
+					<a href="#" onclick="return showAccount(7)">Vormerkungen
+        		  (0)</a>
+				</div>
+			</li>
+		
+		
+			<li id="tab8">
+				<div id="label8">
+					<a href="#" onclick="return showAccount(8)">Gebühren
+        		  &nbsp;(0,00&nbsp;EUR)</a>
+				</div>
+			</li>
+		
+
+
+
+		
+
+	</ul>
+
+</div>
+<!-- tab -->
+<div class="cleaner"></div>
+<div id="bgtab"></div>
+
+<script>
+/* <![CDATA[ */
+$(document).ready(function() {
+	var typ=1;
+	
+	if(typ >= 1 && typ <= 5) {
+		// deaktivierung ausgewaehltes submenu im Konto Ausleihen (id = "typ" + typ, z.B. typ2)
+		var typ_selector = "#typ" + typ;
+		var text = $(typ_selector + " > a").html();
+		$(typ_selector).html(text);
+		$(typ_selector).attr('id', 'current2');
+
+		// Hauptmenu ist Ausleihen entspricht ids label1 und tab1
+		// deshalb Modifikation von typ auf 1 fuer folgende 
+		// Deaktivierung des Haupmenueintrags
+		typ = 1;
+	}
+
+	var label_selector = "#label" + typ;
+	var text = $(label_selector + " > a").html();
+	$(label_selector).html(text);
+	$(label_selector).attr('id', 'active1');
+	selector = "#tab" + typ;
+	$(selector).attr('id', 'current1');
+	
+	var divibib_active = true;
+	
+	if (divibib_active) {
+		if ($("#divibib_account").length) {
+        	$("#divibib_account").data("href", $("#divibib_account").attr("href")).removeAttr("href");
+        }
+	
+        var ncipurl = "";
+        var errorText = "eMedien";
+        $.ajax({
+    		type : "GET",
+    		url : ncipurl,
+    		data : {
+    			method : "itemCounts"
+    		},
+    		cache : false,
+    		success : function(data) {
+    			var itemInfo = data.error;
+    			
+    			if (itemInfo == undefined) {   			
+    				itemInfo = "(" + data.loanedItemsCount + "/" + data.requestedItemsCount + ")";
+        			var selector = "#item_info";
+        			
+        			if ($(selector).length) {
+            			$(selector).text(itemInfo);
+        			}
+    			} else {
+    				var selector = $("#divibib_account");
+        			if (! $(selector).length) {
+        				selector = active1;
+        			}
+        				
+           			if ($(selector).length) {
+           				$(selector).attr("style", "color:red");
+           				$(selector).html(errorText);
+           			}
+    			}
+    			
+    			
+    			if ($("#divibib_account").length) {
+    				$("#divibib_account").attr("href", $("#divibib_account").data("href"));
+    			}
+    		},
+    		error: function(data) {
+    			var selector = "#item_info";
+   				$(selector).attr("style", "color:red");
+   				$(selector).html(errorText);
+    		}
+    	});
+	}
+});
+
+function showAccount(id)
+{
+	document.forms['UserAccountForm'].action="/webOPACClient/userAccount.do";	
+	document.forms['UserAccountForm'].methodToCall.value = "showAccount";  
+	document.forms['UserAccountForm'].typ.value = id;
+	document.forms['UserAccountForm'].anzPos.value="1";
+	document.forms['UserAccountForm'].submit();
+	return false;
+}
+	/* ]]> */
+</script>
+<!-- END of jsp/useraccount/accountdata/accountNavi.jsp -->
+   
+      		<div class="cleaner"></div>
+	 				
+
+
+
+
+
+
+
+
+
+
+<!-- START jsp/useraccount/accountdata/accountData.jsp -->
+ 
+		
+		
+
+    <div id="tab-content">
+      <div class="box">
+        <div class="box-header">
+		  <div class="box-right">
+            <div class="pagination">
+		      
+		          
+	      
+          <input type="hidden" name="size" value="6" />    
+          <input type="hidden" name="startPos" value="1" /> 				 
+          <input type="hidden" name="countPos" value="10" />	
+<script type="text/javascript">
+/* <![CDATA[ */
+function navigate(accountTyp, anzPos)
+{
+   document.forms['UserAccountForm'].methodToCall.value="pos";
+   document.forms['UserAccountForm'].accountTyp.value=accountTyp;
+   document.forms['UserAccountForm'].anzPos.value=anzPos;
+   document.forms['UserAccountForm'].submit();
+   return false;
+ }
+/* ]]> */
+</script>
+
+            </div>
+          </div>
+       		<h2>Ausleihen</h2>
+        </div>
+	  </div>
+	    
+         <table class="data" width="100%">
+     	  <tr>
+		   
+		    <td scope="col" style="width:2%"> &nbsp;</td>
+     	   
+       		<th scope="col" style="width:2%"><abbr title="Nummer">Nr.</abbr></th>
+       		<th scope="col" class="left" style="width:65%">Titel,&nbsp;Verfasser</th>
+	       
+	          
+	           
+	            <th scope="col" class="left" style="width:33%">Leihfrist,&nbsp;Zweigstelle</th>
+	          
+	          
+	      </tr>
+	      
+	      
+	      
+	      
+          
+           
+           
+                
+           
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries0">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[0]" value="on" disabled="disabled" id="selectedMediaListentries0" class="check" />
+             <input type="hidden" name="mediaNrEntries[0]" value="025391872" /> 
+            </td>
+            
+            <th scope="row">1.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Fünf kunterbunte Osterküken</strong><br/>
+             Felgentreff, Carla ¬[Verfasser]<br/>
+             025391872 &nbsp;/&nbsp;Bilderbuch/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries1">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[1]" value="on" disabled="disabled" id="selectedMediaListentries1" class="check" />
+             <input type="hidden" name="mediaNrEntries[1]" value="014437370" /> 
+            </td>
+            
+            <th scope="row">2.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Im Osterhasendorf</strong><br/>
+             Kaden, Outi ¬[Künstler]<br/>
+             014437370 &nbsp;/&nbsp;Bilderbuch/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries2">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[2]" value="on" disabled="disabled" id="selectedMediaListentries2" class="check" />
+             <input type="hidden" name="mediaNrEntries[2]" value="03782703X" /> 
+            </td>
+            
+            <th scope="row">3.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Karlchen und der Kapuzen-Klub</strong><br/>
+             Berner, Rotraut Susanne ¬[Künstler, Verfasser]<br/>
+             03782703X &nbsp;/&nbsp;Sachbilderbuch/Freizeit/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries3">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[3]" value="on" disabled="disabled" id="selectedMediaListentries3" class="check" />
+             <input type="hidden" name="mediaNrEntries[3]" value="039615269" /> 
+            </td>
+            
+            <th scope="row">4.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Mein liebstes Osterbuch</strong><br/>
+             Altegoer, Regine ¬[Künstler]<br/>
+             039615269 &nbsp;/&nbsp;Bilderbuch/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries4">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[4]" value="on" disabled="disabled" id="selectedMediaListentries4" class="check" />
+             <input type="hidden" name="mediaNrEntries[4]" value="037378324" /> 
+            </td>
+            
+            <th scope="row">5.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Ostern mit Familie Hase</strong><br/>
+             Hudson, Katy ¬[Künstler]<br/>
+             037378324 &nbsp;/&nbsp;Bilderbuch/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+           
+           <tr>
+           
+            <td>
+             <label class="hide-content" for="selectedMediaListentries5">den folgenden Titel auswählen</label>
+             <input type="checkbox" name="selectedMediaListentries[5]" value="on" disabled="disabled" id="selectedMediaListentries5" class="check" />
+             <input type="hidden" name="mediaNrEntries[5]" value="036266616" /> 
+            </td>
+            
+            <th scope="row">6.<br/>
+
+
+             <img src="/webOPACClient/images/mtyp/Buch-Kinderbuch.gif" width="32" border="0" alt="" title="Kinderbuch" />
+
+            </th>
+            <td>
+             <strong>Wo ist das Osterei versteckt?</strong><br/>
+             Sturm, Linda ¬[Verfasser]<br/>
+             036266616 &nbsp;/&nbsp;Bilderbuch/Hartpappe<br/>
+             <span class="textdunkelblau">Dieses Medium wurde bereits 1 mal verlängert.<br /></span><span class="textrot">Eine Verlängerung ist nicht mehr möglich.</span>
+             
+             
+            </td>
+            <td>
+
+
+
+
+       
+       
+       
+          
+          
+            
+            04.03.2026 - 04.05.2026<br />
+          
+       
+
+             Zentralbibliothek, Tel. 8648233&nbsp;/&nbsp;Zentralbibliothek
+            </td>
+           </tr>
+                  
+                  
+         </table>
+        
+        <div class="box">
+          <div class="box-right">
+            <div class="pagination">
+              
+            </div>
+          </div>
+	    </div>
+
+    </div><!-- tab-content -->     
+    
+<script type="text/javascript">
+/* <![CDATA[ */
+ setHelp("konto", "");
+/* ]]> */
+</script>
+     
+<script type="text/javascript">
+/* <![CDATA[ */
+    var countSelected = 0;	// total nbr of selected checkboxes
+    var x = $(":checkbox");
+    var link = $("#renewSelect");
+
+    if (0<countSelected) {
+    	link.show();
+	}
+	else {
+    	link.hide();
+	}
+
+    x.click(function(e) {
+    	if (this.checked) {
+    		countSelected = countSelected + 1;
+    	}
+    	else {
+    		countSelected = countSelected - 1;
+    	}
+    	if (0<countSelected) {
+        	link.show();
+    	}
+    	else {
+        	link.hide();
+    	}
+	});
+/* ]]> */
+</script>
+<!-- END of jsp/useraccount/accountdata/accountData.jsp -->   
+  			</div> <!-- middle -->
+		  </div> <!-- SOWrap -->
+ 	 		<div id="right">
+ 	 		    
+
+
+
+<!-- START jsp/useraccount/accountdata/sorthistory.jsp -->
+
+
+<!-- END of jsp/useraccount/accountdata/sorthistory.jsp -->
+
+ 	 			
+
+
+
+
+
+
+<!-- START jsp/useraccount/information.jsp --> 
+
+
+
+	<div class="box3">
+  	<div class="box3-header">
+    	
+    		<h2>Benutzerkonto</h2>
+    	</div>
+    	<div class="box3-content">
+    		
+    			<p>
+    			<strong>Ausweis gültig bis</strong>
+    			<br />
+    			26.08.2099
+    			</p> 
+    		
+    		
+   			
+   		</div>
+  </div>
+
+<!-- END of jsp/useraccount/information.jsp --> 
+ 	 			
+
+
+
+
+<!-- START jsp/common/news.jsp -->
+
+
+	<!-- START jsp/news_info/de_756_56.jsp -->
+		<div class="box3">
+   <div class="box3-header">
+      <h2>Abo (SEPA-Lastschriftmandat)</h2>
+   </div>
+   <p>
+     <div class="box3-content">
+       <p>Mit der Erteilung des SEPA-Lastschrift­mandates besitzen Sie ein Abonnement auf Ihren Benutzerausweis. Seine Gültigkeit läuft nur ab, wenn Sie kündigen. Die Benutzungsgebühr wird automatisch von Ihrem Konto abgebucht.</p>
+       <p><a href="https://www.bibo-dresden.de/de/benutzung/abonnement.php" rel="noopener" target="_blank">Abo abschließen, ändern, kündigen</a></p>
+     </div>
+   </p>
+</div>
+	<!-- END of jsp/news_info/de_756_56.jsp -->
+
+
+
+
+	<!-- START jsp/news_info/de_756_52.jsp -->
+		<div class="box3">
+   <div class="box3-header">
+      <h2>Gebühren online bezahlen</h2>
+   </div>
+   <p>
+     <div class="box3-content">
+       <p style="text-align:center;"><a href="https://www.bibo-dresden.de/online-bezahlung" rel="noopener" target="_blank"><img src="https://www.bibo-dresden.de/media/bilder/stadtbibliothek/benutzung/zahlungsdienstleister_2025_350x178.jpg" style="width: 18.3em;" alt="Grafik mit den Logos der Zahlungsdienstleister PayPal, Mastercard und Visa" /></a></p>
+       <p>Mit der Online-Bezahlfunktion können Sie Ihre Bibliotheks­gebühren ab einer Gebühren­höhe von 2,50 Euro online begleichen.</p>
+       <p><a href="https://www.bibo-dresden.de/online-bezahlung" rel="noopener" target="_blank">Informationen und Schritt-für-Schritt-Anleitung</a></p>
+     </div>
+   </p>
+</div>
+	<!-- END of jsp/news_info/de_756_52.jsp -->
+
+
+
+
+	<!-- START jsp/news_info/de_756_5.jsp -->
+		  <div class="box3">
+     <div class="box3-header">
+       <h2>Benachrichtigungen aktivieren</h2>
+     </div>
+     <p>
+       <div class="box3-content">
+         <p>Benachrichtigungen über abholbare Vorbestellungen und Erinnerungen an das Ende der Leihfrist werden auch als E-Mail oder SMS verschickt.</p>
+         <p>Zur Aktivierung tragen Sie bitte Ihre E-Mail-Adresse oder Ihre Handy-Nummer in Ihre Nutzerdaten ein.</p>
+         <p>Wählen Sie im 'Konto' > 'Benutzerdaten' > 'Stammdaten' > 'Adressdaten'.</p>
+         <p>Dort steht Ihnen auch ein Hinweistext zur Verfügung.</p>
+       </div>
+     </p>
+  </div>
+	<!-- END of jsp/news_info/de_756_5.jsp -->
+
+
+
+<!-- END of jsp/common/news.jsp --> 
+ 	 		</div> <!-- right -->
+    	<br class="cleaner" />
+    </div> <!-- main -->
+    </form>
+ 		
+
+
+
+
+
+
+
+<!-- START jsp/common/footer.jsp -->
+
+<div id="footer">
+<!-- ### SBD MG 10.05.2023 ### START E-Payment ### -->
+	<p class="epayment"><a href="https://www.bibo-dresden.de/online-bezahlung" target="_blank" styleClass="external" title="Hinweise zur Online-Bezahlung anzeigen">
+            Geb&uuml;hren online bezahlen</a>:</p>
+	<img src="/webOPACClient/images/payment/logo_epay-bl.png" alt="Logo ePayBL" width="77" height="20" class="epayment">
+	<img src="/webOPACClient/images/payment/logo_paypal.png" alt="Logo PayPal" width="78" height="20" class="epayment">
+	<img src="/webOPACClient/images/payment/logo_mastercard.png" alt="Logo Mastercard" width="32" height="20" class="epayment">
+	<img src="/webOPACClient/images/payment/logo_visa.png" alt="Logo VISA" width="62" height="20" class="epayment">
+<!-- ### SBD MG 10.05.2023 ### ENDE E-Payment ### -->
+  
+	
+	
+	
+		<br /><br />
+		Bitte melden Sie sich beim Verlassen des Kataloges von Ihrem Bibliothekskonto ab! 
+		<a href="/webOPACClient/login.do?methodToCall=logout" title="Abmelden">Jetzt abmelden.</a>&nbsp;
+	
+  <div id="copyright">
+<!-- ### SBD MG 07.05.2018 ### START Links Impressum/Datenschutz ### -->
+	  <a href="https://www.bibo-dresden.de/de/service/impressum.php" target="_blank" styleClass="external" title="Impressum anzeigen">
+	    Impressum</a> | 
+	  <a href="https://www.bibo-dresden.de/de/service/datenschutz.php" target="_blank" styleClass="external" title="Datenschutzerklärung anzeigen">
+	    Datenschutz</a> | 
+<!-- ### SBD MG 07.05.2018 ### ENDE Links Impressum/Datenschutz ### -->
+ 	  Copyright &copy; 2021.&nbsp;Alle Rechte vorbehalten.
+	  <img src="/webOPACClient/images/OCLC.jpg" alt="OCLC" title="OCLC" width="54" height="19" />
+  </div>
+  <div class="cleaner"></div>
+
+</div>
+<!-- END of jsp/common/footer.jsp -->
+ 
+ 		
+ 	</div> 
+</body>
+<!-- END of jsp/useraccount/accountdata/Layout.jsp --> 	
+<!-- START jsp/common/metaFooter.jsp -->
+</html>
+<!-- END of jsp/common/metaFooter.jsp -->
+  
