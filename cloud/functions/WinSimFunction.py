@@ -32,9 +32,9 @@ def check_winsim_invoices(
         logging.info(
             f"Successfully uploaded {len(uploads)} WinSim invoice(s) to Google Drive"
         )
-        success_msg = f"📄 WinSim: Uploaded {len(uploads)} invoice(s) to Google Drive"
-
-        send_eventgrid_events([SendTelegramMessageEventGrid(message=success_msg)])
+        if (n_uploads := len(uploads)) > 0:
+            success_msg = f"📄 WinSim: Uploaded {n_uploads} invoice(s) to Google Drive"
+            send_eventgrid_events([SendTelegramMessageEventGrid(message=success_msg)])
 
     except Exception as e:
         error_msg = f"Error in check_winsim_invoices: {str(e)}"

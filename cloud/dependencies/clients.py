@@ -2,6 +2,8 @@ from functools import lru_cache
 
 from cloud.functions.infrastructure.google.helper import load_google_credentials
 from cloud.helper import SecretKeys, get_secret
+from sebastian.clients.bibo.client import BiboClient
+from sebastian.clients.bibo.credentials import BiboCredentials
 from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gemini.client import GeminiClient
 from sebastian.clients.google.gemini.credentials import GeminiApiKey
@@ -54,3 +56,9 @@ def resolve_mietplan_client() -> MietplanClient:
 def resolve_gemini_client() -> GeminiClient:
     credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
     return GeminiClient(credentials)
+
+
+@lru_cache()
+def resolve_bibo_client() -> BiboClient:
+    credentials = get_secret(SecretKeys.BiboCredentials, BiboCredentials)
+    return BiboClient(credentials)
