@@ -50,9 +50,9 @@ class EventGridMixin[TRequest](ABC):
         """
         ...
 
-    @property
-    def base_name(self):
-        return self.__class__.__name__.replace("EventGrid", "")
+    @classmethod
+    def base_name(cls):
+        return cls.__name__.replace("EventGrid", "")
 
     @classmethod
     def uri_env_name(cls) -> str:
@@ -69,7 +69,7 @@ class EventGridMixin[TRequest](ABC):
     def to_output(self) -> func.EventGridOutputEvent:
         """Generate EventGridOutputEvent with auto-derived configuration."""
         # Derive base name from class name (remove EventGrid suffix)
-        base_name = self.base_name
+        base_name = self.base_name()
 
         return func.EventGridOutputEvent(
             id=str(uuid.uuid4()),
@@ -83,7 +83,7 @@ class EventGridMixin[TRequest](ABC):
     def to_direct_output(self) -> EventGridEvent:
         """Generate EventGridEvent for SDK with auto-derived configuration."""
         # Derive base name from class name (remove EventGrid suffix)
-        base_name = self.base_name
+        base_name = self.base_name()
 
         return EventGridEvent(
             subject=base_name,

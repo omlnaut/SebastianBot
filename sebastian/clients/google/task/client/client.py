@@ -24,6 +24,7 @@ class GoogleTaskClient:
         task_body = build_task_body(title, notes, due_date)
         parsed = post_create_task(self._service, tasklist, task_body)
         return Task(
+            id=parsed.id,
             title=parsed.title,
             due=parsed.due,
             notes=parsed.notes,
@@ -31,9 +32,19 @@ class GoogleTaskClient:
             link=parsed.webViewLink,
         )
 
-    def get_tasks(self, tasklist: TaskLists = TaskLists.Default) -> list[TaskResponse]:
+    def get_tasks(self, tasklist: TaskLists = TaskLists.Default) -> list[Task]:
+        def _response_to_domain(response: TaskResponse) -> Task:
+            return Task(
+                id=response.id,
+                tasklist=tasklist,
+                title=response.title,
+                due=response.due,
+                notes=response.notes,
+                link=response.webViewLink,
+            )
+
         tasks_response = self._service.get_tasks(to_id(tasklist))
-        return tasks_response
+        return [_response_to_domain(task) for task in tasks_response]
 
     def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:
         self._service.set_task_to_complete(to_id(tasklist), task_id)

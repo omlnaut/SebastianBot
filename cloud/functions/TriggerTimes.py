@@ -5,3 +5,4 @@ class TriggerTimes:
     WinSim: str = "0 21 * * *"  # Every day at 21:00
     Mietplan: str = "1 21 * * *"  # Every day at 21:01
     MailCheck: str = "*/5 * * * *"  # Every 5 minutes
+    BiboLendingSync: str = "0 8 * * *"  # Every day at 08:00

@@ -4,7 +4,8 @@ import re
 
 from bs4 import BeautifulSoup
 
-from sebastian.clients.bibo.client._models import BookLendingInfoRaw, TimeRange
+from sebastian.shared.dates import TimeRange
+from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
 
 def _parse_date(date_str: str) -> datetime:
@@ -39,7 +40,7 @@ def _find_location(date_and_location_cell_content):
     return location
 
 
-def _parse_row(cells: list) -> BookLendingInfoRaw:
+def _parse_row(cells: list) -> BookLendingInfo:
     book_id = cells[0].find("input", type="hidden")["value"]
     title = cells[1].find("strong").get_text(strip=True)
     date_and_location_cell_content = cells[2].get_text(separator="\n", strip=True)
@@ -47,7 +48,7 @@ def _parse_row(cells: list) -> BookLendingInfoRaw:
     location = _find_location(date_and_location_cell_content)
     lending_timerange = _find_dates(date_and_location_cell_content)
 
-    return BookLendingInfoRaw(
+    return BookLendingInfo(
         title=title,
         id=book_id,
         location=location,
@@ -55,7 +56,7 @@ def _parse_row(cells: list) -> BookLendingInfoRaw:
     )
 
 
-def parse_account_page(html: str) -> list[BookLendingInfoRaw]:
+def parse_account_page(html: str) -> list[BookLendingInfo]:
     soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", class_="data")
     return [
