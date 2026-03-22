@@ -30,7 +30,11 @@
 				"python.pythonPath": "/usr/local/bin/python",
 				"python.testing.autoTestDiscoverOnSaveEnabled": false,
 				"jupyter.useDefaultConfigForJupyter": true,
-				"python.analysis.diagnosticMode": "workspace"
+				"python.analysis.diagnosticMode": "workspace",
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.black-formatter",
+					"editor.formatOnSave": true
+				}
 			}
 		}
 	},
