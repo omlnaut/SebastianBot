@@ -13,12 +13,14 @@ from sebastian.usecases.side_effects import (
     modify_mail_labels,
 )
 from sebastian.usecases.features import delivery_ready
+from sebastian.usecases.features import bibo_lending_sync
 import sebastian.usecases.WinSim as WinSim
 import sebastian.usecases.ReturnTracker as ReturnTracker
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 from .clients import (
+    resolve_bibo_client,
     resolve_gemini_client,
     resolve_gmail_client,
     resolve_google_drive_client,
@@ -54,6 +56,16 @@ def resolve_delivery_ready(
 ) -> UseCaseHandler[delivery_ready.Request]:
     return delivery_ready.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
+    )
+
+
+def resolve_bibo_lending_sync(
+    bibo_client: bibo_lending_sync.BiboClient | None = None,
+    task_client: bibo_lending_sync.TaskClient | None = None,
+) -> UseCaseHandler[bibo_lending_sync.Request]:
+    return bibo_lending_sync.Handler(
+        bibo_client=bibo_client or resolve_bibo_client(),
+        task_client=task_client or resolve_google_task_client(),
     )
 
 

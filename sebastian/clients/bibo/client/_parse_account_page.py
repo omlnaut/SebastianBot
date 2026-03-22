@@ -4,7 +4,8 @@ import re
 
 from bs4 import BeautifulSoup
 
-from sebastian.clients.bibo.client._models import BookLendingInfo, TimeRange
+from sebastian.shared.dates import TimeRange
+from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
 
 def _parse_date(date_str: str) -> datetime:

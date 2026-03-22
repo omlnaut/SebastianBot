@@ -1,8 +1,9 @@
 from datetime import datetime
 from pathlib import Path
 
-from sebastian.clients.bibo.client._models import BookLendingInfo, TimeRange
 from sebastian.clients.bibo.client._parse_account_page import parse_account_page
+from sebastian.shared.dates import TimeRange
+from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
 
 def test_account_page_parsing():

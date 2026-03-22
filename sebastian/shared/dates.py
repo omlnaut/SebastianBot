@@ -1,5 +1,13 @@
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
+from dataclasses import dataclass
+from datetime import datetime
+
+
+@dataclass(frozen=True)
+class TimeRange:
+    from_date: datetime
+    to_date: datetime
 
 
 def get_end_of_day(day: datetime | None = None) -> datetime:
