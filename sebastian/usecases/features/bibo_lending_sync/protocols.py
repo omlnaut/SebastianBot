@@ -1,7 +1,6 @@
 from typing import Protocol
 
-from sebastian.clients.google.task.client._models import TaskResponse
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import Task, TaskLists
 from sebastian.shared.dates import TimeRange
 
 from pydantic import BaseModel, Field
@@ -21,4 +20,4 @@ class BiboClient(Protocol):
 
 
 class TaskClient(Protocol):
-    def get_tasks(self, tasklist: TaskLists) -> list[TaskResponse]: ...
+    def get_tasks(self, tasklist: TaskLists) -> list[Task]: ...

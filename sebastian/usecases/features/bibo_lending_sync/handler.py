@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 import logging
 
-from sebastian.clients.google.task.client._models import TaskResponse
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import AllActor, CompleteTask, CreateTask
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -30,7 +29,7 @@ class Handler(UseCaseHandler[Request]):
         bibo_tasks = {
             book_id: task
             for task in tasks
-            if (book_id := _extract_book_id(task)) is not None
+            if (book_id := _extract_book_id(task.notes)) is not None
         }
         lending_by_id = {lending.id: lending for lending in lendings}
 
@@ -49,7 +48,7 @@ class Handler(UseCaseHandler[Request]):
             elif _due_date_differs(existing, lending):
                 logging.info(
                     f"BiboLendingSync: due date changed for book_id={lending.id}, "
-                    f"completing task {existing.id}"
+                    f"completing task {existing.title}"
                 )
                 completes.append(
                     CompleteTask(tasklist=self._tasklist, task_id=existing.id)
@@ -60,7 +59,7 @@ class Handler(UseCaseHandler[Request]):
             if book_id not in lending_by_id:
                 logging.info(
                     f"BiboLendingSync: lending for book_id={book_id} no longer open, "
-                    f"completing task {task.id}"
+                    f"completing task {task.title}"
                 )
                 completes.append(CompleteTask(tasklist=self._tasklist, task_id=task.id))
 
@@ -71,16 +70,16 @@ class Handler(UseCaseHandler[Request]):
         return AllActor(create_tasks=creates, complete_tasks=completes)
 
 
-def _extract_book_id(task: TaskResponse) -> str | None:
-    if not task.notes:
+def _extract_book_id(notes: str | None) -> str | None:
+    if not notes:
         return None
-    for line in task.notes.splitlines():
+    for line in notes.splitlines():
         if line.startswith("book_id: "):
             return line[len("book_id: ") :]
     return None
 
 
-def _due_date_differs(task: TaskResponse, lending: BookLendingInfo) -> bool:
+def _due_date_differs(task: Task, lending: BookLendingInfo) -> bool:
     if task.due is None:
         return True
     return task.due.date() != lending.lending_timerange.to_date.date()

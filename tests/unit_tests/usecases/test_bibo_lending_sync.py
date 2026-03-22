@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 
-from sebastian.clients.google.task.client._models import TaskResponse
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import AllActor, CompleteTask
 from sebastian.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
-_TASKLIST = TaskLists.Default
+_TASKLIST = TaskLists.Bibo
 
 
 def _make_lending(
@@ -26,19 +25,12 @@ def _make_lending(
 
 
 def _make_task(
-    task_id: str = "task-1",
     book_id: str | None = "123456789",
     due: datetime | None = datetime(2026, 4, 1, tzinfo=timezone.utc),
-) -> TaskResponse:
+    task_id: str = "task-1",
+) -> Task:
     notes = f"book_id: {book_id}\ntitle: Some Book" if book_id else None
-    return TaskResponse(
-        kind="tasks#task",
-        id=task_id,
-        etag="abc",
-        title="Bibo: Some Book",
-        due=due,
-        notes=notes,
-    )
+    return Task(id=task_id, tasklist=_TASKLIST, title="bibo", due=due, notes=notes)
 
 
 class _FakeBiboClient:
@@ -50,14 +42,14 @@ class _FakeBiboClient:
 
 
 class _FakeTaskClient:
-    def __init__(self, tasks: list[TaskResponse]):
+    def __init__(self, tasks: list[Task]):
         self._tasks = tasks
 
-    def get_tasks(self, tasklist: TaskLists) -> list[TaskResponse]:
+    def get_tasks(self, tasklist: TaskLists) -> list[Task]:
         return self._tasks
 
 
-def _run(lendings: list[BookLendingInfo], tasks: list[TaskResponse]) -> AllActor:
+def _run(lendings: list[BookLendingInfo], tasks: list[Task]) -> AllActor:
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
         task_client=_FakeTaskClient(tasks),
@@ -115,7 +107,7 @@ def test_due_date_changed_completes_and_recreates():
     old_due = datetime(2026, 3, 20, tzinfo=timezone.utc)
     new_due = datetime(2026, 4, 5, tzinfo=timezone.utc)
     lending = _make_lending(to_date=new_due)
-    task = _make_task(task_id="task-old", due=old_due)
+    task = _make_task(due=old_due, task_id="task-old")
 
     result = _run(lendings=[lending], tasks=[task])
 
