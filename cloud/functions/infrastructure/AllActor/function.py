@@ -13,6 +13,7 @@ def all_actor_handler(
 ):
     logging.info("AllActor event received")
     event = parse_payload(azeventgrid, AllActorEventGrid)
+    logging.info(f"AllActor event parsed: {event}")
     send_eventgrid_events(event.create_tasks)
     send_eventgrid_events(event.complete_tasks)
     send_eventgrid_events(event.send_messages)

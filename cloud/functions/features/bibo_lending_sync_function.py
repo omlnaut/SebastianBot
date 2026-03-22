@@ -13,7 +13,7 @@ from ..TriggerTimes import TriggerTimes
 @app.timer_trigger(
     schedule=TriggerTimes.BiboLendingSync,
     arg_name="mytimer",
-    run_on_startup=True,
+    run_on_startup=False,
     use_monitor=False,
 )
 def check_bibo_lending_sync(mytimer: TimerRequest) -> None:
