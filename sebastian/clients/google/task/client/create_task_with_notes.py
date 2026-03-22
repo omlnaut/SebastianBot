@@ -15,4 +15,4 @@ def post_create_task(
 
 
 def build_task_body(title: str, notes: str, due_date: datetime) -> dict[str, str]:
-    return {"title": title, "notes": notes, "due": due_date.isoformat()}
+    return {"title": title, "notes": notes, "due": due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")}

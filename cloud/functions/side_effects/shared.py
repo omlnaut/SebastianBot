@@ -48,7 +48,7 @@ def perform_usecase_from_eventgrid(
 
     event_model = _extract_first_arg_type(create_request)
     try:
-        logging.info(f"EventGrid {event_model.base_name} triggered")
+        logging.info(f"EventGrid {event_model.base_name()} triggered")
         event = parse_payload(az_event, event_model)
         request = create_request(event)
         handler = resolve_handler()
@@ -58,8 +58,9 @@ def perform_usecase_from_eventgrid(
         send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
 
     except Exception as e:
-        error_msg = f"Error {event_model.base_name}: {str(e)}"
+        error_msg = f"Error {event_model.base_name()}: {str(e)}"
         logging.error(error_msg)
+        logging.error(f"Error payload: {az_event.get_json()}")
         send_eventgrid_events(
             [
                 AllActorEventGrid(
@@ -68,7 +69,7 @@ def perform_usecase_from_eventgrid(
             ]
         )
 
-    logging.info(f"EventGrid {event_model.base_name} completed")
+    logging.info(f"EventGrid {event_model.base_name()} completed")
 
 
 def perform_usecase_from_request(
