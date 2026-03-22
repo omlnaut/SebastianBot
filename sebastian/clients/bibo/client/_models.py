@@ -11,7 +11,7 @@ class TimeRange:
 from pydantic import BaseModel, Field
 
 
-class BookLendingInfoRaw(BaseModel):
+class BookLendingInfo(BaseModel):
     title: str = Field(min_length=1)
     id: str = Field(min_length=9, max_length=9)
     location: str = Field(min_length=1)
