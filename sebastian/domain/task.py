@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class TaskLists(Enum):
     Default = auto()
     Mangas = auto()
+    Bibo = auto()
 
 
 class Task(BaseModel):

@@ -10,8 +10,6 @@ from .protocols import BiboClient, BookLendingInfo, TaskClient
 
 __all__ = ["Request", "Handler", "BiboClient", "TaskClient"]
 
-_TASKLIST = TaskLists.Default
-
 
 @dataclass
 class Request:
@@ -19,13 +17,15 @@ class Request:
 
 
 class Handler(UseCaseHandler[Request]):
+    _tasklist = TaskLists.Bibo
+
     def __init__(self, bibo_client: BiboClient, task_client: TaskClient):
         self._bibo_client = bibo_client
         self._task_client = task_client
 
     def handle(self, request: Request) -> AllActor:
         lendings = self._bibo_client.fetch_open_lendings()
-        tasks = self._task_client.get_tasks(_TASKLIST)
+        tasks = self._task_client.get_tasks(self._tasklist)
 
         bibo_tasks = {
             book_id: task
@@ -45,14 +45,16 @@ class Handler(UseCaseHandler[Request]):
         for lending in lendings:
             existing = bibo_tasks.get(lending.id)
             if existing is None:
-                creates.append(_make_create_task(lending))
+                creates.append(_make_create_task(lending, self._tasklist))
             elif _due_date_differs(existing, lending):
                 logging.info(
                     f"BiboLendingSync: due date changed for book_id={lending.id}, "
                     f"completing task {existing.id}"
                 )
-                completes.append(CompleteTask(tasklist=_TASKLIST, task_id=existing.id))
-                creates.append(_make_create_task(lending))
+                completes.append(
+                    CompleteTask(tasklist=self._tasklist, task_id=existing.id)
+                )
+                creates.append(_make_create_task(lending, self._tasklist))
 
         for book_id, task in bibo_tasks.items():
             if book_id not in lending_by_id:
@@ -60,7 +62,7 @@ class Handler(UseCaseHandler[Request]):
                     f"BiboLendingSync: lending for book_id={book_id} no longer open, "
                     f"completing task {task.id}"
                 )
-                completes.append(CompleteTask(tasklist=_TASKLIST, task_id=task.id))
+                completes.append(CompleteTask(tasklist=self._tasklist, task_id=task.id))
 
         logging.info(
             f"BiboLendingSync: creating {len(creates)} tasks, "
@@ -84,7 +86,7 @@ def _due_date_differs(task: TaskResponse, lending: BookLendingInfo) -> bool:
     return task.due.date() != lending.lending_timerange.to_date.date()
 
 
-def _make_create_task(lending: BookLendingInfo) -> CreateTask:
+def _make_create_task(lending: BookLendingInfo, tasklist: TaskLists) -> CreateTask:
     notes = (
         f"book_id: {lending.id}\n"
         f"title: {lending.title}\n"
@@ -94,7 +96,7 @@ def _make_create_task(lending: BookLendingInfo) -> CreateTask:
     )
     return CreateTask(
         title=f"Bibo: {lending.title}",
-        tasklist=_TASKLIST,
+        tasklist=tasklist,
         notes=notes,
         due=lending.lending_timerange.to_date,
     )
