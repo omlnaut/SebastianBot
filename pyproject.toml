@@ -11,7 +11,7 @@ azure-functions = "^1.24"
 python-telegram-bot = "^22.5"
 azure-identity = "^1.25"
 azure-keyvault-secrets = "^4.10"
-pydantic = "^2.12"
+pydantic = {extras = ["email"], version = "^2.12.5"}
 google-auth-oauthlib = "^1.2"
 google-api-python-client = "^2.187"
 beautifulsoup4 = "^4.14"
