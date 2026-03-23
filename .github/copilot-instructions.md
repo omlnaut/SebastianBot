@@ -27,6 +27,9 @@ The project root dir is always */workspaces/SebastianBot*. Code is organized as 
     - instructions/: specific instructions for different tasks (e.g., creating a new service)
 
 ## Guidelines
+### agentic coding
+- Delay asking for user input as much as possible. I.e. when creating a new client that needs a new scope in a token, ask for adding that scope after the implementation is done (not at the start)
+- When creating new .py files, pylance does not pick them up for type checking automatically. Before checking for any kind of errors in the problem tab, always restart the python language server
 ### Project structure
 - Follow clean architecture principles: separate concerns between different layers (cloud vs sebastian)
     - sebastian (application layer) should not depend on cloud (infrastructure layer)
@@ -37,9 +40,11 @@ The project root dir is always */workspaces/SebastianBot*. Code is organized as 
 A usecase should only contain a request model, a handler class and protocols for all external dependencies that get dependency injected. A cloud function that calls the usecase does so through the *perform_usecase* method. You pass in a mapping function from the EventGrid event to the request model, and a function to resolve the handler. The return type of a usecase handler should always be an *AllActor* object, which then gets mapped to *AllActorEventGrid* and handled accordingly.
 
 ### Code
-- use type hints everywhere. if not possible because external packages don't support it, use type: ignore comments
+- use type hints everywhere. if not possible because external packages don't support it, use type: ignore comments or extract calls to that library into a wrapper with standard type checking. By default, files should not have open typing problems.
 - make sure classes only "expose" their public methods and attributes. use leading underscore for private methods/attributes
 - public methods should orchestrate calls to private methods to clearly show the logical flow. private methods should not call other private methods
-- use list comprehensions and early returns/continue to write more concise code
+- use comprehensions and early returns/continue to write more concise code
 - include relevant information, like IDs, in log messages
 - represent time spans passed into methods as `timedelta` (e.g. prefer `time_back: timedelta` over `hours_back: int`). Convert to absolute timestamps within the method body.
+- use | None instead of Optional[...] for none-able type hints
+- in general, don't handle exceptions. Every usecase will be wrapped in caller functions with a try except, handling unexpected exceptions. Excempt are cases where certain exceptions should be handled 'locally'
