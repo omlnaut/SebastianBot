@@ -9,6 +9,7 @@ from sebastian.clients.google.gemini.client import GeminiClient
 from sebastian.clients.google.gemini.credentials import GeminiApiKey
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
+from sebastian.clients.google.calendar_event.client import CalendarEventClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
 from sebastian.clients.mietplan.client import MietplanClient
 from sebastian.clients.mietplan.credentials import MietplanCredentials
@@ -38,6 +39,12 @@ def resolve_telegram_client() -> TelegramClient:
 def resolve_google_task_client() -> GoogleTaskClient:
     credentials = load_google_credentials()
     return GoogleTaskClient(credentials)
+
+
+@lru_cache()
+def resolve_calendar_event_client() -> CalendarEventClient:
+    credentials = load_google_credentials()
+    return CalendarEventClient(credentials)
 
 
 @lru_cache()
