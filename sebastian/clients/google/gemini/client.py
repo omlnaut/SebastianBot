@@ -10,6 +10,10 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class GeminiClient:
+    """
+    See https://ai.google.dev/gemini-api/docs/rate-limits
+    """
+
     def __init__(self, credentials: GeminiApiKey) -> None:
         self._client = genai.Client(api_key=credentials.api_key)
 
