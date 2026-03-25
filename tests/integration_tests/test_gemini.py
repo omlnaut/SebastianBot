@@ -16,7 +16,7 @@ def test_get_response(gemini_client: IGeminiClient):
 
     prompt = "Tell me a funny joke in JSON format with a single field 'joke'."
     joke_response = gemini_client.get_response(
-        contents=prompt, response_schema=JokeResponse
+        prompt=prompt, response_schema=JokeResponse
     )
 
     assert isinstance(joke_response, JokeResponse)

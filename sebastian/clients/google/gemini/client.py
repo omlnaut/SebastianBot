@@ -13,7 +13,7 @@ class GeminiClient:
     def __init__(self, credentials: GeminiApiKey) -> None:
         self._client = genai.Client(api_key=credentials.api_key)
 
-    def get_response(self, contents: str, response_schema: type[T]) -> T:
+    def get_response(self, prompt: str, response_schema: type[T]) -> T:
         """
         Generate content using Gemini model with structured output.
 
@@ -26,7 +26,7 @@ class GeminiClient:
         """
         response = self._client.models.generate_content(  # type: ignore
             model="gemini-2.5-flash-lite",
-            contents=contents,
+            contents=prompt,
             config={
                 "response_mime_type": "application/json",
                 "response_schema": response_schema,
