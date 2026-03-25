@@ -7,12 +7,12 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class IGeminiClient(Protocol):
-    def get_response(self, contents: str, response_schema: type[T]) -> T:
+    def get_response(self, prompt: str, response_schema: type[T]) -> T:
         """
         Generate content using Gemini model with structured output.
 
         Args:
-            contents: The prompt/content to send to the model
+            prompt: The prompt/content to send to the model
             response_schema: Pydantic model class defining the expected response structure
 
         Returns:
