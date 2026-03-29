@@ -4,9 +4,9 @@ import logging
 from azure.functions import TimerRequest
 
 from cloud.dependencies.usecases import resolve_mietplan_service
-from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
-from cloud.functions.side_effects.shared import send_eventgrid_events
+from cloud.functions.side_effects.shared import perform_usecase_from_request
 from function_app import app
+from sebastian.usecases.features import mietplan
 
 from .TriggerTimes import TriggerTimes
 
@@ -22,7 +22,6 @@ def check_mietplan(
 ) -> None:
     logging.info("Checking for new mietplan files")
 
-    service = resolve_mietplan_service()
-    actor_result = service.process_new_files(max_file_age=timedelta(days=1))
-
-    send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
+    perform_usecase_from_request(
+        mietplan.Request(max_file_age=timedelta(days=1)), resolve_mietplan_service
+    )

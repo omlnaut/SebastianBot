@@ -2,7 +2,6 @@ from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
 from sebastian.usecases.side_effects import (
@@ -11,7 +10,7 @@ from sebastian.usecases.side_effects import (
     send_telegram_message,
     modify_mail_labels,
 )
-from sebastian.usecases.features import delivery_ready, manga_update
+from sebastian.usecases.features import delivery_ready, manga_update, mietplan
 from sebastian.usecases.features import bibo_lending_sync
 import sebastian.usecases.WinSim as WinSim
 import sebastian.usecases.ReturnTracker as ReturnTracker
@@ -34,8 +33,8 @@ def resolve_mietplan_service(
     mietplan_client: IMietplanClient | None = None,
     google_drive_client: IGoogleDriveClient | None = None,
     gdrive_folder_id: str = "19gdVV_DMtdQU0xi7TgfKJCRRc4c7m0fd",
-) -> MietplanService:
-    return MietplanService(
+) -> UseCaseHandler[mietplan.Request]:
+    return mietplan.Handler(
         mietplan_client=mietplan_client or resolve_mietplan_client(),
         google_drive_client=google_drive_client or resolve_google_drive_client(),
         gdrive_folder_id=gdrive_folder_id,
