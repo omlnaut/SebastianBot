@@ -20,13 +20,12 @@ def get_end_of_day(day: datetime | None = None) -> datetime:
     return day.replace(hour=23, minute=59, second=59, microsecond=0)
 
 
-def is_at_most_one_day_old(input_date: datetime | date) -> bool:
-    """Check if the given date is at most one day old."""
+def is_within_timedelta(input_date: datetime | date, delta: timedelta) -> bool:
+    """Check if the given date is within the specified timedelta from now."""
     if isinstance(input_date, datetime):
         input_date = input_date.date()
     now = date.today()
-    one_day_ago = now - timedelta(days=1)
-    return one_day_ago <= input_date <= now
+    return now - delta <= input_date <= now
 
 
 def to_timestamp(date: datetime | int) -> int:
