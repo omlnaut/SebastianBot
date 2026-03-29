@@ -20,7 +20,7 @@ from cloud.functions.side_effects.modify_mail_label.function import (
     test_modify_mail_label,
 )
 from cloud.functions.features.bibo_lending_sync_function import check_bibo_lending_sync
-from cloud.functions.MangaUpdateFunction import check_manga_update
+from cloud.functions.features.MangaUpdateFunction import check_manga_update
 from cloud.functions.MietplanFunction import check_mietplan
 from cloud.functions.WinSimFunction import check_winsim_invoices
 from cloud.functions.ReturnTrackerFunction import check_return_tracker

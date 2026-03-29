@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from datetime import timedelta
+
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.manga_update import (
     IMangaUpdateClient,
@@ -6,7 +9,8 @@ from sebastian.protocols.manga_update import (
     MangaChapter,
 )
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
-from sebastian.shared.dates import is_at_most_one_day_old
+from sebastian.shared.dates import is_within_timedelta
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
 mangas = [
@@ -14,12 +18,6 @@ mangas = [
         title="Omniscient Reader's Viewpoint",
         url="https://flamecomics.xyz/series/2",
         series_id=50369844984,
-        publisher=MangaPublisher.FLAMECOMICS,
-    ),
-    MangaUpdateManga(
-        title="Auto Hunting with Clones",
-        url="https://flamecomics.xyz/series/109",
-        series_id=44327338345,
         publisher=MangaPublisher.FLAMECOMICS,
     ),
     MangaUpdateManga(
@@ -31,18 +29,23 @@ mangas = [
 ]
 
 
-class MangaUpdateService:
+@dataclass
+class Request:
+    time_back: timedelta
+
+
+class Handler(UseCaseHandler[Request]):
     def __init__(self, client: IMangaUpdateClient):
         self.client = client
 
-    def get_latest_chapters(self) -> AllActor:
+    def handle(self, request: Request) -> AllActor:
         tasks: list[CreateTask] = []
         errors: list[SendMessage] = []
 
         for manga in mangas:
             try:
                 chapter = self.client.get_latest_chapter(manga)
-                if is_at_most_one_day_old(chapter.release_date):
+                if is_within_timedelta(chapter.release_date, request.time_back):
                     tasks.append(_map_to_create_task(chapter))
             except Exception as e:
                 errors.append(

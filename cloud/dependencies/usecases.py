@@ -2,7 +2,6 @@ from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.MangaUpdate.service import MangaUpdateService
 from sebastian.usecases.mietplan.service import MietplanService
 from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
@@ -12,7 +11,7 @@ from sebastian.usecases.side_effects import (
     send_telegram_message,
     modify_mail_labels,
 )
-from sebastian.usecases.features import delivery_ready
+from sebastian.usecases.features import delivery_ready, manga_update
 from sebastian.usecases.features import bibo_lending_sync
 import sebastian.usecases.WinSim as WinSim
 import sebastian.usecases.ReturnTracker as ReturnTracker
@@ -45,8 +44,8 @@ def resolve_mietplan_service(
 
 def resolve_mangaupdate_service(
     mangaupdate_client: IMangaUpdateClient | None = None,
-) -> MangaUpdateService:
-    return MangaUpdateService(
+) -> UseCaseHandler[manga_update.Request]:
+    return manga_update.Handler(
         client=mangaupdate_client or resolve_mangaupdate_client(),
     )
 

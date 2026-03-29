@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from sebastian.shared.dates import get_end_of_day, is_at_most_one_day_old
+from sebastian.shared.dates import get_end_of_day, is_within_timedelta
 
 
 def test_get_end_of_day_specific_day():
@@ -27,18 +27,18 @@ def test_is_at_most_one_day_old_within_one_day():
     # Test with a date within one day
     now = datetime.now(ZoneInfo("UTC"))
     one_day_ago = now - timedelta(hours=23)
-    assert is_at_most_one_day_old(one_day_ago) is True
+    assert is_within_timedelta(one_day_ago, timedelta(days=1)) is True
 
 
 def test_is_at_most_one_day_old_exactly_one_day():
     # Test with a date exactly one day old
     now = datetime.now(ZoneInfo("UTC"))
     exactly_one_day_ago = now - timedelta(days=1)
-    assert is_at_most_one_day_old(exactly_one_day_ago) is True
+    assert is_within_timedelta(exactly_one_day_ago, timedelta(days=1)) is True
 
 
 def test_is_at_most_one_day_old_older_than_one_day():
     # Test with a date older than one day
     now = datetime.now(ZoneInfo("UTC"))
     older_than_one_day = now - timedelta(days=2)
-    assert is_at_most_one_day_old(older_than_one_day) is False
+    assert is_within_timedelta(older_than_one_day, timedelta(days=1)) is False
