@@ -1,12 +1,19 @@
+from dataclasses import dataclass
 import logging
 from datetime import datetime, timedelta
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.protocols.mietplan import File, Folder, IMietplanClient
 from sebastian.protocols.models import AllActor, SendMessage
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
-class MietplanService:
+@dataclass
+class Request:
+    max_file_age: timedelta
+
+
+class Handler(UseCaseHandler[Request]):
     def __init__(
         self,
         mietplan_client: IMietplanClient,
@@ -17,9 +24,7 @@ class MietplanService:
         self.google_drive_client = google_drive_client
         self.gdrive_folder_id = gdrive_folder_id
 
-    def process_new_files(
-        self, max_file_age: timedelta = timedelta(days=1)
-    ) -> AllActor:
+    def handle(self, request: Request) -> AllActor:
         """
         Checks for new files in the mietplan source, and if they are newer than max_file_age,
         uploads them to Google Drive.
@@ -27,40 +32,28 @@ class MietplanService:
         Returns:
             AllActor: With send_messages containing success or error messages.
         """
-        try:
-            logging.info("Starting to process new mietplan files.")
+        logging.info("Starting to process new mietplan files.")
 
-            newly_uploaded_files: list[str] = []
-            for file, folder in self._get_all_file_folder_pairs():
-                if not self._is_new_file(file, max_file_age):
-                    continue
+        newly_uploaded_files: list[str] = []
+        for file, folder in self._get_all_file_folder_pairs():
+            if not self._is_new_file(file, request.max_file_age):
+                continue
 
-                logging.info(f"  Found new file: {file.name}")
-                file_content = self._download_file(file)
-                upload_path = self._get_upload_path(file, folder)
-                self._upload_to_gdrive(upload_path, file_content)
-                newly_uploaded_files.append(upload_path)
+            logging.info(f"  Found new file: {file.name}")
+            file_content = self._download_file(file)
+            upload_path = self._get_upload_path(file, folder)
+            self._upload_to_gdrive(upload_path, file_content)
+            newly_uploaded_files.append(upload_path)
 
-            logging.info(
-                f"Finished processing. Uploaded {len(newly_uploaded_files)} new files."
-            )
+        logging.info(
+            f"Finished processing. Uploaded {len(newly_uploaded_files)} new files."
+        )
 
-            if not newly_uploaded_files:
-                return AllActor(create_tasks=[], send_messages=[])
+        if not newly_uploaded_files:
+            return AllActor(create_tasks=[], send_messages=[])
 
-            message = _create_message(newly_uploaded_files)
-            return AllActor(
-                create_tasks=[], send_messages=[SendMessage(message=message)]
-            )
-
-        except Exception as e:
-            logging.error(
-                f"An error occurred during mietplan file processing: {e}", exc_info=True
-            )
-            return AllActor(
-                create_tasks=[],
-                send_messages=[SendMessage(message=f"Mietplan check failed: {str(e)}")],
-            )
+        message = _create_message(newly_uploaded_files)
+        return AllActor(create_tasks=[], send_messages=[SendMessage(message=message)])
 
     def _get_all_file_folder_pairs(self) -> list[tuple[File, Folder]]:
         return [
