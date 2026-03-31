@@ -43,12 +43,15 @@ Side-effect EventGrid triggers (one per action type):
 ## Directory Layout
 
 ```
+sebastian/domain/
+    {model}.py           # Shared data types used across usecases and clients
+
 sebastian/usecases/features/{name}/
     __init__.py          # re-exports handler.py's __all__  (from .handler import *)
     handler.py           # Request dataclass, Handler class, __all__ with protocol re-exports
     protocols.py         # Protocol definitions for every external dependency
-    parsing.py           # Domain models + parsing/transformation logic (if needed)
-    {name}.ipynb         # Notebook showcasing usage (optional but recommended)
+    parsing.py           # Complex parsing/transformation logic extracted from handler (optional)
+    {name}.ipynb         # Notebook showcasing usage (optional)
 
 cloud/functions/features/
     {name}_function.py   # Azure timer-trigger function for this usecase
@@ -123,7 +126,7 @@ class GmailClient(Protocol):
 
 `handler.py` is the core of every feature usecase. It contains exactly three things:
 
-1. **`Request`** — a `@dataclass` carrying all input parameters. Use `timedelta` for time spans.
+1. **`Request`** — a `@dataclass` carrying all input parameters.
 2. **`Handler(UseCaseHandler[Request])`** — implements `handle(request) -> AllActor`.
 3. **`__all__`** — re-exports `Request`, `Handler`, and every protocol name.
 
@@ -190,9 +193,7 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
 
 **Handler conventions:**
 - `handle()` is the single public entry point; it orchestrates calls to private methods.
-- Private methods (`_do_x`) do not call other private methods.
-- Wrap each item-level operation in `try/except`; convert exceptions to `SendMessage` objects.
-- Module-level private helpers (e.g. `_map_to_create_task`) are fine for mapping logic.
+- Errors are caught per-item and returned as `SendMessage` objects in `AllActor.send_messages`.
 
 ---
 
@@ -219,13 +220,11 @@ Errors should be returned as `SendMessage` objects in `send_messages`, not raise
 
 ---
 
-### 5. `parsing.py` — Domain Models and Parsing Logic
+### 5. `parsing.py` — Extracted Parsing Logic (optional)
 
-Extract parsing and transformation logic into `parsing.py` when it is non-trivial.
+When a usecase involves complex parsing or transformation logic (e.g. stripping HTML and feeding the result to an AI model), that logic is extracted into a separate `parsing.py` file to keep `handler.py` readable.
 
-- Use `pydantic.BaseModel` when parsing external data (e.g. structured AI responses, API JSON).
-- Use `@dataclass` for plain data containers passed between internal components.
-- Add `# pyright: basic` at the top if third-party libraries without type stubs are used (e.g. `BeautifulSoup`).
+`parsing.py` may define data models specific to its parsing logic (e.g. a schema used as the AI response type). These are not domain models — domain models always live in `sebastian/domain/`.
 
 ```python
 # sebastian/usecases/features/delivery_ready/parsing.py
@@ -236,7 +235,9 @@ from .protocols import GeminiClient
 
 class PickupData(BaseModel):
     tracking_number: str = Field(description="The DHL tracking number of the package.")
-    pickup_location: str = Field(description="...")
+    pickup_location: str = Field(
+        description="When location is Packstation, only include 'Packstation <Number>' as location."
+    )
     due_date: date
     item: str = Field(description="Description of the item to be picked up")
 
@@ -507,10 +508,10 @@ Timer fires every hour
   - One `Protocol` per external dependency
   - Export all via `__all__`
 - [ ] Create `sebastian/usecases/features/{name}/handler.py`:
-  - `@dataclass class Request` with `timedelta` for time spans
+  - `@dataclass class Request`
   - `class Handler(UseCaseHandler[Request])` with `handle(request) -> AllActor`
   - `__all__` re-exporting `Request`, `Handler`, and all protocol names
-- [ ] If parsing logic is non-trivial: create `parsing.py` with domain models and parsing functions
+- [ ] If parsing logic is non-trivial: create `parsing.py` with parsing functions
 - [ ] If using domain types (e.g. a new task list): add to `sebastian/domain/` as needed
 - [ ] Optional: create `{name}.ipynb` notebook showcasing usage
 
