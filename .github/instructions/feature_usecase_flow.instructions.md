@@ -200,7 +200,8 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
 
 **Handler conventions:**
 - `handle()` is the single public entry point; it orchestrates calls to private methods.
-- Errors are caught per-item and returned as `SendMessage` objects in `AllActor.send_messages`.
+- **Do not wrap the entire `handle()` body in `try/except`.** Both `perform_usecase_from_request` and `perform_usecase_from_eventgrid` already catch unhandled exceptions and forward them as a Telegram error message — adding a top-level `try/except` would suppress that mechanism.
+- Per-item `try/except` is acceptable when processing a list and you want to continue with remaining items despite one failure. In that case, convert the exception to a `SendMessage` in `AllActor.send_messages` so the error is surfaced via Telegram.
 
 ---
 
@@ -223,7 +224,7 @@ class AllActor(BaseModel):
 | `send_messages` | Sends a Telegram message |
 | `modify_labels` | Adds or removes Gmail labels |
 
-Errors should be returned as `SendMessage` objects in `send_messages`, not raised as exceptions.
+Unhandled exceptions propagate to `perform_usecase_from_request` / `perform_usecase_from_eventgrid`, which catch them and forward an error `SendMessage` automatically. Only convert exceptions to `SendMessage` yourself when processing a list and you want to continue despite individual item failures.
 
 ---
 
