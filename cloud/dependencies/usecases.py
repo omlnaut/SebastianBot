@@ -1,16 +1,14 @@
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.WinSim.service import WinSimService
 from sebastian.usecases.side_effects import (
     complete_task,
     create_task,
     send_telegram_message,
     modify_mail_labels,
 )
-from sebastian.usecases.features import delivery_ready, manga_update, mietplan, return_tracker
+from sebastian.usecases.features import delivery_ready, manga_update, mietplan, return_tracker, winsim
 from sebastian.usecases.features import bibo_lending_sync
-import sebastian.usecases.WinSim as WinSim
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -26,7 +24,7 @@ from .clients import (
 )
 
 
-def resolve_mietplan_service(
+def resolve_mietplan(
     mietplan_client: IMietplanClient | None = None,
     google_drive_client: IGoogleDriveClient | None = None,
     gdrive_folder_id: str = "19gdVV_DMtdQU0xi7TgfKJCRRc4c7m0fd",
@@ -66,12 +64,12 @@ def resolve_bibo_lending_sync(
     )
 
 
-def resolve_winsim_service(
-    gmail_client: WinSim.GmailClient | None = None,
-    drive_client: IGoogleDriveClient | None = None,
-) -> WinSimService:
-    winsim_folder_id = "1VGX5Wt8D3huZm3vVemjI3C6zz6W38PJr"
-    return WinSimService(
+def resolve_winsim(
+    gmail_client: winsim.GmailClient | None = None,
+    drive_client: winsim.GoogleDriveClient | None = None,
+    winsim_folder_id: str = "1VGX5Wt8D3huZm3vVemjI3C6zz6W38PJr",
+) -> UseCaseHandler[winsim.Request]:
+    return winsim.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         drive_client=drive_client or resolve_google_drive_client(),
         winsim_folder_id=winsim_folder_id,
