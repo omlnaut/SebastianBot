@@ -1,3 +1,4 @@
+# pyright: standard
 import pytest
 
 from cloud.functions.infrastructure.google.credentials import GoogleSecret

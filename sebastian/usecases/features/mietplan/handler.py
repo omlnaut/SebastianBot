@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.protocols.mietplan import File, Folder, IMietplanClient
