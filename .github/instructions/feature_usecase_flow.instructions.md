@@ -32,10 +32,17 @@ cloud/functions/infrastructure/AllActor/function.py :: all_actor_handler
     │  fans out each action list to its own EventGrid topic
     ▼
 Side-effect EventGrid triggers (one per action type):
-    ├── cloud/functions/side_effects/create_task/function.py     → Google Tasks
-    ├── cloud/functions/side_effects/send_message/function.py    → Telegram
-    ├── cloud/functions/side_effects/complete_task/function.py   → Google Tasks
-    └── cloud/functions/side_effects/modify_mail_label/function.py → Gmail
+    ├── cloud/functions/side_effects/create_task/function.py
+    ├── cloud/functions/side_effects/send_message/function.py
+    ├── cloud/functions/side_effects/complete_task/function.py
+    └── cloud/functions/side_effects/modify_mail_label/function.py
+            │  each uses perform_usecase_from_eventgrid(create_request, resolve_handler, az_event)
+            ▼
+    sebastian/usecases/side_effects/{action}.py :: Handler.handle(request)
+            │  executes the action (create task, send message, etc.)
+            │  returns AllActor (e.g. a confirmation SendMessage after task creation)
+            ▼
+    AllActorEventGrid published → feeds back into all_actor_handler
 ```
 
 ---
@@ -428,11 +435,55 @@ After `perform_usecase_from_request` publishes the `AllActorEventGrid` event:
    - `event.send_messages` → `SendTelegramMessageEventGrid` topic
    - `event.modify_labels` → `ModifyMailLabelEventGrid` topic
 
-2. **Side-effect functions** each subscribe to their topic and execute the action:
-   - `create_task` → calls `GoogleTaskClient.create_task()`
-   - `complete_task` → calls `GoogleTaskClient.complete_task()`
-   - `send_telegram_message` → calls `TelegramClient.send_message()`
-   - `modify_mail_label` → calls `GmailClient.modify_labels()`
+2. **Side-effect functions** each subscribe to their topic and execute the action using their own usecase handler.
+
+#### Side-effect function structure
+
+Side-effect functions differ from feature usecase functions in two key ways:
+- They are **EventGrid-triggered** (not timer-triggered).
+- They use **`perform_usecase_from_eventgrid`** instead of `perform_usecase_from_request`.
+
+```python
+# cloud/functions/side_effects/create_task/function.py
+@app.event_grid_trigger(arg_name="azeventgrid")
+def create_task(azeventgrid: func.EventGridEvent):
+    def create_request(event: CreateTaskEventGrid) -> usecases.create_task.Request:
+        return usecases.create_task.Request(
+            tasklist=event.tasklist,
+            title=event.title,
+            notes=event.notes or "",
+            due_date=event.due,
+        )
+
+    perform_usecase_from_eventgrid(
+        create_request,
+        usecases.resolve_create_task,
+        azeventgrid,
+    )
+```
+
+`perform_usecase_from_eventgrid(create_request, resolve_handler, az_event)`:
+1. Reads the event model type from `create_request`'s type hint.
+2. Parses the raw Azure EventGrid event into that model (e.g. `CreateTaskEventGrid`).
+3. Calls `create_request(event)` to build the usecase `Request`.
+4. Calls `resolve_handler()` to get the `Handler`.
+5. Calls `handler.handle(request)` → returns `AllActor`.
+6. Publishes the result as a new `AllActorEventGrid` event (so side effects can themselves produce further actions, e.g. `create_task` returns a confirmation `SendMessage`).
+7. On any exception: logs the error and publishes an `AllActorEventGrid` containing an error `SendTelegramMessageEventGrid`.
+
+#### Side-effect usecases (`sebastian/usecases/side_effects/`)
+
+Each side-effect function has a corresponding usecase in `sebastian/usecases/side_effects/`. These follow the same `Request` / `Handler` / Protocol pattern as feature usecases, but live in a separate directory:
+
+```
+sebastian/usecases/side_effects/
+    create_task.py           # Request, Handler, TaskClient protocol
+    complete_task.py         # Request, Handler, TaskClient protocol
+    send_telegram_message.py # Request, Handler, TelegramClient protocol
+    modify_mail_labels.py    # Request, Handler, GmailClient protocol
+```
+
+Their handlers also return `AllActor` — for example, the `create_task` handler returns a `SendMessage` confirmation after creating the task.
 
 #### EventGrid Environment Variables
 

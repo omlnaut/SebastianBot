@@ -33,6 +33,7 @@ Review the code changes introduced by the current PR and update `.github/instruc
    - `TriggerTimes` / Azure Function structure
    - `function_app.py` registration pattern
    - EventGrid infrastructure or side-effect function patterns
+   - The side-effect usecase structure (`sebastian/usecases/side_effects/`) or `perform_usecase_from_eventgrid` behaviour
 
    Skip updates for:
    - New usecase implementations that follow the existing pattern unchanged
