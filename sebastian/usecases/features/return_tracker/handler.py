@@ -1,26 +1,30 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+import logging
 
 from sebastian.domain.task import TaskLists
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
-from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.models import AllActor, CreateTask, SendMessage
+from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
-from .models import ReturnData
-from .parsing import parse_return_email_html
-from .protocols import GmailClient
+from .parsing import ReturnData, parse_return_email_html
+from .protocols import GeminiClient, GmailClient
+
+__all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
 
 
-class ReturnTrackerService:
-    def __init__(self, gmail_client: GmailClient, gemini_client: IGeminiClient):
-        self.gmail_client = gmail_client
-        self.gemini_client = gemini_client
+@dataclass
+class Request:
+    time_back: timedelta = timedelta(hours=1)
 
-    def get_recent_returns(self, time_back: timedelta = timedelta(hours=1)) -> AllActor:
-        """Fetch recent return emails within the given time delta.
 
-        time_back: timedelta indicating how far back to search (e.g. timedelta(hours=1)).
-        """
-        time_threshold = datetime.now(timezone.utc) - time_back
+class Handler(UseCaseHandler[Request]):
+    def __init__(self, gmail_client: GmailClient, gemini_client: GeminiClient):
+        self._gmail_client = gmail_client
+        self._gemini_client = gemini_client
+
+    def handle(self, request: Request) -> AllActor:
+        time_threshold = datetime.now(timezone.utc) - request.time_back
 
         query = (
             GmailQueryBuilder()
@@ -30,20 +34,15 @@ class ReturnTrackerService:
             .build()
         )
 
-        try:
-            mails = self.gmail_client.fetch_mails(query)
-        except Exception as e:
-            return AllActor(
-                create_tasks=[],
-                send_messages=[SendMessage(message=f"Error fetching emails: {str(e)}")],
-            )
+        mails = self._gmail_client.fetch_mails(query)
+        logging.info(f"Fetched {len(mails)} return emails from Amazon")
 
         tasks: list[CreateTask] = []
         errors: list[SendMessage] = []
 
         for mail in mails:
             try:
-                return_data = parse_return_email_html(mail.content, self.gemini_client)
+                return_data = parse_return_email_html(mail.content, self._gemini_client)
                 tasks.append(_map_to_create_task(return_data))
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))

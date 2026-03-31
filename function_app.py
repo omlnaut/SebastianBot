@@ -23,4 +23,4 @@ from cloud.functions.features.bibo_lending_sync_function import check_bibo_lendi
 from cloud.functions.features.MangaUpdateFunction import check_manga_update
 from cloud.functions.MietplanFunction import check_mietplan
 from cloud.functions.WinSimFunction import check_winsim_invoices
-from cloud.functions.ReturnTrackerFunction import check_return_tracker
+from cloud.functions.features.return_tracker_function import check_return_tracker

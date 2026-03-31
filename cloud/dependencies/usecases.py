@@ -1,8 +1,6 @@
-from sebastian.protocols.gemini import IGeminiClient
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
-from sebastian.usecases.ReturnTracker.service import ReturnTrackerService
 from sebastian.usecases.WinSim.service import WinSimService
 from sebastian.usecases.side_effects import (
     complete_task,
@@ -10,10 +8,9 @@ from sebastian.usecases.side_effects import (
     send_telegram_message,
     modify_mail_labels,
 )
-from sebastian.usecases.features import delivery_ready, manga_update, mietplan
+from sebastian.usecases.features import delivery_ready, manga_update, mietplan, return_tracker
 from sebastian.usecases.features import bibo_lending_sync
 import sebastian.usecases.WinSim as WinSim
-import sebastian.usecases.ReturnTracker as ReturnTracker
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -81,11 +78,11 @@ def resolve_winsim_service(
     )
 
 
-def resolve_return_tracker_service(
-    gmail_client: ReturnTracker.GmailClient | None = None,
-    gemini_client: IGeminiClient | None = None,
-) -> ReturnTrackerService:
-    return ReturnTrackerService(
+def resolve_return_tracker(
+    gmail_client: return_tracker.GmailClient | None = None,
+    gemini_client: return_tracker.GeminiClient | None = None,
+) -> UseCaseHandler[return_tracker.Request]:
+    return return_tracker.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
     )
