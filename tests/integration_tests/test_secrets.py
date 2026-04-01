@@ -8,14 +8,7 @@ from cloud.helper.secrets import TypedSecretKey
 
 @pytest.mark.parametrize(
     "key",
-    [
-        SecretKeys.TelegramSebastianToken,
-        SecretKeys.GoogleCredentials,
-        SecretKeys.MangaUpdateCredentials,
-        SecretKeys.MietplanCredentials,
-        SecretKeys.GeminiApiKey,
-        SecretKeys.BiboCredentials,
-    ],
+    [value for value in vars(SecretKeys).values() if isinstance(value, TypedSecretKey)],
     ids=lambda k: k._name,
 )
 def test_secret_can_be_fetched_and_parsed(key: TypedSecretKey[Any]) -> None:
