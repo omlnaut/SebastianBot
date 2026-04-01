@@ -16,6 +16,7 @@ from cloud.helper.secrets import TypedSecretKey
         SecretKeys.GeminiApiKey,
         SecretKeys.BiboCredentials,
     ],
+    ids=lambda k: k._name,
 )
 def test_secret_can_be_fetched_and_parsed(key: TypedSecretKey[Any]) -> None:
     result = get_secret(key)
