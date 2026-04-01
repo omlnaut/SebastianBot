@@ -1,3 +1,6 @@
+---
+agent: agent
+---
 # Update Feature Usecase Flow Documentation
 
 Run this instruction before merging a PR to keep `.github/instructions/feature_usecase_flow.instructions.md` in sync with the current state of the codebase.

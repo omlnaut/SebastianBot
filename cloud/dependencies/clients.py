@@ -3,18 +3,14 @@ from functools import lru_cache
 from cloud.functions.infrastructure.google.helper import load_google_credentials
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.bibo.client import BiboClient
-from sebastian.clients.bibo.credentials import BiboCredentials
 from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gemini.client import GeminiClient
-from sebastian.clients.google.gemini.credentials import GeminiApiKey
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.google.calendar_event.client import CalendarEventClient
-from sebastian.clients.MangaUpdate import MangaUpdateClient, MangaUpdateSecret
+from sebastian.clients.MangaUpdate import MangaUpdateClient
 from sebastian.clients.mietplan.client import MietplanClient
-from sebastian.clients.mietplan.credentials import MietplanCredentials
 from sebastian.clients.telegram.client import TelegramClient
-from sebastian.clients.telegram.config import TelegramConfig
 
 
 @lru_cache()
@@ -25,13 +21,13 @@ def resolve_gmail_client() -> GmailClient:
 
 @lru_cache()
 def resolve_mangaupdate_client() -> MangaUpdateClient:
-    credentials = get_secret(SecretKeys.MangaUpdateCredentials, MangaUpdateSecret)
+    credentials = get_secret(SecretKeys.MangaUpdateCredentials)
     return MangaUpdateClient(credentials)
 
 
 @lru_cache()
 def resolve_telegram_client() -> TelegramClient:
-    config = get_secret(SecretKeys.TelegramSebastianToken, TelegramConfig)
+    config = get_secret(SecretKeys.TelegramSebastianToken)
     return TelegramClient(config)
 
 
@@ -55,17 +51,17 @@ def resolve_google_drive_client() -> GoogleDriveClient:
 
 @lru_cache()
 def resolve_mietplan_client() -> MietplanClient:
-    credentials = get_secret(SecretKeys.MietplanCredentials, MietplanCredentials)
+    credentials = get_secret(SecretKeys.MietplanCredentials)
     return MietplanClient(credentials)
 
 
 @lru_cache()
 def resolve_gemini_client() -> GeminiClient:
-    credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
+    credentials = get_secret(SecretKeys.GeminiApiKey)
     return GeminiClient(credentials)
 
 
 @lru_cache()
 def resolve_bibo_client() -> BiboClient:
-    credentials = get_secret(SecretKeys.BiboCredentials, BiboCredentials)
+    credentials = get_secret(SecretKeys.BiboCredentials)
     return BiboClient(credentials)

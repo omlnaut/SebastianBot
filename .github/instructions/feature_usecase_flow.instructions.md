@@ -283,27 +283,27 @@ Secrets are stored in **Azure Key Vault** and accessed via `get_secret()`.
 ```python
 from cloud.helper import SecretKeys, get_secret
 
-# Retrieve and parse a secret into a pydantic model:
-credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
+# Retrieve and parse a secret into its associated pydantic model:
+credentials = get_secret(SecretKeys.GeminiApiKey)
 ```
 
-`SecretKeys` is an `Enum` mapping readable names to Key Vault secret names:
+`SecretKeys` contains `TypedSecretKey` constants mapping readable names to Key Vault secret names and their target model types:
 
 ```python
-class SecretKeys(Enum):
-    TelegramSebastianToken = "SebastianTelegramToken"
-    GoogleCredentials      = "GoogleCredentials"
-    MangaUpdateCredentials = "MangaUpdateCredentials"
-    MietplanCredentials    = "MietplanCredentials"
-    GeminiApiKey           = "GeminiApiKey"
-    BiboCredentials        = "BiboCredentials"
+class SecretKeys:
+    TelegramSebastianToken: TypedSecretKey[_TelegramConfig] = TypedSecretKey("SebastianTelegramToken", _TelegramConfig)
+    GoogleCredentials: TypedSecretKey[_GoogleSecret] = TypedSecretKey("GoogleCredentials", _GoogleSecret)
+    MangaUpdateCredentials: TypedSecretKey[_MangaUpdateSecret] = TypedSecretKey("MangaUpdateCredentials", _MangaUpdateSecret)
+    MietplanCredentials: TypedSecretKey[_MietplanCredentials] = TypedSecretKey("MietplanCredentials", _MietplanCredentials)
+    GeminiApiKey: TypedSecretKey[_GeminiApiKey] = TypedSecretKey("GeminiApiKey", _GeminiApiKey)
+    BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey("BiboCredentials", _BiboCredentials)
 ```
 
 **To add a new secret:**
 1. Store the secret value in the Azure Key Vault (e.g. as JSON matching the credential model).
-2. Add a new member to `SecretKeys` with the Key Vault secret name as the value.
-3. Create a credentials model (pydantic `BaseModel`) in the client's directory.
-4. Use `get_secret(SecretKeys.YourNewKey, YourCredentialsModel)` in the client resolver.
+2. Create a credentials model (pydantic `BaseModel`) in the client's directory.
+3. Import the model in `cloud/helper/secrets.py` and add a new `TypedSecretKey` to `SecretKeys`.
+4. Use `get_secret(SecretKeys.YourNewKey)` in the client resolver.
 
 Google API credentials (Gmail, Tasks, Drive, Calendar) use OAuth2 credentials stored under `SecretKeys.GoogleCredentials` and are loaded via `cloud/functions/infrastructure/google/helper.py :: load_google_credentials()`. If a new Google API scope is required, update `investigations/google_token/create_credentials.py` and re-run it to generate a new token.
 
@@ -317,7 +317,7 @@ Client resolvers are cached factory functions that instantiate real client objec
 # cloud/dependencies/clients.py
 @lru_cache()
 def resolve_gemini_client() -> GeminiClient:
-    credentials = get_secret(SecretKeys.GeminiApiKey, GeminiApiKey)
+    credentials = get_secret(SecretKeys.GeminiApiKey)
     return GeminiClient(credentials)
 
 @lru_cache()

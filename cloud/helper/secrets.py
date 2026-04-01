@@ -1,10 +1,16 @@
-from enum import Enum
 from functools import lru_cache
-from typing import Type, TypeVar
+from typing import Generic, TypeVar
 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import BaseModel
+
+from cloud.functions.infrastructure.google.credentials import GoogleSecret as _GoogleSecret
+from sebastian.clients.bibo.credentials import BiboCredentials as _BiboCredentials
+from sebastian.clients.google.gemini.credentials import GeminiApiKey as _GeminiApiKey
+from sebastian.clients.MangaUpdate import MangaUpdateSecret as _MangaUpdateSecret
+from sebastian.clients.mietplan.credentials import MietplanCredentials as _MietplanCredentials
+from sebastian.clients.telegram.config import TelegramConfig as _TelegramConfig
 
 
 @lru_cache()
@@ -20,48 +26,52 @@ def _get_secret_client() -> SecretClient:
     return SecretClient(vault_url=key_vault_url, credential=credential)
 
 
-class SecretKeys(Enum):
-    TelegramSebastianToken = "SebastianTelegramToken"
-    GoogleCredentials = "GoogleCredentials"
-    MangaUpdateCredentials = "MangaUpdateCredentials"
-    RedditCredentials = "RedditCredentials"
-    MietplanCredentials = "MietplanCredentials"
-    GeminiApiKey = "GeminiApiKey"
-    BiboCredentials = "BiboCredentials"
-
-    def __str__(self):
-        return self.value
-
-
 T = TypeVar("T", bound=BaseModel)
 
 
-def get_secret(secret_name: str | SecretKeys, model: Type[T]) -> T:
+class TypedSecretKey(Generic[T]):
+    """A typed key for an Azure Key Vault secret that carries its target model type.
+
+    Use the predefined constants in `SecretKeys` instead of constructing this directly.
     """
-    Retrieve a secret value from Azure Key Vault and parse it into the provided model type.
+
+    def __init__(self, name: str, model: type[T]) -> None:
+        self._name = name
+        self._model = model
+
+    @property
+    def model(self) -> type[T]:
+        return self._model
+
+    def __str__(self) -> str:
+        return self._name
+
+
+class SecretKeys:
+    TelegramSebastianToken: TypedSecretKey[_TelegramConfig] = TypedSecretKey("SebastianTelegramToken", _TelegramConfig)
+    GoogleCredentials: TypedSecretKey[_GoogleSecret] = TypedSecretKey("GoogleCredentials", _GoogleSecret)
+    MangaUpdateCredentials: TypedSecretKey[_MangaUpdateSecret] = TypedSecretKey("MangaUpdateCredentials", _MangaUpdateSecret)
+    MietplanCredentials: TypedSecretKey[_MietplanCredentials] = TypedSecretKey("MietplanCredentials", _MietplanCredentials)
+    GeminiApiKey: TypedSecretKey[_GeminiApiKey] = TypedSecretKey("GeminiApiKey", _GeminiApiKey)
+    BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey("BiboCredentials", _BiboCredentials)
+
+
+def get_secret(key: TypedSecretKey[T]) -> T:
+    """Retrieve a secret from Azure Key Vault and parse it into the key's model type.
 
     Args:
-        secret_name (str | SecretKeys): The name of the secret to retrieve.
-        model (Type[T]): The Pydantic model class to parse the secret value into.
+        key: A typed secret key constant from `SecretKeys`.
 
     Returns:
-        T: An instance of the provided model type parsed from the secret value.
+        An instance of the model type associated with the key.
 
     Raises:
         Exception: If the secret is not found in the Key Vault.
-
-    Note:
-        Uses a cached SecretClient to minimize Azure Key Vault operations.
-        The cache persists within a function app instance's lifetime.
     """
     secret_client = _get_secret_client()
-
-    if isinstance(secret_name, SecretKeys):
-        secret_name = str(secret_name)
-
-    secret_str = secret_client.get_secret(secret_name).value
+    secret_str = secret_client.get_secret(str(key)).value
 
     if not secret_str:
-        raise Exception(f"Secret {secret_name} not found in Key Vault")
+        raise Exception(f"Secret {key} not found in Key Vault")
 
-    return model.model_validate_json(secret_str)
+    return key.model.model_validate_json(secret_str)

@@ -1,26 +1,16 @@
 # pyright: standard
+from typing import Any
 import pytest
 
-from cloud.functions.infrastructure.google.credentials import GoogleSecret
 from cloud.helper import SecretKeys, get_secret
-from sebastian.clients.bibo.credentials import BiboCredentials
-from sebastian.clients.google.gemini.credentials import GeminiApiKey
-from sebastian.clients.MangaUpdate import MangaUpdateSecret
-from sebastian.clients.mietplan.credentials import MietplanCredentials
-from sebastian.clients.telegram.config import TelegramConfig
+from cloud.helper.secrets import TypedSecretKey
 
 
 @pytest.mark.parametrize(
-    "key,model",
-    [
-        (SecretKeys.TelegramSebastianToken, TelegramConfig),
-        (SecretKeys.GoogleCredentials, GoogleSecret),
-        (SecretKeys.MangaUpdateCredentials, MangaUpdateSecret),
-        (SecretKeys.MietplanCredentials, MietplanCredentials),
-        (SecretKeys.GeminiApiKey, GeminiApiKey),
-        (SecretKeys.BiboCredentials, BiboCredentials),
-    ],
+    "key",
+    [value for value in vars(SecretKeys).values() if isinstance(value, TypedSecretKey)],
+    ids=lambda k: k._name,
 )
-def test_secret_can_be_fetched_and_parsed(key: SecretKeys, model: type) -> None:
-    result = get_secret(key, model)
-    assert isinstance(result, model)
+def test_secret_can_be_fetched_and_parsed(key: TypedSecretKey[Any]) -> None:
+    result = get_secret(key)
+    assert isinstance(result, key.model)
