@@ -1,3 +1,4 @@
+from typing import Sequence
 from abc import ABC, abstractmethod
 
 from sebastian.protocols.models import BaseActorEvent
@@ -5,7 +6,7 @@ from sebastian.protocols.models import BaseActorEvent
 
 class UseCaseHandler[TRequest](ABC):
     @abstractmethod
-    def handle(self, request: TRequest) -> list[BaseActorEvent]: ...
+    def handle(self, request: TRequest) -> Sequence[BaseActorEvent]: ...
 
     def name(self) -> str:
         cls = type(self)

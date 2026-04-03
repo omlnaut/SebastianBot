@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 import logging
-from typing import Protocol
+from typing import Sequence, Protocol
 
 from sebastian.domain.gmail import GmailLabel
 from sebastian.protocols.models import BaseActorEvent
@@ -27,7 +27,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, gmail_client: GmailClient):
         self._gmail_client = gmail_client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         _log_operation(request.email_id, request.add_labels, request.remove_labels)
 
         self._gmail_client.modify_labels(

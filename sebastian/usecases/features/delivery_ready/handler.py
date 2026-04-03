@@ -1,3 +1,4 @@
+from typing import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
@@ -24,7 +25,7 @@ class Handler(UseCaseHandler[Request]):
         self.gmail_client = gmail_client
         self.gemini_client = gemini_client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.hours_back
 
         query = (

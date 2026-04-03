@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Sequence, Protocol
 
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent
@@ -22,6 +22,6 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         self._client.set_task_to_completed(request.tasklist, request.task_id)
         return []

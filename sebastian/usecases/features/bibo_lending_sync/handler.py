@@ -1,3 +1,4 @@
+from typing import Sequence
 from dataclasses import dataclass
 import logging
 
@@ -22,7 +23,7 @@ class Handler(UseCaseHandler[Request]):
         self._bibo_client = bibo_client
         self._task_client = task_client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()
         tasks = self._task_client.get_tasks(self._tasklist)
 

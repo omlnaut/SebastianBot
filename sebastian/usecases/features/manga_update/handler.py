@@ -1,3 +1,4 @@
+from typing import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -38,7 +39,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, client: IMangaUpdateClient):
         self.client = client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         tasks: list[CreateTask] = []
         errors: list[SendMessage] = []
 

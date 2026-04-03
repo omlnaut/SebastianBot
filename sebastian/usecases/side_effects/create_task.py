@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Protocol
+from typing import Sequence, Optional, Protocol
 
 from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import BaseActorEvent
@@ -33,7 +33,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         due_date = request.due_date or get_end_of_day()
         created_task = self._client.create_task_with_notes(
             tasklist=request.tasklist,

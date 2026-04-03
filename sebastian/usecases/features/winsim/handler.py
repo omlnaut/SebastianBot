@@ -1,3 +1,4 @@
+from typing import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
@@ -28,7 +29,7 @@ class Handler(UseCaseHandler[Request]):
         self._drive_client = drive_client
         self._winsim_folder_id = winsim_folder_id
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.time_back
         query = (
             GmailQueryBuilder()

@@ -1,3 +1,4 @@
+from typing import Sequence
 from dataclasses import dataclass
 import logging
 from datetime import timedelta
@@ -25,13 +26,13 @@ class Handler(UseCaseHandler[Request]):
         self.google_drive_client = google_drive_client
         self.gdrive_folder_id = gdrive_folder_id
 
-    def handle(self, request: Request) -> list[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         """
         Checks for new files in the mietplan source, and if they are newer than max_file_age,
         uploads them to Google Drive.
 
         Returns:
-            list[BaseActorEvent]: Returns a list of base actor events (e.g. SendMessage).
+            Sequence[BaseActorEvent]: Returns a list of base actor events (e.g. SendMessage).
         """
         logging.info("Starting to process new mietplan files.")
 
