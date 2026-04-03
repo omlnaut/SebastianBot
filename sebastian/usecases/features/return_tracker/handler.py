@@ -1,9 +1,10 @@
+from typing import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
 
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import AllActor, CreateTask, SendMessage
+from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -23,7 +24,7 @@ class Handler(UseCaseHandler[Request]):
         self._gmail_client = gmail_client
         self._gemini_client = gemini_client
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.time_back
 
         query = (
@@ -47,7 +48,7 @@ class Handler(UseCaseHandler[Request]):
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
-        return AllActor(create_tasks=tasks, send_messages=errors)
+        return tasks + errors
 
 
 def _map_to_create_task(return_data: ReturnData) -> CreateTask:

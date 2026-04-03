@@ -1,10 +1,11 @@
+from typing import Sequence
 from dataclasses import dataclass
 import logging
 from datetime import timedelta
 
 from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
 from sebastian.protocols.mietplan import File, Folder, IMietplanClient
-from sebastian.protocols.models import AllActor, SendMessage
+from sebastian.protocols.models import BaseActorEvent, SendMessage
 from sebastian.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -25,13 +26,13 @@ class Handler(UseCaseHandler[Request]):
         self.google_drive_client = google_drive_client
         self.gdrive_folder_id = gdrive_folder_id
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         """
         Checks for new files in the mietplan source, and if they are newer than max_file_age,
         uploads them to Google Drive.
 
         Returns:
-            AllActor: With send_messages containing success or error messages.
+            Sequence[BaseActorEvent]: Returns a list of base actor events (e.g. SendMessage).
         """
         logging.info("Starting to process new mietplan files.")
 
@@ -45,10 +46,10 @@ class Handler(UseCaseHandler[Request]):
         )
 
         if not newly_uploaded_files:
-            return AllActor(create_tasks=[], send_messages=[])
+            return []
 
         message = _create_message(newly_uploaded_files)
-        return AllActor(create_tasks=[], send_messages=[SendMessage(message=message)])
+        return [SendMessage(message=message)]
 
     def _process_new_file(self, file: File, folder: Folder) -> str:
         logging.info(f"  Found new file: {file.name}")

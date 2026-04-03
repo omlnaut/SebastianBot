@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 import logging
-from typing import Protocol
+from typing import Sequence, Protocol
 
 from sebastian.domain.gmail import GmailLabel
-from sebastian.protocols.models import AllActor
+from sebastian.protocols.models import BaseActorEvent
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -27,7 +27,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, gmail_client: GmailClient):
         self._gmail_client = gmail_client
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         _log_operation(request.email_id, request.add_labels, request.remove_labels)
 
         self._gmail_client.modify_labels(
@@ -37,7 +37,7 @@ class Handler(UseCaseHandler[Request]):
         )
 
         logging.info(f"Successfully modified labels for email {request.email_id}")
-        return AllActor()
+        return []
 
 
 def _log_operation(

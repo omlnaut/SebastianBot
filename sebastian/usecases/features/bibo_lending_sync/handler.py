@@ -1,8 +1,9 @@
+from typing import Sequence
 from dataclasses import dataclass
 import logging
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import AllActor, CompleteTask, CreateTask
+from sebastian.protocols.models import BaseActorEvent, CompleteTask, CreateTask
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import BiboClient, BookLendingInfo, TaskClient
@@ -22,7 +23,7 @@ class Handler(UseCaseHandler[Request]):
         self._bibo_client = bibo_client
         self._task_client = task_client
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()
         tasks = self._task_client.get_tasks(self._tasklist)
 
@@ -67,7 +68,7 @@ class Handler(UseCaseHandler[Request]):
             f"BiboLendingSync: creating {len(creates)} tasks, "
             f"completing {len(completes)} tasks"
         )
-        return AllActor(create_tasks=creates, complete_tasks=completes)
+        return creates + completes
 
 
 def _extract_book_id(notes: str | None) -> str | None:

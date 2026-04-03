@@ -1,9 +1,10 @@
+from typing import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
 
 from sebastian.protocols.google_drive import UploadFileRequest
-from sebastian.protocols.models import AllActor, SendMessage
+from sebastian.protocols.models import BaseActorEvent, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -28,7 +29,7 @@ class Handler(UseCaseHandler[Request]):
         self._drive_client = drive_client
         self._winsim_folder_id = winsim_folder_id
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.time_back
         query = (
             GmailQueryBuilder()
@@ -72,7 +73,7 @@ class Handler(UseCaseHandler[Request]):
                 )
             )
 
-        return AllActor(send_messages=messages)
+        return messages
 
 
 def _generate_filename() -> str:

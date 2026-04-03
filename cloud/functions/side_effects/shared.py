@@ -7,19 +7,32 @@ from azure.eventgrid import EventGridPublisherClient
 import azure.functions as func
 from azure.core.credentials import AzureKeyCredential
 
-
-from cloud.functions.infrastructure.AllActor.models import AllActorEventGrid
+from cloud.functions.side_effects.complete_task.models import CompleteTaskEventGrid
+from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
+from cloud.functions.side_effects.modify_mail_label.models import (
+    ModifyMailLabelEventGrid,
+)
 from cloud.functions.side_effects.send_message.models import (
     SendTelegramMessageEventGrid,
 )
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
-
-
 from cloud.helper import parse_payload
-from typing import TypeVar
 
 from sebastian.usecases.usecase_handler import UseCaseHandler
+from sebastian.protocols.models import (
+    BaseActorEvent,
+    CompleteTask,
+    CreateTask,
+    ModifyMailLabel,
+    SendMessage,
+)
 
+EVENT_MAP: dict[type[BaseActorEvent], type[EventGridModel[Any]]] = {
+    CompleteTask: CompleteTaskEventGrid,
+    CreateTask: CreateTaskEventGrid,
+    ModifyMailLabel: ModifyMailLabelEventGrid,
+    SendMessage: SendTelegramMessageEventGrid,
+}
 
 TRequest = TypeVar("TRequest")
 
@@ -55,19 +68,15 @@ def perform_usecase_from_eventgrid(
 
         actor_result = handler.handle(request)
 
-        send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
+        events_to_send = [EVENT_MAP[type(e)].from_application(e) for e in actor_result]
+        if events_to_send:
+            send_eventgrid_events(events_to_send)
 
     except Exception as e:
         error_msg = f"Error {event_model.base_name()}: {str(e)}"
         logging.error(error_msg)
         logging.error(f"Error payload: {az_event.get_json()}")
-        send_eventgrid_events(
-            [
-                AllActorEventGrid(
-                    send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
-                )
-            ]
-        )
+        send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
 
     logging.info(f"EventGrid {event_model.base_name()} completed")
 
@@ -81,20 +90,16 @@ def perform_usecase_from_request(
     try:
         handler = resolve_handler()
         actor_result = handler.handle(request)
-        send_eventgrid_events([AllActorEventGrid.from_application(actor_result)])
+        events_to_send = [EVENT_MAP[type(e)].from_application(e) for e in actor_result]
+        if events_to_send:
+            send_eventgrid_events(events_to_send)
     except Exception as e:
         error_msg = f"Error performing usecase: {str(e)}"
         logging.error(error_msg)
-        send_eventgrid_events(
-            [
-                AllActorEventGrid(
-                    send_messages=[SendTelegramMessageEventGrid(message=error_msg)]
-                )
-            ]
-        )
+        send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
 
 
-def send_eventgrid_events(events: Sequence[TEventModel]) -> None:
+def send_eventgrid_events(events: Sequence[EventGridModel[Any]]) -> None:
     def _load_eventgrid_info(env_name: str) -> EventGridInfo:
         raw_env_content = os.environ.get(env_name)
         assert (
@@ -103,7 +108,10 @@ def send_eventgrid_events(events: Sequence[TEventModel]) -> None:
 
         return EventGridInfo.model_validate_json(raw_env_content)
 
-    for event_type, event_group_iterator in groupby(events, key=lambda x: type(x)):
+    sorted_events = sorted(events, key=lambda x: type(x).__name__)
+    for event_type, event_group_iterator in groupby(
+        sorted_events, key=lambda x: type(x)
+    ):
         event_group = list(event_group_iterator)
         logging.info(
             f"Sending {len(event_group)} EventGrid events for {event_type.env_name()}"

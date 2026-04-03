@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
+from typing import Sequence
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import AllActor, CompleteTask
+from sebastian.protocols.models import BaseActorEvent, CompleteTask, CreateTask
 from sebastian.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
@@ -49,7 +50,9 @@ class _FakeTaskClient:
         return self._tasks
 
 
-def _run(lendings: list[BookLendingInfo], tasks: list[Task]) -> AllActor:
+def _run(
+    lendings: list[BookLendingInfo], tasks: list[Task]
+) -> Sequence[BaseActorEvent]:
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
         task_client=_FakeTaskClient(tasks),
@@ -62,9 +65,9 @@ def test_new_lending_creates_task():
 
     result = _run(lendings=[lending], tasks=[])
 
-    assert len(result.create_tasks) == 1
-    assert len(result.complete_tasks) == 0
-    task = result.create_tasks[0]
+    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
+    assert len([t for t in result if isinstance(t, CompleteTask)]) == 0
+    task = [t for t in result if isinstance(t, CreateTask)][0]
     assert task.title == "Bibo: Some Book"
     assert task.tasklist == _TASKLIST
     assert task.due == lending.lending_timerange.to_date
@@ -83,7 +86,7 @@ def test_new_lending_notes_contain_all_fields():
 
     result = _run(lendings=[lending], tasks=[])
 
-    notes = result.create_tasks[0].notes
+    notes = [t for t in result if isinstance(t, CreateTask)][0].notes
     assert notes is not None
     assert "book_id: 987654321" in notes
     assert "title: Another Book" in notes
@@ -99,8 +102,8 @@ def test_existing_task_same_due_no_action():
 
     result = _run(lendings=[lending], tasks=[task])
 
-    assert result.create_tasks == []
-    assert result.complete_tasks == []
+    assert [t for t in result if isinstance(t, CreateTask)] == []
+    assert [t for t in result if isinstance(t, CompleteTask)] == []
 
 
 def test_due_date_changed_completes_and_recreates():
@@ -111,12 +114,12 @@ def test_due_date_changed_completes_and_recreates():
 
     result = _run(lendings=[lending], tasks=[task])
 
-    assert len(result.complete_tasks) == 1
-    assert result.complete_tasks[0] == CompleteTask(
+    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
+    assert [t for t in result if isinstance(t, CompleteTask)][0] == CompleteTask(
         tasklist=_TASKLIST, task_id="task-old"
     )
-    assert len(result.create_tasks) == 1
-    assert result.create_tasks[0].due == new_due
+    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
+    assert [t for t in result if isinstance(t, CreateTask)][0].due == new_due
 
 
 def test_task_with_no_due_date_treated_as_changed():
@@ -125,9 +128,11 @@ def test_task_with_no_due_date_treated_as_changed():
 
     result = _run(lendings=[lending], tasks=[task])
 
-    assert len(result.complete_tasks) == 1
-    assert result.complete_tasks[0].task_id == "task-noduedate"
-    assert len(result.create_tasks) == 1
+    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
+    assert [t for t in result if isinstance(t, CompleteTask)][
+        0
+    ].task_id == "task-noduedate"
+    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
 
 
 def test_returned_book_task_is_completed():
@@ -135,11 +140,11 @@ def test_returned_book_task_is_completed():
 
     result = _run(lendings=[], tasks=[task])
 
-    assert len(result.complete_tasks) == 1
-    assert result.complete_tasks[0] == CompleteTask(
+    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
+    assert [t for t in result if isinstance(t, CompleteTask)][0] == CompleteTask(
         tasklist=_TASKLIST, task_id="task-returned"
     )
-    assert result.create_tasks == []
+    assert [t for t in result if isinstance(t, CreateTask)] == []
 
 
 def test_task_without_book_id_is_ignored():
@@ -147,14 +152,14 @@ def test_task_without_book_id_is_ignored():
 
     result = _run(lendings=[], tasks=[task])
 
-    assert result.complete_tasks == []
-    assert result.create_tasks == []
+    assert [t for t in result if isinstance(t, CompleteTask)] == []
+    assert [t for t in result if isinstance(t, CreateTask)] == []
 
 
 def test_no_lendings_no_tasks_returns_empty():
     result = _run(lendings=[], tasks=[])
 
-    assert result == AllActor()
+    assert result == []
 
 
 def test_mixed_scenario():
@@ -185,14 +190,16 @@ def test_mixed_scenario():
         tasks=[task_unchanged, task_changed, task_returned],
     )
 
-    created_ids = {t.title for t in result.create_tasks}
+    created_ids = {t.title for t in [t for t in result if isinstance(t, CreateTask)]}
     assert "Bibo: New Book" in created_ids
     assert "Bibo: Changed Book" in created_ids
     assert "Bibo: Unchanged Book" not in created_ids
-    assert len(result.create_tasks) == 2
+    assert len([t for t in result if isinstance(t, CreateTask)]) == 2
 
-    completed_ids = {t.task_id for t in result.complete_tasks}
+    completed_ids = {
+        t.task_id for t in [t for t in result if isinstance(t, CompleteTask)]
+    }
     assert "task-changed" in completed_ids
     assert "task-returned" in completed_ids
     assert "task-unchanged" not in completed_ids
-    assert len(result.complete_tasks) == 2
+    assert len([t for t in result if isinstance(t, CompleteTask)]) == 2
