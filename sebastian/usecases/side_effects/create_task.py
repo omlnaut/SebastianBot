@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Protocol
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import AllActor
+from sebastian.protocols.models import BaseActorEvent
 from sebastian.protocols.models import SendMessage
 from sebastian.shared.dates import get_end_of_day
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -33,7 +33,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, task_client: TaskClient):
         self._client = task_client
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> list[BaseActorEvent]:
         due_date = request.due_date or get_end_of_day()
         created_task = self._client.create_task_with_notes(
             tasklist=request.tasklist,
@@ -43,7 +43,7 @@ class Handler(UseCaseHandler[Request]):
         )
 
         message = _build_message(created_task)
-        return AllActor(send_messages=[SendMessage(message=message)])
+        return [SendMessage(message=message)]
 
 
 def _build_message(created_task: Task) -> str:

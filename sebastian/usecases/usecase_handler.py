@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from sebastian.protocols.models import AllActor
+from sebastian.protocols.models import BaseActorEvent
 
 
 class UseCaseHandler[TRequest](ABC):
     @abstractmethod
-    def handle(self, request: TRequest) -> AllActor: ...
+    def handle(self, request: TRequest) -> list[BaseActorEvent]: ...
 
     def name(self) -> str:
         cls = type(self)
