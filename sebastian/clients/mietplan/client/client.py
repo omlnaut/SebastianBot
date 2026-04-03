@@ -2,7 +2,7 @@ from typing import Generator
 
 import requests
 
-from sebastian.protocols.mietplan import Folder
+from sebastian.domain.mietplan import Folder
 
 from ..credentials import MietplanCredentials
 from . import _download_file, _login, _walk_from_top_folder

@@ -5,7 +5,7 @@ from typing import Generator
 
 import requests
 
-from sebastian.protocols.mietplan import File, Folder
+from sebastian.domain.mietplan import File, Folder
 
 from ._models import MietplanFile, MietplanFolder
 

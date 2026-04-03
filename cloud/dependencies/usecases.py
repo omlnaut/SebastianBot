@@ -1,6 +1,5 @@
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
-from sebastian.protocols.mietplan import IMietplanClient
 from sebastian.usecases.features import (
     bibo_lending_sync,
     delivery_ready,
@@ -30,7 +29,7 @@ from .clients import (
 
 
 def resolve_mietplan(
-    mietplan_client: IMietplanClient | None = None,
+    mietplan_client: mietplan.IMietplanClient | None = None,
     google_drive_client: IGoogleDriveClient | None = None,
     gdrive_folder_id: str = "19gdVV_DMtdQU0xi7TgfKJCRRc4c7m0fd",
 ) -> UseCaseHandler[mietplan.Request]:
