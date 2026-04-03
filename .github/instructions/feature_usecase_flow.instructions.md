@@ -20,16 +20,11 @@ cloud/dependencies/usecases.py :: resolve_{name}()
     ▼
 sebastian/usecases/features/{name}/handler.py :: Handler.handle(request)
     │  executes business logic, calls clients via protocol interfaces
-    │  returns AllActor(create_tasks=[...], send_messages=[...], ...)
+    │  returns Sequence[BaseActorEvent] (e.g. CreateTask, SendMessage, ...)
     ▼
-cloud/functions/infrastructure/AllActor/models.py :: AllActorEventGrid.from_application(actor_result)
-    │  serialises AllActor to EventGrid events
-    ▼
-Azure EventGrid Topic
-    │
-    ▼
-cloud/functions/infrastructure/AllActor/function.py :: all_actor_handler
-    │  fans out each action list to its own EventGrid topic
+cloud/functions/side_effects/shared.py :: perform_usecase_from_request
+    │  maps returned events to infrastructure EventGridModels via EVENT_MAP
+    │  publishes each EventGridModel to its dedicated topic
     ▼
 Side-effect EventGrid triggers (one per action type):
     ├── cloud/functions/side_effects/create_task/function.py
@@ -40,9 +35,9 @@ Side-effect EventGrid triggers (one per action type):
             ▼
     sebastian/usecases/side_effects/{action}.py :: Handler.handle(request)
             │  executes the action (create task, send message, etc.)
-            │  returns AllActor (e.g. a confirmation SendMessage after task creation)
+            │  returns Sequence[BaseActorEvent] (e.g. a confirmation SendMessage after task creation)
             ▼
-    AllActorEventGrid published → feeds back into all_actor_handler
+    Mapped and published to its respective EventGrid topic
 ```
 
 ---
@@ -134,7 +129,7 @@ class GmailClient(Protocol):
 `handler.py` is the core of every feature usecase. It contains exactly three things:
 
 1. **`Request`** — a `@dataclass` carrying all input parameters.
-2. **`Handler(UseCaseHandler[Request])`** — implements `handle(request) -> AllActor`.
+2. **`Handler(UseCaseHandler[Request])`** — implements `handle(request) -> Sequence[BaseActorEvent]`.
 3. **`__all__`** — re-exports `Request`, `Handler`, and every protocol name.
 
 ```python
@@ -143,8 +138,10 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
 
+from typing import Sequence
+
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import AllActor, CreateTask, SendMessage
+from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -164,7 +161,7 @@ class Handler(UseCaseHandler[Request]):
         self._gmail_client = gmail_client
         self._gemini_client = gemini_client
 
-    def handle(self, request: Request) -> AllActor:
+    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.hours_back
         query = (
             GmailQueryBuilder()
@@ -186,7 +183,7 @@ class Handler(UseCaseHandler[Request]):
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
-        return AllActor(create_tasks=pickups, send_messages=errors)
+        return [*pickups, *errors]
 
 
 def _map_to_create_task(pickup: PickupData) -> CreateTask:
@@ -201,21 +198,13 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
 **Handler conventions:**
 - `handle()` is the single public entry point; it orchestrates calls to private methods.
 - **Do not wrap the entire `handle()` body in `try/except`.** Both `perform_usecase_from_request` and `perform_usecase_from_eventgrid` already catch unhandled exceptions and forward them as a Telegram error message — adding a top-level `try/except` would suppress that mechanism.
-- Per-item `try/except` is acceptable when processing a list and you want to continue with remaining items despite one failure. In that case, convert the exception to a `SendMessage` in `AllActor.send_messages` so the error is surfaced via Telegram.
+- Per-item `try/except` is acceptable when processing a list and you want to continue with remaining items despite one failure. In that case, convert the exception to a `SendMessage` and include it in the returned list so the error is surfaced via Telegram.
 
 ---
 
-### 4. `AllActor` — Return Type
+### 4. `Sequence[BaseActorEvent]` — Return Type
 
-Every `Handler.handle()` returns an `AllActor` from `sebastian.protocols.models`. It contains lists of actions to be executed by the infrastructure layer:
-
-```python
-class AllActor(BaseModel):
-    create_tasks: list[CreateTask] = []
-    complete_tasks: list[CompleteTask] = []
-    send_messages: list[SendMessage] = []
-    modify_labels: list[ModifyMailLabel] = []
-```
+Every `Handler.handle()` returns a list of objects deriving from `BaseActorEvent` (found in `sebastian.protocols.models`). These define actions to be executed by the infrastructure layer. Supported event types include:
 
 | Field | Effect |
 |---|---|
@@ -406,8 +395,8 @@ def check_delivery_ready(mytimer: TimerRequest) -> None:
 
 `perform_usecase_from_request` (from `cloud/functions/side_effects/shared.py`):
 1. Calls `resolve_delivery_ready()` to get a `Handler`.
-2. Calls `handler.handle(request)` to get an `AllActor`.
-3. Converts `AllActor` → `AllActorEventGrid` and publishes it to EventGrid.
+2. Calls `handler.handle(request)` to get a `Sequence[BaseActorEvent]`.
+3. Maps returned events to EventGrid models using `EVENT_MAP` and publishes them.
 4. If an unhandled exception occurs, sends a `SendMessage` with the error text to Telegram.
 
 ---
@@ -427,16 +416,13 @@ Add the import after implementing the function file. Without it the function wil
 
 ### 13. EventGrid Infrastructure and Side Effects
 
-After `perform_usecase_from_request` publishes the `AllActorEventGrid` event:
+In `perform_usecase_from_request`, the `Sequence[BaseActorEvent]` is mapped to dedicated EventGrid models using the `EVENT_MAP` in `cloud/functions/side_effects/shared.py`. They are then published directly to dedicated EventGrid topics:
+- `CreateTask` → `CreateTaskEventGrid` topic
+- `CompleteTask` → `CompleteTaskEventGrid` topic
+- `SendMessage` → `SendTelegramMessageEventGrid` topic
+- `ModifyMailLabel` → `ModifyMailLabelEventGrid` topic
 
-1. **`all_actor_handler`** (`cloud/functions/infrastructure/AllActor/function.py`) receives the event.  
-   It fans out each action list to its dedicated EventGrid topic:
-   - `event.create_tasks` → `CreateTaskEventGrid` topic
-   - `event.complete_tasks` → `CompleteTaskEventGrid` topic
-   - `event.send_messages` → `SendTelegramMessageEventGrid` topic
-   - `event.modify_labels` → `ModifyMailLabelEventGrid` topic
-
-2. **Side-effect functions** each subscribe to their topic and execute the action using their own usecase handler.
+**Side-effect functions** each subscribe to their topic and execute the action using their own usecase handler.
 
 #### Side-effect function structure
 
@@ -468,9 +454,9 @@ def create_task(azeventgrid: func.EventGridEvent):
 2. Parses the raw Azure EventGrid event into that model (e.g. `CreateTaskEventGrid`).
 3. Calls `create_request(event)` to build the usecase `Request`.
 4. Calls `resolve_handler()` to get the `Handler`.
-5. Calls `handler.handle(request)` → returns `AllActor`.
-6. Publishes the result as a new `AllActorEventGrid` event (so side effects can themselves produce further actions, e.g. `create_task` returns a confirmation `SendMessage`).
-7. On any exception: logs the error and publishes an `AllActorEventGrid` containing an error `SendTelegramMessageEventGrid`.
+5. Calls `handler.handle(request)` → returns `Sequence[BaseActorEvent]`.
+6. Maps returned events via `EVENT_MAP` and publishes them to their respective EventGrid topics (so side effects can themselves produce further actions, e.g. `create_task` returns a confirmation `SendMessage`).
+7. On any exception: logs the error and publishes an error `SendTelegramMessageEventGrid`.
 
 #### Side-effect usecases (`sebastian/usecases/side_effects/`)
 
@@ -484,7 +470,7 @@ sebastian/usecases/side_effects/
     modify_mail_labels.py    # Request, Handler, GmailClient protocol
 ```
 
-Their handlers also return `AllActor` — for example, the `create_task` handler returns a `SendMessage` confirmation after creating the task.
+Their handlers also return `Sequence[BaseActorEvent]` — for example, the `create_task` handler returns a `SendMessage` confirmation after creating the task.
 
 #### EventGrid Environment Variables
 
@@ -539,11 +525,9 @@ Timer fires every hour
                     → returns PickupData(tracking_number, pickup_location, due_date, item)
                 → _map_to_create_task(pickup_data)
                     → CreateTask(title="Paket abholen: ...", notes="...", tasklist=TaskLists.Default)
-          → AllActor(create_tasks=[CreateTask(...)], send_messages=[])
-    → AllActorEventGrid.from_application(AllActor)
-    → publish to AllActor EventGrid topic
-    → all_actor_handler receives event
-    → send_eventgrid_events(event.create_tasks)
+          → returns [CreateTask(...)]
+    → maps CreateTask to CreateTaskEventGrid via EVENT_MAP
+    → publishes CreateTaskEventGrid directly to its EventGrid topic
     → create_task function receives CreateTaskEventGrid
     → GoogleTaskClient.create_task(...)
 ```
@@ -561,7 +545,7 @@ Timer fires every hour
   - Export all via `__all__`
 - [ ] Create `sebastian/usecases/features/{name}/handler.py`:
   - `@dataclass class Request`
-  - `class Handler(UseCaseHandler[Request])` with `handle(request) -> AllActor`
+  - `class Handler(UseCaseHandler[Request])` with `handle(request) -> Sequence[BaseActorEvent]`
   - `__all__` re-exporting `Request`, `Handler`, and all protocol names
 - [ ] If parsing logic is non-trivial: create `parsing.py` with parsing functions
 - [ ] If using domain types (e.g. a new task list): add to `sebastian/domain/` as needed
@@ -593,8 +577,9 @@ Timer fires every hour
 
 ### EventGrid (if new action types are needed)
 
+- [ ] Add new domain event derived from `BaseActorEvent` in `sebastian/protocols/models.py`
 - [ ] Add new `EventGridModel` subclass under `cloud/functions/side_effects/{action}/models.py`
-- [ ] Add the corresponding field to `AllActorEventGrid` and `AllActor`
+- [ ] Add the mapping from domain model to `EventGridModel` in `EVENT_MAP` inside `cloud/functions/side_effects/shared.py`
 - [ ] Create the side-effect function in `cloud/functions/side_effects/{action}/function.py`
 - [ ] Add EventGrid URI and KEY environment variables to `local.settings.json` and Function App settings
 - [ ] Import the new side-effect function in `function_app.py`
