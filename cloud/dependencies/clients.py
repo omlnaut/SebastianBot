@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from cloud.functions.infrastructure.google.helper import load_google_credentials
+from google.oauth2.credentials import Credentials
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.bibo.client import BiboClient
 from sebastian.clients.google.drive.client import GoogleDriveClient
@@ -11,6 +11,13 @@ from sebastian.clients.google.calendar_event.client import CalendarEventClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient
 from sebastian.clients.mietplan.client import MietplanClient
 from sebastian.clients.telegram.client import TelegramClient
+
+
+@lru_cache()
+def load_google_credentials() -> Credentials:
+    credentials_model = get_secret(SecretKeys.GoogleCredentials)
+    creds = Credentials.from_authorized_user_info(credentials_model.credentials.model_dump())  # type: ignore
+    return creds
 
 
 @lru_cache()

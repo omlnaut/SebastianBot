@@ -1,16 +1,15 @@
 from pydantic import BaseModel
 import pytest
 from cloud.dependencies.clients import resolve_gemini_client
-from sebastian.protocols.gemini import IGeminiClient
+from sebastian.clients.google.gemini.client import GeminiClient
 
 
 @pytest.fixture
-def gemini_client() -> IGeminiClient:
+def gemini_client() -> GeminiClient:
     return resolve_gemini_client()
 
 
-def test_get_response(gemini_client: IGeminiClient):
-
+def test_get_response(gemini_client: GeminiClient):
     class JokeResponse(BaseModel):
         joke: str
 
