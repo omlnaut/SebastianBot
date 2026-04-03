@@ -2,16 +2,15 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Sequence
 
+from sebastian.domain.mangas import MangaChapter, MangaPublisher, MangaUpdateManga
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.manga_update import (
-    IMangaUpdateClient,
-    MangaChapter,
-    MangaPublisher,
-    MangaUpdateManga,
-)
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
+
+from .protocols import MangaUpdateClient
+
+__all__ = ["Request", "Handler", "MangaUpdateClient"]
 
 mangas = [
     MangaUpdateManga(
@@ -35,7 +34,7 @@ class Request:
 
 
 class Handler(UseCaseHandler[Request]):
-    def __init__(self, client: IMangaUpdateClient):
+    def __init__(self, client: MangaUpdateClient):
         self.client = client
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:

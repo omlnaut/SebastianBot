@@ -1,4 +1,3 @@
-from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.usecases.features import (
     bibo_lending_sync,
     delivery_ready,
@@ -40,7 +39,7 @@ def resolve_mietplan(
 
 
 def resolve_mangaupdate_service(
-    mangaupdate_client: IMangaUpdateClient | None = None,
+    mangaupdate_client: manga_update.MangaUpdateClient | None = None,
 ) -> UseCaseHandler[manga_update.Request]:
     return manga_update.Handler(
         client=mangaupdate_client or resolve_mangaupdate_client(),

@@ -1,9 +1,11 @@
 from typing import Protocol
 
-from .models import MangaChapter, MangaUpdateManga
+from sebastian.domain.mangas import MangaChapter, MangaUpdateManga
+
+__all__ = ["MangaUpdateClient"]
 
 
-class IMangaUpdateClient(Protocol):
+class MangaUpdateClient(Protocol):
     """Protocol for MangaUpdate client operations."""
 
     def get_latest_chapter(self, manga: MangaUpdateManga) -> MangaChapter:
