@@ -83,7 +83,11 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
 
         if "parts" in payload:
             for part in payload["parts"]:
-                if part["mimeType"] == "text/html":
+                if (
+                    part["mimeType"] == "text/html"
+                    and "body" in part
+                    and "data" in part["body"]
+                ):
                     return _decode(part)
         else:
             return _decode(payload)
