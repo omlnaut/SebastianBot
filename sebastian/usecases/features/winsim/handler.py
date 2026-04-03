@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
-from sebastian.protocols.google_drive import UploadFileRequest
+from sebastian.domain.gdrive import UploadFileRequest
 from sebastian.protocols.models import BaseActorEvent, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -61,9 +61,13 @@ class Handler(UseCaseHandler[Request]):
                 )
                 response = self._drive_client.upload_file(upload_request)
                 uploaded_file_ids.append(response.file_id)
-                logging.info(f"Uploaded {pdf.filename} as {filename} (id: {response.file_id})")
+                logging.info(
+                    f"Uploaded {pdf.filename} as {filename} (id: {response.file_id})"
+                )
             except Exception as e:
-                errors.append(SendMessage(message=f"Error uploading {pdf.filename}: {str(e)}"))
+                errors.append(
+                    SendMessage(message=f"Error uploading {pdf.filename}: {str(e)}")
+                )
 
         messages = errors
         if n_uploads := len(uploaded_file_ids):

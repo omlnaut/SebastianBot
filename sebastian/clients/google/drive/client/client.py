@@ -1,7 +1,7 @@
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build  # type: ignore
 
-from sebastian.protocols.google_drive import UploadFileRequest, UploadFileResponse
+from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
 
 from .upload_file import upload_file_with_path  # type: ignore
 

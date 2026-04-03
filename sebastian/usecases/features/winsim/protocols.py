@@ -1,7 +1,7 @@
 from typing import Protocol
 
+from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
 from sebastian.domain.gmail import FullMailResponse, PdfAttachment
-from sebastian.protocols.google_drive import UploadFileRequest, UploadFileResponse
 
 __all__ = ["GmailClient", "GoogleDriveClient"]
 
