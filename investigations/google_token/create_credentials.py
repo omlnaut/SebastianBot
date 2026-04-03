@@ -1,8 +1,8 @@
 # pyright: standard
 import json
+from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
-from pathlib import Path
 
 # The scopes required
 SCOPES = [

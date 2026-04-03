@@ -17,4 +17,9 @@
     "notebook.cellFailureDiagnostics": true,
     "notebook.defaultFormatter": "ms-python.black-formatter",
     "notebook.formatOnSave.enabled": true,
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
 }

@@ -1,6 +1,7 @@
 from collections import Counter
 from itertools import chain
 from pathlib import Path
+
 import astroid
 from astroid.nodes import FunctionDef
 

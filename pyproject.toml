@@ -46,3 +46,6 @@ source = ["sebastian/shared", "sebastian/usecases"]
 typeCheckingMode = "strict"
 reportPrivateUsage = false
 reportMissingTypeStubs = false
+
+[tool.isort]
+profile = "black"

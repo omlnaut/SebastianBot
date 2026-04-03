@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Sequence, Protocol
+from typing import Protocol, Sequence
 
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent

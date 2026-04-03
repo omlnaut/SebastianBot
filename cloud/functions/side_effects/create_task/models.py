@@ -1,10 +1,7 @@
+from datetime import datetime
 from typing import Self, override
 
-
 from cloud.helper.event_grid import EventGridModel
-
-from datetime import datetime
-
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import CreateTask
 

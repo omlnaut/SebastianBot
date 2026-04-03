@@ -1,5 +1,6 @@
 # pyright: standard
 from typing import Any
+
 import pytest
 
 from cloud.helper import SecretKeys, get_secret

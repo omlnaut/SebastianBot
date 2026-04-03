@@ -1,8 +1,8 @@
-from datetime import datetime
 import json
+from datetime import datetime
 
-import pytest
 import azure.functions as func
+import pytest
 
 from cloud.functions.side_effects.send_message.models import (
     SendTelegramMessageEventGrid,

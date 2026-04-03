@@ -1,6 +1,7 @@
 from typing import Generator, Protocol
 
-from .models import Folder
+from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
+from sebastian.domain.mietplan import Folder
 
 
 class IMietplanClient(Protocol):
@@ -12,4 +13,12 @@ class IMietplanClient(Protocol):
 
     def download_file(self, download_path: str) -> bytes:
         """Download a file from the given path."""
+        ...
+
+
+class IGoogleDriveClient(Protocol):
+    """Protocol for Google Drive client operations."""
+
+    def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
+        """Upload a file to Google Drive."""
         ...

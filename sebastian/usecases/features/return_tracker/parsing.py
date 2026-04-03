@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
 from bs4 import BeautifulSoup
+from pydantic import BaseModel, Field
 
 from .protocols import GeminiClient
 

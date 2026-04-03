@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 import logging
-from typing import Sequence, Protocol
+from dataclasses import dataclass
+from typing import Protocol, Sequence
 
 from sebastian.protocols.models import BaseActorEvent
 from sebastian.usecases.usecase_handler import UseCaseHandler

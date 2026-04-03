@@ -1,6 +1,6 @@
 # pyright: standard
-from datetime import datetime
 import re
+from datetime import datetime
 
 from bs4 import BeautifulSoup
 

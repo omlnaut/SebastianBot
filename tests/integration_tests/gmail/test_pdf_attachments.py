@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.clients.google.gmail.client import GmailClient
+from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 
 
 def test_download_pdf_attachments(gmail_client: GmailClient):

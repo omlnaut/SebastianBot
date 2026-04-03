@@ -5,11 +5,13 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import BaseModel
 
-from cloud.functions.infrastructure.google.credentials import GoogleSecret as _GoogleSecret
 from sebastian.clients.bibo.credentials import BiboCredentials as _BiboCredentials
+from sebastian.clients.google.credentials import GoogleSecret as _GoogleSecret
 from sebastian.clients.google.gemini.credentials import GeminiApiKey as _GeminiApiKey
 from sebastian.clients.MangaUpdate import MangaUpdateSecret as _MangaUpdateSecret
-from sebastian.clients.mietplan.credentials import MietplanCredentials as _MietplanCredentials
+from sebastian.clients.mietplan.credentials import (
+    MietplanCredentials as _MietplanCredentials,
+)
 from sebastian.clients.telegram.config import TelegramConfig as _TelegramConfig
 
 
@@ -48,12 +50,24 @@ class TypedSecretKey(Generic[T]):
 
 
 class SecretKeys:
-    TelegramSebastianToken: TypedSecretKey[_TelegramConfig] = TypedSecretKey("SebastianTelegramToken", _TelegramConfig)
-    GoogleCredentials: TypedSecretKey[_GoogleSecret] = TypedSecretKey("GoogleCredentials", _GoogleSecret)
-    MangaUpdateCredentials: TypedSecretKey[_MangaUpdateSecret] = TypedSecretKey("MangaUpdateCredentials", _MangaUpdateSecret)
-    MietplanCredentials: TypedSecretKey[_MietplanCredentials] = TypedSecretKey("MietplanCredentials", _MietplanCredentials)
-    GeminiApiKey: TypedSecretKey[_GeminiApiKey] = TypedSecretKey("GeminiApiKey", _GeminiApiKey)
-    BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey("BiboCredentials", _BiboCredentials)
+    TelegramSebastianToken: TypedSecretKey[_TelegramConfig] = TypedSecretKey(
+        "SebastianTelegramToken", _TelegramConfig
+    )
+    GoogleCredentials: TypedSecretKey[_GoogleSecret] = TypedSecretKey(
+        "GoogleCredentials", _GoogleSecret
+    )
+    MangaUpdateCredentials: TypedSecretKey[_MangaUpdateSecret] = TypedSecretKey(
+        "MangaUpdateCredentials", _MangaUpdateSecret
+    )
+    MietplanCredentials: TypedSecretKey[_MietplanCredentials] = TypedSecretKey(
+        "MietplanCredentials", _MietplanCredentials
+    )
+    GeminiApiKey: TypedSecretKey[_GeminiApiKey] = TypedSecretKey(
+        "GeminiApiKey", _GeminiApiKey
+    )
+    BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey(
+        "BiboCredentials", _BiboCredentials
+    )
 
 
 def get_secret(key: TypedSecretKey[T]) -> T:

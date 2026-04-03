@@ -9,17 +9,17 @@ Requires:
 - Environment variables: AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_FUNCTION_APP_NAME
 """
 
+import importlib
 import os
 from pathlib import Path
+
 import astroid
 import pytest
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.web import WebSiteManagementClient
 from pydantic import ValidationError
 
-from cloud.helper.event_grid import EventGridInfo
-from cloud.helper.event_grid import EventGridModel
-import importlib
+from cloud.helper.event_grid import EventGridInfo, EventGridModel
 
 
 @pytest.fixture(scope="module")

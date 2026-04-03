@@ -1,13 +1,15 @@
-from typing import Sequence
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from datetime import timedelta
+from typing import Sequence
 
-from sebastian.protocols.google_drive import IGoogleDriveClient, UploadFileRequest
-from sebastian.protocols.mietplan import File, Folder, IMietplanClient
+from sebastian.domain.gdrive import UploadFileRequest
+from sebastian.domain.mietplan import File, Folder
 from sebastian.protocols.models import BaseActorEvent, SendMessage
 from sebastian.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
+
+from .protocols import IGoogleDriveClient, IMietplanClient
 
 
 @dataclass
