@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Sequence
 
 from sebastian.domain.task import Task, TaskLists
 from sebastian.protocols.models import BaseActorEvent, CompleteTask, CreateTask
@@ -49,7 +50,9 @@ class _FakeTaskClient:
         return self._tasks
 
 
-def _run(lendings: list[BookLendingInfo], tasks: list[Task]) -> list[BaseActorEvent]:
+def _run(
+    lendings: list[BookLendingInfo], tasks: list[Task]
+) -> Sequence[BaseActorEvent]:
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
         task_client=_FakeTaskClient(tasks),
@@ -126,7 +129,9 @@ def test_task_with_no_due_date_treated_as_changed():
     result = _run(lendings=[lending], tasks=[task])
 
     assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
-    assert [t for t in result if isinstance(t, CompleteTask)][0].task_id == "task-noduedate"
+    assert [t for t in result if isinstance(t, CompleteTask)][
+        0
+    ].task_id == "task-noduedate"
     assert len([t for t in result if isinstance(t, CreateTask)]) == 1
 
 
@@ -191,7 +196,9 @@ def test_mixed_scenario():
     assert "Bibo: Unchanged Book" not in created_ids
     assert len([t for t in result if isinstance(t, CreateTask)]) == 2
 
-    completed_ids = {t.task_id for t in [t for t in result if isinstance(t, CompleteTask)]}
+    completed_ids = {
+        t.task_id for t in [t for t in result if isinstance(t, CompleteTask)]
+    }
     assert "task-changed" in completed_ids
     assert "task-returned" in completed_ids
     assert "task-unchanged" not in completed_ids
