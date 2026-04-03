@@ -1,7 +1,6 @@
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
-from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass(frozen=True)

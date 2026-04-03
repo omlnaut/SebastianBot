@@ -1,10 +1,10 @@
 from google.oauth2.credentials import Credentials
 
-from .modify_labels import modify_labels
-from .service_wrapper import GmailServiceWrapper
 from sebastian.domain.gmail import FullMailResponse, GmailLabel, PdfAttachment
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
+from .modify_labels import modify_labels
+from .service_wrapper import GmailServiceWrapper
 
 
 class GmailClient:

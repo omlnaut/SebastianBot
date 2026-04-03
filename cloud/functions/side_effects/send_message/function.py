@@ -3,12 +3,13 @@ import logging
 import azure.functions as func
 
 from cloud.dependencies import usecases
-from .models import SendTelegramMessageEventGrid
 from cloud.functions.side_effects.shared import (
-    send_eventgrid_events,
     perform_usecase_from_eventgrid,
+    send_eventgrid_events,
 )
 from function_app import app
+
+from .models import SendTelegramMessageEventGrid
 
 
 @app.route(route="test_send_telegram_message")

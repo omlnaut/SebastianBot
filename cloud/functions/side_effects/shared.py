@@ -1,11 +1,11 @@
-from itertools import groupby
 import logging
 import os
+from itertools import groupby
 from typing import Any, Callable, Sequence, TypeVar, get_type_hints
 
-from azure.eventgrid import EventGridPublisherClient
 import azure.functions as func
 from azure.core.credentials import AzureKeyCredential
+from azure.eventgrid import EventGridPublisherClient
 
 from cloud.functions.side_effects.complete_task.models import CompleteTaskEventGrid
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
@@ -15,10 +15,8 @@ from cloud.functions.side_effects.modify_mail_label.models import (
 from cloud.functions.side_effects.send_message.models import (
     SendTelegramMessageEventGrid,
 )
-from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from cloud.helper import parse_payload
-
-from sebastian.usecases.usecase_handler import UseCaseHandler
+from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from sebastian.protocols.models import (
     BaseActorEvent,
     CompleteTask,
@@ -26,6 +24,7 @@ from sebastian.protocols.models import (
     ModifyMailLabel,
     SendMessage,
 )
+from sebastian.usecases.usecase_handler import UseCaseHandler
 
 EVENT_MAP: dict[type[BaseActorEvent], type[EventGridModel[Any]]] = {
     CompleteTask: CompleteTaskEventGrid,

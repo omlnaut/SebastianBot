@@ -1,6 +1,7 @@
 from google.oauth2.credentials import Credentials
 
 from sebastian.domain.calendar import Calendar
+
 from .service_wrapper import CalendarServiceWrapper
 
 

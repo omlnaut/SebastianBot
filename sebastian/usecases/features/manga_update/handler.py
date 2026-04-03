@@ -1,18 +1,17 @@
-from typing import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import Sequence
 
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.manga_update import (
     IMangaUpdateClient,
-    MangaUpdateManga,
-    MangaPublisher,
     MangaChapter,
+    MangaPublisher,
+    MangaUpdateManga,
 )
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
-
 
 mangas = [
     MangaUpdateManga(

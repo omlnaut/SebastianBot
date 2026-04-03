@@ -1,16 +1,21 @@
 from sebastian.protocols.google_drive import IGoogleDriveClient
 from sebastian.protocols.manga_update import IMangaUpdateClient
 from sebastian.protocols.mietplan import IMietplanClient
+from sebastian.usecases.features import (
+    bibo_lending_sync,
+    delivery_ready,
+    manga_update,
+    mietplan,
+    return_tracker,
+    winsim,
+)
 from sebastian.usecases.side_effects import (
     complete_task,
     create_task,
-    send_telegram_message,
     modify_mail_labels,
+    send_telegram_message,
 )
-from sebastian.usecases.features import delivery_ready, manga_update, mietplan, return_tracker, winsim
-from sebastian.usecases.features import bibo_lending_sync
 from sebastian.usecases.usecase_handler import UseCaseHandler
-
 
 from .clients import (
     resolve_bibo_client,

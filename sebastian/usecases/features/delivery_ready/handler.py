@@ -1,8 +1,7 @@
-from typing import Sequence
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import logging
-
+from typing import Sequence
 
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
@@ -10,7 +9,7 @@ from sebastian.shared.gmail.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import PickupData, parse_dhl_pickup_email_html
-from .protocols import GmailClient, GeminiClient
+from .protocols import GeminiClient, GmailClient
 
 __all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
 

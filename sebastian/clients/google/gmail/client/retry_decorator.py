@@ -1,14 +1,15 @@
 import logging
-import ssl
 import socket
+import ssl
+
+from googleapiclient.errors import HttpError  # type: ignore
 from tenacity import (
+    before_sleep_log,
     retry,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception,
-    before_sleep_log,
 )
-from googleapiclient.errors import HttpError  # type: ignore
 
 
 def _is_retryable_error(exception: BaseException) -> bool:

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Sequence, Optional, Protocol
+from typing import Optional, Protocol, Sequence
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import BaseActorEvent
-from sebastian.protocols.models import SendMessage
+from sebastian.protocols.models import BaseActorEvent, SendMessage
 from sebastian.shared.dates import get_end_of_day
 from sebastian.usecases.usecase_handler import UseCaseHandler
 

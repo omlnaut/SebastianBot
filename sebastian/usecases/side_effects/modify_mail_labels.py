@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
 import logging
-from typing import Sequence, Protocol
+from dataclasses import dataclass, field
+from typing import Protocol, Sequence
 
 from sebastian.domain.gmail import GmailLabel
 from sebastian.protocols.models import BaseActorEvent

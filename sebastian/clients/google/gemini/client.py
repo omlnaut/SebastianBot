@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from sebastian.clients.google.gemini.credentials import GeminiApiKey
 
-
 T = TypeVar("T", bound=BaseModel)
 
 

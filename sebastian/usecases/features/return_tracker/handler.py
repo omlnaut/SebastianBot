@@ -1,7 +1,7 @@
-from typing import Sequence
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import logging
+from typing import Sequence
 
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage

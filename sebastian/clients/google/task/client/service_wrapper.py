@@ -1,8 +1,8 @@
 # pyright: basic
-from sebastian.clients.google.task.client._models import TaskList, TaskResponse
-
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+
+from sebastian.clients.google.task.client._models import TaskList, TaskResponse
 
 
 class TaskServiceWrapper:

@@ -1,9 +1,9 @@
 from typing import Protocol
 
+from pydantic import BaseModel, Field
+
 from sebastian.domain.task import Task, TaskLists
 from sebastian.shared.dates import TimeRange
-
-from pydantic import BaseModel, Field
 
 __all__ = ["BiboClient", "TaskClient"]
 

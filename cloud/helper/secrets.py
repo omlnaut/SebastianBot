@@ -5,8 +5,8 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import BaseModel
 
-from sebastian.clients.google.credentials import GoogleSecret as _GoogleSecret
 from sebastian.clients.bibo.credentials import BiboCredentials as _BiboCredentials
+from sebastian.clients.google.credentials import GoogleSecret as _GoogleSecret
 from sebastian.clients.google.gemini.credentials import GeminiApiKey as _GeminiApiKey
 from sebastian.clients.MangaUpdate import MangaUpdateSecret as _MangaUpdateSecret
 from sebastian.clients.mietplan.credentials import (

@@ -1,9 +1,11 @@
 from typing import Generator
+
 import requests
 
-from ..credentials import MietplanCredentials
 from sebastian.protocols.mietplan import Folder
-from . import _login, _walk_from_top_folder, _download_file
+
+from ..credentials import MietplanCredentials
+from . import _download_file, _login, _walk_from_top_folder
 
 
 class MietplanClient:

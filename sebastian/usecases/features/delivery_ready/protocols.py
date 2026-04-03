@@ -1,4 +1,5 @@
 from typing import Protocol, TypeVar
+
 from pydantic import BaseModel
 
 from sebastian.domain.gmail import FullMailResponse

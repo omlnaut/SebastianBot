@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from sebastian.clients.google.task.client.create_task_with_notes import build_task_body
+from pydantic import AwareDatetime, RootModel
 
-from pydantic import RootModel, AwareDatetime
+from sebastian.clients.google.task.client.create_task_with_notes import build_task_body
 
 
 def validate_with_pydantic(timestamp_str: str):

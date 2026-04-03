@@ -1,5 +1,5 @@
-from typing import Sequence
 from abc import ABC, abstractmethod
+from typing import Sequence
 
 from sebastian.protocols.models import BaseActorEvent
 

@@ -7,11 +7,10 @@ from cloud.functions.side_effects.shared import (
     perform_usecase_from_eventgrid,
     send_eventgrid_events,
 )
+from function_app import app
 from sebastian.domain.task import TaskLists
 
-
 from .models import CreateTaskEventGrid
-from function_app import app
 
 
 @app.route(route="test_create_task")

@@ -1,9 +1,6 @@
 from typing import Self, override
 
-
 from cloud.helper.event_grid import EventGridModel
-
-
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import CompleteTask
 

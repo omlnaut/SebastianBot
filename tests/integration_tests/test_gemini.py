@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 import pytest
+from pydantic import BaseModel
+
 from cloud.dependencies.clients import resolve_gemini_client
 from sebastian.clients.google.gemini.client import GeminiClient
 

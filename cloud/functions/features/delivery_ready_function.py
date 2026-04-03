@@ -1,12 +1,10 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 from azure.functions import TimerRequest
 
 from cloud.dependencies.usecases import resolve_delivery_ready
-from cloud.functions.side_effects.shared import (
-    perform_usecase_from_request,
-)
+from cloud.functions.side_effects.shared import perform_usecase_from_request
 from function_app import app
 from sebastian.usecases.features import delivery_ready
 
