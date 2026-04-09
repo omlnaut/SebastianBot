@@ -1,8 +1,16 @@
+from datetime import datetime
+
 from google.oauth2.credentials import Credentials
 
-from sebastian.domain.calendar import Calendar
+from sebastian.domain.calendar import Calendar, Calendars
 
 from .service_wrapper import CalendarServiceWrapper
+
+
+def to_id(calendar: Calendars) -> str:
+    match calendar:
+        case Calendars.MyDefault:
+            return "oneironaut.oml@gmail.com"
 
 
 class CalendarEventClient:
@@ -18,3 +26,7 @@ class CalendarEventClient:
         return [
             Calendar(id=calendar.id, title=calendar.summary) for calendar in calendars
         ]
+
+    def create_event(self, calendar: Calendars, title: str, date: datetime) -> None:
+        calendar_id = to_id(calendar)
+        self._service.create_event(calendar_id, title, date)

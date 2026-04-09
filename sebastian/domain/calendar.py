@@ -9,4 +9,4 @@ class Calendar(BaseModel):
 
 
 class Calendars(Enum):
-    Bibo = auto()
+    MyDefault = auto()
