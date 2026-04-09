@@ -23,7 +23,8 @@
 				"mathematic.vscode-pdf",
 				"GitHub.vscode-pull-request-github",
 				"github.vscode-github-actions",
-				"tamasfe.even-better-toml"
+				"tamasfe.even-better-toml",
+				"vscode-icons-team.vscode-icons"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",

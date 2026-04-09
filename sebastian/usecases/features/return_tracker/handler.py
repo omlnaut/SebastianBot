@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
+from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
@@ -27,16 +28,7 @@ class Handler(UseCaseHandler[Request]):
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.time_back
 
-        query = (
-            GmailQueryBuilder()
-            .from_email("rueckgabe@amazon.de")
-            .subject("Ihre Rücksendung von", exact=False)
-            .after_date(time_threshold)
-            .build()
-        )
-
-        mails = self._gmail_client.fetch_mails(query)
-        logging.info(f"Fetched {len(mails)} return emails from Amazon")
+        mails = self._fetch_return_emails(time_threshold)
 
         tasks: list[CreateTask] = []
         errors: list[SendMessage] = []
@@ -49,6 +41,37 @@ class Handler(UseCaseHandler[Request]):
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
         return tasks + errors
+
+    def _fetch_return_emails(
+        self, time_threshold: datetime
+    ) -> Sequence[FullMailResponse]:
+        mails = fetch_return_emails(self._gmail_client, after_date=time_threshold)
+
+        return mails
+
+
+def fetch_return_emails(
+    gmail_client: GmailClient, after_date: datetime, before_date: datetime | None = None
+) -> Sequence[FullMailResponse]:
+    query_parts = (
+        GmailQueryBuilder()
+        .from_email("rueckgabe@amazon.de")
+        .subject("Ihre Rücksendung von", exact=False)
+        .after_date(after_date)
+    )
+    if before_date:
+        query_parts.before_date(before_date)
+
+    query = query_parts.build()
+    mails = gmail_client.fetch_mails(query)
+    logging.info(f"Fetched {len(mails)} return emails from Amazon")
+    filtered_mails = [
+        mail
+        for mail in mails
+        if "Deine Rückgabeanfrage wurde akzeptiert" in mail.content
+    ]
+    logging.info(f"Filtered {len(filtered_mails)} accepted return emails from Amazon")
+    return filtered_mails
 
 
 def _map_to_create_task(return_data: ReturnData) -> CreateTask:
