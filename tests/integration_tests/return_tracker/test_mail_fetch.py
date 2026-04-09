@@ -17,6 +17,6 @@ def test_fetch_mails(client: return_tracker.GmailClient):
         after_date=datetime(2026, 4, 5),
         before_date=datetime(2026, 4, 9),
     )
-    tap_mails = [mail for mail in mails if "Tapo TP-Link" in mail.content]
+    tapo_mails = [mail for mail in mails if "Tapo TP-Link" in mail.content]
 
-    assert len(tap_mails) == 1
+    assert len(tapo_mails) == 1

@@ -53,6 +53,10 @@ class Handler(UseCaseHandler[Request]):
 def fetch_return_emails(
     gmail_client: GmailClient, after_date: datetime, before_date: datetime | None = None
 ) -> Sequence[FullMailResponse]:
+    """
+    Fetch return emails from Amazon using the Gmail API, filtering by sender, subject, and date.
+    Additionally filter the fetched emails to only include those that contain the inital return confirmation text.
+    """
     query_parts = (
         GmailQueryBuilder()
         .from_email("rueckgabe@amazon.de")
@@ -65,6 +69,7 @@ def fetch_return_emails(
     query = query_parts.build()
     mails = gmail_client.fetch_mails(query)
     logging.info(f"Fetched {len(mails)} return emails from Amazon")
+    # this filter has to be done in-memory, because the Gmail API does not support searching for email content
     filtered_mails = [
         mail
         for mail in mails
