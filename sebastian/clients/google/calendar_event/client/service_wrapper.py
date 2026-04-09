@@ -14,4 +14,6 @@ class CalendarServiceWrapper:
     def get_calendars(self) -> list[CalendarListEntry]:
         response = self._service.calendarList().list().execute()
         # from json?
-        return [CalendarListEntry(**item) for item in response.get("items", [])]
+        return [
+            CalendarListEntry.model_validate(item) for item in response.get("items", [])
+        ]
