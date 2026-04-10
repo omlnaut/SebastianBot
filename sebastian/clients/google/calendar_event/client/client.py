@@ -11,6 +11,8 @@ def to_id(calendar: Calendars) -> str:
     match calendar:
         case Calendars.Primary:
             return "oneironaut.oml@gmail.com"
+        case _:
+            raise ValueError(f"Unsupported calendar: {calendar}")
 
 
 class CalendarEventClient:
