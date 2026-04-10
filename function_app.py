@@ -22,3 +22,8 @@ from cloud.functions.side_effects.send_message.function import (
     send_telegram_message,
     test_send_telegram_message,
 )
+
+from cloud.functions.side_effects.create_calendar_event.function import (
+    create_calendar_event,
+    test_create_calendar_event,
+)

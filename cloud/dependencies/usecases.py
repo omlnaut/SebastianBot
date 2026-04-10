@@ -8,6 +8,7 @@ from sebastian.usecases.features import (
 )
 from sebastian.usecases.side_effects import (
     complete_task,
+    create_calendar_event,
     create_task,
     modify_mail_labels,
     send_telegram_message,
@@ -16,6 +17,7 @@ from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .clients import (
     resolve_bibo_client,
+    resolve_calendar_event_client,
     resolve_gemini_client,
     resolve_gmail_client,
     resolve_google_drive_client,
@@ -109,6 +111,14 @@ def resolve_create_task(
 ) -> UseCaseHandler[create_task.Request]:
     return create_task.Handler(
         task_client=task_client or resolve_google_task_client(),
+    )
+
+
+def resolve_create_calendar_event(
+    calendar_event_client: create_calendar_event.CalendarEventClient | None = None,
+) -> UseCaseHandler[create_calendar_event.Request]:
+    return create_calendar_event.Handler(
+        calendar_event_client=calendar_event_client or resolve_calendar_event_client(),
     )
 
 
