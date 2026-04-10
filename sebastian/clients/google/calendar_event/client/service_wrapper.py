@@ -1,5 +1,5 @@
 # pyright: standard
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -20,7 +20,7 @@ class CalendarServiceWrapper:
             CalendarListEntry.model_validate(item) for item in response.get("items", [])
         ]
 
-    def create_event(self, calendar_id: str, title: str, date: datetime) -> None:
+    def create_event(self, calendar_id: str, title: str, date: date) -> None:
         day_after = date + timedelta(days=1)
         event_body = {
             "summary": title,

@@ -9,7 +9,7 @@ from .service_wrapper import CalendarServiceWrapper
 
 def to_id(calendar: Calendars) -> str:
     match calendar:
-        case Calendars.MyDefault:
+        case Calendars.Primary:
             return "oneironaut.oml@gmail.com"
 
 
@@ -27,6 +27,6 @@ class CalendarEventClient:
             Calendar(id=calendar.id, title=calendar.summary) for calendar in calendars
         ]
 
-    def create_event(self, calendar: Calendars, title: str, date: datetime) -> None:
+    def create_event(self, calendar: Calendars, title: str, date: date) -> None:
         calendar_id = to_id(calendar)
         self._service.create_event(calendar_id, title, date)
