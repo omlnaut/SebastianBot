@@ -8,6 +8,9 @@ from azure.core.credentials import AzureKeyCredential
 from azure.eventgrid import EventGridPublisherClient
 
 from cloud.functions.side_effects.complete_task.models import CompleteTaskEventGrid
+from cloud.functions.side_effects.create_calendar_event.models import (
+    CreateCalendarEventEventGrid,
+)
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from cloud.functions.side_effects.modify_mail_label.models import (
     ModifyMailLabelEventGrid,
@@ -20,6 +23,7 @@ from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from sebastian.protocols.models import (
     BaseActorEvent,
     CompleteTask,
+    CreateCalendarEvent,
     CreateTask,
     ModifyMailLabel,
     SendMessage,
@@ -28,6 +32,7 @@ from sebastian.usecases.usecase_handler import UseCaseHandler
 
 EVENT_MAP: dict[type[BaseActorEvent], type[EventGridModel[Any]]] = {
     CompleteTask: CompleteTaskEventGrid,
+    CreateCalendarEvent: CreateCalendarEventEventGrid,
     CreateTask: CreateTaskEventGrid,
     ModifyMailLabel: ModifyMailLabelEventGrid,
     SendMessage: SendTelegramMessageEventGrid,

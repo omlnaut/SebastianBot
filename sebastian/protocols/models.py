@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
+from sebastian.domain.calendar import Calendars
 from sebastian.domain.gmail import GmailLabel
 from sebastian.domain.task import TaskLists
 
@@ -15,6 +16,12 @@ class CreateTask(BaseActorEvent):
     tasklist: TaskLists
     notes: str | None = None
     due: datetime | None = None
+
+
+class CreateCalendarEvent(BaseActorEvent):
+    calendar: Calendars
+    title: str = Field(min_length=1)
+    date: date
 
 
 class SendMessage(BaseActorEvent):
