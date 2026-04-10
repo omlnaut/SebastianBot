@@ -28,6 +28,7 @@ cloud/functions/side_effects/shared.py :: perform_usecase_from_request
     ▼
 Side-effect EventGrid triggers (one per action type):
     ├── cloud/functions/side_effects/create_task/function.py
+    ├── cloud/functions/side_effects/create_calendar_event/function.py
     ├── cloud/functions/side_effects/send_message/function.py
     ├── cloud/functions/side_effects/complete_task/function.py
     └── cloud/functions/side_effects/modify_mail_label/function.py
@@ -206,12 +207,13 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
 
 Every `Handler.handle()` returns a list of objects deriving from `BaseActorEvent` (found in `sebastian.protocols.models`). These define actions to be executed by the infrastructure layer. Supported event types include:
 
-| Field | Effect |
+| Actor Event | Effect |
 |---|---|
-| `create_tasks` | Creates a task in Google Tasks |
-| `complete_tasks` | Marks an existing task as complete |
-| `send_messages` | Sends a Telegram message |
-| `modify_labels` | Adds or removes Gmail labels |
+| `CreateTask` | Creates a task in Google Tasks |
+| `CreateCalendarEvent` | Creates a calendar event in Google Calendar |
+| `CompleteTask` | Marks an existing task as complete |
+| `SendMessage` | Sends a Telegram message |
+| `ModifyMailLabel` | Adds or removes Gmail labels |
 
 Unhandled exceptions propagate to `perform_usecase_from_request` / `perform_usecase_from_eventgrid`, which catch them and forward an error `SendMessage` automatically. Only convert exceptions to `SendMessage` yourself when processing a list and you want to continue despite individual item failures.
 
@@ -418,6 +420,7 @@ Add the import after implementing the function file. Without it the function wil
 
 In `perform_usecase_from_request`, the `Sequence[BaseActorEvent]` is mapped to dedicated EventGrid models using the `EVENT_MAP` in `cloud/functions/side_effects/shared.py`. They are then published directly to dedicated EventGrid topics:
 - `CreateTask` → `CreateTaskEventGrid` topic
+- `CreateCalendarEvent` → `CreateCalendarEventEventGrid` topic
 - `CompleteTask` → `CompleteTaskEventGrid` topic
 - `SendMessage` → `SendTelegramMessageEventGrid` topic
 - `ModifyMailLabel` → `ModifyMailLabelEventGrid` topic
@@ -465,6 +468,7 @@ Each side-effect function has a corresponding usecase in `sebastian/usecases/sid
 ```
 sebastian/usecases/side_effects/
     create_task.py           # Request, Handler, TaskClient protocol
+    create_calendar_event.py # Request, Handler, CalendarEventClient protocol
     complete_task.py         # Request, Handler, TaskClient protocol
     send_telegram_message.py # Request, Handler, TelegramClient protocol
     modify_mail_labels.py    # Request, Handler, GmailClient protocol
