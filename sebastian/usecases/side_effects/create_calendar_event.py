@@ -29,5 +29,5 @@ class Handler(UseCaseHandler[Request]):
             date=request.date,
         )
 
-        message = f"📅 CALENDAR EVENT created: {request.title} on {request.date} in {request.calendar}"
+        message = f"📅 CALENDAR EVENT created: {request.title} on {request.date.strftime('%d-%m-%Y')} in {request.calendar}"
         return [SendMessage(message=message)]
