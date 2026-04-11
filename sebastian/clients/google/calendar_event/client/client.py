@@ -32,8 +32,8 @@ class CalendarEventClient:
     def get_events(
         self,
         calendar: Calendars,
-        time_min: datetime | date | None = None,
-        time_max: datetime | date | None = None,
+        time_min: date | None = None,
+        time_max: date | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]:
         calendar_id = to_id(calendar)

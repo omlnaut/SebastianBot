@@ -22,8 +22,6 @@ def _to_datetime(value: EventDateTime | None) -> datetime | None:
 
 
 def _to_rfc3339(value: datetime | date) -> str:
-    if isinstance(value, datetime):
-        return value.isoformat()
     return datetime(value.year, value.month, value.day, tzinfo=timezone.utc).isoformat()
 
 
@@ -45,7 +43,6 @@ class CalendarServiceWrapper:
 
     def get_calendars(self) -> list[CalendarListEntry]:
         response = self._service.calendarList().list().execute()
-        # from json?
         return [
             CalendarListEntry.model_validate(item) for item in response.get("items", [])
         ]
@@ -53,8 +50,8 @@ class CalendarServiceWrapper:
     def list_events(
         self,
         calendar_id: str,
-        time_min: datetime | date | None = None,
-        time_max: datetime | date | None = None,
+        time_min: date | None = None,
+        time_max: date | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]:
         kwargs: dict[str, object] = {
