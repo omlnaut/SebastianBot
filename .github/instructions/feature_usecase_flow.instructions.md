@@ -73,8 +73,9 @@ cloud/dependencies/
 Domain models represent shared data structures that may be used across multiple usecases or clients.
 
 - Place shared data types (e.g. `FullMailResponse`, `Task`, `TaskLists`) in `sebastian/domain/`.
-- Use `pydantic.BaseModel` for models that are parsed from external JSON (clients, API responses).
-- Use plain `@dataclass` or `pydantic.BaseModel` without `extra` constraints for internal value objects.
+- Domain models are **pure**: no `ConfigDict(extra="allow")`, no parsing logic. They are mapped *to* from API response models, not parsed directly from external JSON.
+- Use plain `@dataclass` or `pydantic.BaseModel` without `extra` constraints.
+- **API response models** (direct JSON parsing from external services) live in the client's `_models.py` and use `ConfigDict(extra="allow")` to tolerate unexpected fields. Mapping from API response → domain model is done in the service wrapper (`service_wrapper.py`) via module-level `_to_*` helper functions, not inside the domain model itself.
 
 ```python
 # sebastian/domain/task.py
