@@ -60,10 +60,10 @@ class CalendarServiceWrapper:
         kwargs: dict[str, object] = {
             "calendarId": calendar_id,
             "singleEvents": True,
-            "orderBy": "startTime",
         }
         if time_min is not None:
             kwargs["timeMin"] = _to_rfc3339(time_min)
+            kwargs["orderBy"] = "startTime"
         if time_max is not None:
             kwargs["timeMax"] = _to_rfc3339(time_max)
         if q is not None:
