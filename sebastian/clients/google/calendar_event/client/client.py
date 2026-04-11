@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 
 from google.oauth2.credentials import Credentials
 
-from sebastian.domain.calendar import Calendar, Calendars
+from sebastian.domain.calendar import Calendar, CalendarEvent, Calendars
 
 from .service_wrapper import CalendarServiceWrapper
 
@@ -28,6 +28,18 @@ class CalendarEventClient:
         return [
             Calendar(id=calendar.id, title=calendar.summary) for calendar in calendars
         ]
+
+    def get_events(
+        self,
+        calendar: Calendars,
+        time_min: date | None = None,
+        time_max: date | None = None,
+        q: str | None = None,
+    ) -> list[CalendarEvent]:
+        calendar_id = to_id(calendar)
+        return self._service.list_events(
+            calendar_id, time_min=time_min, time_max=time_max, q=q
+        )
 
     def create_event(self, calendar: Calendars, title: str, date: date) -> None:
         calendar_id = to_id(calendar)
