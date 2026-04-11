@@ -74,6 +74,18 @@ astroid = ["astroid (>=2,<5)"]
 test = ["astroid (>=2,<5)", "pytest (<9.0)", "pytest-cov", "pytest-xdist"]
 
 [[package]]
+name = "azure-common"
+version = "1.1.28"
+description = "Microsoft Azure Client Library for Python (Common)"
+optional = false
+python-versions = "*"
+groups = ["test"]
+files = [
+    {file = "azure-common-1.1.28.zip", hash = "sha256:4ac0cd3214e36b6a1b6a442686722a5d8cc449603aa833f3f0f40bda836704a3"},
+    {file = "azure_common-1.1.28-py2.py3-none-any.whl", hash = "sha256:5c12d3dcf4ec20599ca6b0d3e09e86e146353d443e7fcc050c9a19c1f9df20ad"},
+]
+
+[[package]]
 name = "azure-core"
 version = "1.36.0"
 description = "Microsoft Azure Core Library for Python"
@@ -178,6 +190,24 @@ files = [
 
 [package.dependencies]
 azure-core = ">=1.32.0"
+
+[[package]]
+name = "azure-mgmt-eventgrid"
+version = "10.4.0"
+description = "Microsoft Azure Event Grid Management Client Library for Python"
+optional = false
+python-versions = ">=3.8"
+groups = ["test"]
+files = [
+    {file = "azure_mgmt_eventgrid-10.4.0-py3-none-any.whl", hash = "sha256:5e4637245bbff33298d5f427971b870dbb03d873a3ef68f328190a7b7a38c56f"},
+    {file = "azure_mgmt_eventgrid-10.4.0.tar.gz", hash = "sha256:303e5e27cf4bb5ec833ba4e5a9ef70b5bc410e190412ec47cde59d82e413fb7e"},
+]
+
+[package.dependencies]
+azure-common = ">=1.1"
+azure-mgmt-core = ">=1.3.2"
+isodate = ">=0.6.1"
+typing-extensions = ">=4.6.0"
 
 [[package]]
 name = "azure-mgmt-web"
@@ -3404,4 +3434,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "3ea69a90b9a8979a632717210e5228fe45162d07ef733207e26813e52d146758"
+content-hash = "694adc3134289563879f0a5f826902cacf97b033a09e3db1de7b7c09b25f4512"

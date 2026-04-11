@@ -478,14 +478,17 @@ Their handlers also return `Sequence[BaseActorEvent]` — for example, the `crea
 
 #### EventGrid Environment Variables
 
-Each EventGrid topic requires two environment variables:
+Each EventGrid topic requires one environment variable named after the `EventGridModel` class (e.g. `CreateTaskEventGrid`). Its value is a JSON object with `uri` and `key`:
 
-| Variable | Description |
+| Variable | Value format |
 |---|---|
-| `{EventGridModelName}_EVENT_GRID_URI` | Topic endpoint URL |
-| `{EventGridModelName}_EVENT_GRID_KEY` | Topic access key |
+| `{EventGridModelClassName}` | `{"uri": "<topic-endpoint>", "key": "<access-key>"}` |
 
-These are loaded automatically by `send_eventgrid_events()` in `cloud/functions/side_effects/shared.py`. Add the variables to `local.settings.json` (development) and to the Function App application settings (production).
+In `local.settings.json` the JSON value must be stored as a string with escaped quotes (e.g. `"{\"uri\": \"...\", \"key\": \"...\"}"`).
+
+These are loaded automatically by `send_eventgrid_events()` via `event_type.env_name()` in `cloud/functions/side_effects/shared.py`.
+
+**Automated setup:** Use the notebook `cloud/helper/eventgrid_wiring/eventgrid_wiring.ipynb` to automate the full setup: creating the EventGrid topic, creating a subscription to the Azure Function, retrieving the endpoint and key, and writing the env var to both the Function App application settings and `local.settings.json`.
 
 ---
 
@@ -585,5 +588,5 @@ Timer fires every hour
 - [ ] Add new `EventGridModel` subclass under `cloud/functions/side_effects/{action}/models.py`
 - [ ] Add the mapping from domain model to `EventGridModel` in `EVENT_MAP` inside `cloud/functions/side_effects/shared.py`
 - [ ] Create the side-effect function in `cloud/functions/side_effects/{action}/function.py`
-- [ ] Add EventGrid URI and KEY environment variables to `local.settings.json` and Function App settings
+- [ ] Run `cloud/helper/eventgrid_wiring/eventgrid_wiring.ipynb` to create the topic, subscription, and set `{EventGridModelClassName}` env var in the Function App and `local.settings.json`
 - [ ] Import the new side-effect function in `function_app.py`
