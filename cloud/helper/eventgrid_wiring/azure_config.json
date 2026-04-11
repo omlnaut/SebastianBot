@@ -1,5 +1,7 @@
 {
     "subscription_id": "fcdc0c79-2df2-4d19-8f7e-607a4fa79363",
-    "resource_group": "Sebastian",
-    "function_app_name": "Sebastian"
+    "resource_group_other": "Sebastian",
+    "resource_group_functions": "Sebastian_group",
+    "function_app_name": "Sebastian",
+    "location": "germanywestcentral"
 }
