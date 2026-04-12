@@ -27,3 +27,7 @@ from cloud.functions.side_effects.create_calendar_event.function import (
     create_calendar_event,
     test_create_calendar_event,
 )
+
+from cloud.functions.side_effects.delete_calendar_event.function import (
+    delete_calendar_event,
+)

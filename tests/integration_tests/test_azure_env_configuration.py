@@ -62,7 +62,12 @@ def test_eventgrid_info_structure(
         def extract_inherited_classnames(
             node: astroid.nodes.ClassDef, base_name: str
         ) -> str | None:
-            base_names = [b.name for b in node.bases if hasattr(b, "name")]
+            base_names: list[str] = []
+            for b in node.bases:
+                if hasattr(b, "name"):
+                    base_names.append(b.name)
+                elif hasattr(b, "value") and hasattr(b.value, "name"):
+                    base_names.append(b.value.name)
             if base_name in base_names:
                 return node.name
             return None
@@ -103,6 +108,7 @@ def test_eventgrid_info_structure(
             pytest.fail(f"EventGridInfo validation failed: {e}")
 
     env_names = extract_event_grid_models()
+    assert len(env_names) > 0, "No EventGridModel subclasses found in cloud/functions"
     for env_name in env_names:
         env_value = fetch_env_value(env_name)
         validate_env_var(env_value)

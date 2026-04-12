@@ -84,3 +84,8 @@ class CalendarServiceWrapper:
             },
         }
         self._service.events().insert(calendarId=calendar_id, body=event_body).execute()
+
+    def delete_event(self, calendar_id: str, event_id: str) -> None:
+        self._service.events().delete(
+            calendarId=calendar_id, eventId=event_id
+        ).execute()

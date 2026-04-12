@@ -29,6 +29,7 @@ cloud/functions/side_effects/shared.py :: perform_usecase_from_request
 Side-effect EventGrid triggers (one per action type):
     ├── cloud/functions/side_effects/create_task/function.py
     ├── cloud/functions/side_effects/create_calendar_event/function.py
+    ├── cloud/functions/side_effects/delete_calendar_event/function.py
     ├── cloud/functions/side_effects/send_message/function.py
     ├── cloud/functions/side_effects/complete_task/function.py
     └── cloud/functions/side_effects/modify_mail_label/function.py
@@ -212,6 +213,7 @@ Every `Handler.handle()` returns a list of objects deriving from `BaseActorEvent
 |---|---|
 | `CreateTask` | Creates a task in Google Tasks |
 | `CreateCalendarEvent` | Creates a calendar event in Google Calendar |
+| `DeleteCalendarEvent` | Deletes a calendar event in Google Calendar |
 | `CompleteTask` | Marks an existing task as complete |
 | `SendMessage` | Sends a Telegram message |
 | `ModifyMailLabel` | Adds or removes Gmail labels |
@@ -422,6 +424,7 @@ Add the import after implementing the function file. Without it the function wil
 In `perform_usecase_from_request`, the `Sequence[BaseActorEvent]` is mapped to dedicated EventGrid models using the `EVENT_MAP` in `cloud/functions/side_effects/shared.py`. They are then published directly to dedicated EventGrid topics:
 - `CreateTask` → `CreateTaskEventGrid` topic
 - `CreateCalendarEvent` → `CreateCalendarEventEventGrid` topic
+- `DeleteCalendarEvent` → `DeleteCalendarEventEventGrid` topic
 - `CompleteTask` → `CompleteTaskEventGrid` topic
 - `SendMessage` → `SendTelegramMessageEventGrid` topic
 - `ModifyMailLabel` → `ModifyMailLabelEventGrid` topic
@@ -470,6 +473,7 @@ Each side-effect function has a corresponding usecase in `sebastian/usecases/sid
 sebastian/usecases/side_effects/
     create_task.py           # Request, Handler, TaskClient protocol
     create_calendar_event.py # Request, Handler, CalendarEventClient protocol
+    delete_calendar_event.py # Request, Handler, CalendarEventClient protocol
     complete_task.py         # Request, Handler, TaskClient protocol
     send_telegram_message.py # Request, Handler, TelegramClient protocol
     modify_mail_labels.py    # Request, Handler, GmailClient protocol
