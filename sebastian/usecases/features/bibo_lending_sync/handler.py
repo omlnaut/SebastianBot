@@ -15,6 +15,8 @@ from .protocols import BiboClient, BookLendingInfo, CalendarClient
 
 __all__ = ["Request", "Handler", "BiboClient", "CalendarClient"]
 
+_BIBO_TAG = "BIBO_SYNC"
+
 
 @dataclass
 class Request:
@@ -30,7 +32,7 @@ class Handler(UseCaseHandler[Request]):
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()
-        events = self._calendar_client.get_events(self._calendar)
+        events = self._calendar_client.get_events(self._calendar, q=_BIBO_TAG)
 
         bibo_events = {
             book_id: event
@@ -92,8 +94,6 @@ def _extract_book_id(description: str | None) -> str | None:
 
 
 def _date_differs(event: CalendarEvent, lending: BookLendingInfo) -> bool:
-    if event.start is None:
-        return True
     return event.start.date() != lending.lending_timerange.to_date.date()
 
 
@@ -105,7 +105,8 @@ def _make_create_event(
         f"title: {lending.title}\n"
         f"location: {lending.location}\n"
         f"from: {lending.lending_timerange.from_date.strftime('%Y-%m-%d')}\n"
-        f"to: {lending.lending_timerange.to_date.strftime('%Y-%m-%d')}"
+        f"to: {lending.lending_timerange.to_date.strftime('%Y-%m-%d')}\n"
+        f"{_BIBO_TAG}"
     )
     return CreateCalendarEvent(
         title=f"Bibo: {lending.title}",

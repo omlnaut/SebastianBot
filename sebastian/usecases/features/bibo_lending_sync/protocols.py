@@ -20,4 +20,6 @@ class BiboClient(Protocol):
 
 
 class CalendarClient(Protocol):
-    def get_events(self, calendar: Calendars) -> list[CalendarEvent]: ...
+    def get_events(
+        self, calendar: Calendars, q: str | None = None
+    ) -> list[CalendarEvent]: ...

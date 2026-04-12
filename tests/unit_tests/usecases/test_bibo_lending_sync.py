@@ -32,12 +32,19 @@ def _make_lending(
 
 def _make_event(
     book_id: str | None = "123456789",
-    start: datetime | None = datetime(2026, 4, 1, tzinfo=timezone.utc),
+    start: datetime = datetime(2026, 4, 1, tzinfo=timezone.utc),
     event_id: str = "event-1",
 ) -> CalendarEvent:
-    description = f"book_id: {book_id}\ntitle: Some Book" if book_id else None
+    description = (
+        f"book_id: {book_id}\ntitle: Some Book\nBIBO_SYNC" if book_id else None
+    )
+    end = start
     return CalendarEvent(
-        id=event_id, title="Bibo: Some Book", description=description, start=start
+        id=event_id,
+        title="Bibo: Some Book",
+        description=description,
+        start=start,
+        end=end,
     )
 
 
@@ -53,7 +60,9 @@ class _FakeCalendarClient:
     def __init__(self, events: list[CalendarEvent]):
         self._events = events
 
-    def get_events(self, calendar: Calendars) -> list[CalendarEvent]:
+    def get_events(
+        self, calendar: Calendars, q: str | None = None
+    ) -> list[CalendarEvent]:
         return self._events
 
 
@@ -102,6 +111,7 @@ def test_new_lending_description_contains_all_fields():
     assert "location: Floor 2" in description
     assert "from: 2026-03-05" in description
     assert "to: 2026-04-10" in description
+    assert "BIBO_SYNC" in description
 
 
 def test_existing_event_same_date_no_action():

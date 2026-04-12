@@ -13,8 +13,8 @@ class CalendarEvent(BaseModel):
     id: str
     title: str | None = None
     description: str | None = None
-    start: datetime | None = None
-    end: datetime | None = None
+    start: datetime
+    end: datetime
 
 
 class Calendars(Enum):
