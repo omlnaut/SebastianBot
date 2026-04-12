@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Protocol
 
 from pydantic import BaseModel, Field
@@ -21,5 +22,9 @@ class BiboClient(Protocol):
 
 class CalendarClient(Protocol):
     def get_events(
-        self, calendar: Calendars, q: str | None = None
+        self,
+        calendar: Calendars,
+        time_min: date | None = None,
+        time_max: date | None = None,
+        q: str | None = None,
     ) -> list[CalendarEvent]: ...

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
@@ -61,7 +61,11 @@ class _FakeCalendarClient:
         self._events = events
 
     def get_events(
-        self, calendar: Calendars, q: str | None = None
+        self,
+        calendar: Calendars,
+        time_min: date | None = None,
+        time_max: date | None = None,
+        q: str | None = None,
     ) -> list[CalendarEvent]:
         return self._events
 
