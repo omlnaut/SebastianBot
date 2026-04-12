@@ -9,13 +9,12 @@ from sebastian.protocols.models import (
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
+from sebastian.domain.bibo import BiboAccounts
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import BiboClient, BookLendingInfo, CalendarClient
 
-__all__ = ["Request", "Handler", "BiboClient", "CalendarClient"]
-
-_BIBO_TAG = "BIBO_SYNC"
+__all__ = ["Request", "Handler", "BiboAccounts", "BiboClient", "CalendarClient"]
 
 
 @dataclass
@@ -26,13 +25,19 @@ class Request:
 class Handler(UseCaseHandler[Request]):
     _calendar = Calendars.SharedPrimary
 
-    def __init__(self, bibo_client: BiboClient, calendar_client: CalendarClient):
+    def __init__(
+        self,
+        bibo_client: BiboClient,
+        calendar_client: CalendarClient,
+        account: BiboAccounts,
+    ):
         self._bibo_client = bibo_client
         self._calendar_client = calendar_client
+        self._sync_tag = f"BIBO_SYNC_{account.value.upper()}"
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()
-        events = self._calendar_client.get_events(self._calendar, q=_BIBO_TAG)
+        events = self._calendar_client.get_events(self._calendar, q=self._sync_tag)
 
         bibo_events = {
             book_id: event
@@ -53,7 +58,9 @@ class Handler(UseCaseHandler[Request]):
         for lending in lendings:
             existing = bibo_events.get(lending.id)
             if existing is None:
-                creates.append(_make_create_event(lending, self._calendar))
+                creates.append(
+                    _make_create_event(lending, self._calendar, self._sync_tag)
+                )
             elif _date_differs(existing, lending):
                 logging.info(
                     f"BiboLendingSync: date changed for book_id={lending.id}, "
@@ -98,7 +105,7 @@ def _date_differs(event: CalendarEvent, lending: BookLendingInfo) -> bool:
 
 
 def _make_create_event(
-    lending: BookLendingInfo, calendar: Calendars
+    lending: BookLendingInfo, calendar: Calendars, sync_tag: str
 ) -> CreateCalendarEvent:
     description = (
         f"book_id: {lending.id}\n"
@@ -106,7 +113,7 @@ def _make_create_event(
         f"location: {lending.location}\n"
         f"from: {lending.lending_timerange.from_date.strftime('%Y-%m-%d')}\n"
         f"to: {lending.lending_timerange.to_date.strftime('%Y-%m-%d')}\n"
-        f"{_BIBO_TAG}"
+        f"{sync_tag}"
     )
     return CreateCalendarEvent(
         title=f"Bibo: {lending.title}",

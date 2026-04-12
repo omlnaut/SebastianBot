@@ -134,7 +134,7 @@ class GmailClient(Protocol):
 
 1. **`Request`** — a `@dataclass` carrying all input parameters.
 2. **`Handler(UseCaseHandler[Request])`** — implements `handle(request) -> Sequence[BaseActorEvent]`.
-3. **`__all__`** — re-exports `Request`, `Handler`, and every protocol name.
+3. **`__all__`** — re-exports `Request`, `Handler`, every protocol name, and any domain enums the cloud layer needs to reference (e.g. to pass as required resolver parameters).
 
 ```python
 # sebastian/usecases/features/delivery_ready/handler.py
@@ -351,6 +351,24 @@ Key rules:
 - Protocol types are referenced via the module alias (`delivery_ready.GmailClient`) — this works because they are re-exported in `handler.py`'s `__all__`.
 - All client parameters default to `None` so that tests can inject mock clients.
 
+**Parameterized resolvers:** When the same usecase should run for multiple accounts or configurations, add a required parameter (no default) _before_ the optional client parameters. The required parameter is passed to both the handler and the relevant client resolver:
+
+```python
+# cloud/dependencies/usecases.py
+def resolve_bibo_lending_sync(
+    account: bibo_lending_sync.BiboAccounts,          # required — no default
+    bibo_client: bibo_lending_sync.BiboClient | None = None,
+    calendar_client: bibo_lending_sync.CalendarClient | None = None,
+) -> UseCaseHandler[bibo_lending_sync.Request]:
+    return bibo_lending_sync.Handler(
+        bibo_client=bibo_client or resolve_bibo_client(account),
+        calendar_client=calendar_client or resolve_calendar_event_client(),
+        account=account,
+    )
+```
+
+The domain enum type (e.g. `BiboAccounts`) must be included in the usecase's `__all__` so it can be referenced as `bibo_lending_sync.BiboAccounts`.
+
 ---
 
 ### 10. Trigger Times (`cloud/functions/TriggerTimes.py`)
@@ -359,9 +377,10 @@ All cron schedules are centralised here. Add one entry per usecase.
 
 ```python
 class TriggerTimes:
-    DeliveryReady: str = "28 * * * *"    # Every hour at minute 28
-    MangaUpdate:   str = "5 3 * * *"     # Every day at 03:05
-    BiboLendingSync: str = "0 8 * * *"   # Every day at 08:00
+    DeliveryReady: str = "28 * * * *"       # Every hour at minute 28
+    MangaUpdate:   str = "5 3 * * *"        # Every day at 03:05
+    BiboLendingSync: str = "0 3 * * *"      # Every day at 03:00
+    BiboLendingSyncWife: str = "5 3 * * *"  # Every day at 03:05
 ```
 
 Cron format: `"min hour day month dayofweek"` (Azure Functions / NCrontab syntax).
@@ -401,10 +420,39 @@ def check_delivery_ready(mytimer: TimerRequest) -> None:
 ```
 
 `perform_usecase_from_request` (from `cloud/functions/side_effects/shared.py`):
-1. Calls `resolve_delivery_ready()` to get a `Handler`.
+1. Calls the resolver (second argument) to get a `Handler`.
 2. Calls `handler.handle(request)` to get a `Sequence[BaseActorEvent]`.
 3. Maps returned events to EventGrid models using `EVENT_MAP` and publishes them.
 4. If an unhandled exception occurs, sends a `SendMessage` with the error text to Telegram.
+
+**Parameterized resolvers — lambda wrapper:** When `resolve_{name}` requires mandatory parameters (e.g. an account enum), wrap it in a zero-argument `lambda` to bind those arguments before passing to `perform_usecase_from_request`:
+
+```python
+perform_usecase_from_request(
+    bibo_lending_sync.Request(),
+    lambda: resolve_bibo_lending_sync(BiboAccounts.Oli),
+)
+```
+
+**Multiple triggers for the same usecase:** A single usecase can be invoked by multiple Azure timer functions, each with a different configuration. Each function gets its own entry in `TriggerTimes`, its own `@app.timer_trigger` decorator, and its own `lambda` binding the relevant parameter:
+
+```python
+@app.timer_trigger(schedule=TriggerTimes.BiboLendingSync, ...)
+def check_bibo_lending_sync(mytimer: TimerRequest) -> None:
+    perform_usecase_from_request(
+        bibo_lending_sync.Request(),
+        lambda: resolve_bibo_lending_sync(BiboAccounts.Oli),
+    )
+
+@app.timer_trigger(schedule=TriggerTimes.BiboLendingSyncWife, ...)
+def check_bibo_lending_sync_wife(mytimer: TimerRequest) -> None:
+    perform_usecase_from_request(
+        bibo_lending_sync.Request(),
+        lambda: resolve_bibo_lending_sync(BiboAccounts.Katja),
+    )
+```
+
+Both functions must be imported in `function_app.py`.
 
 ---
 

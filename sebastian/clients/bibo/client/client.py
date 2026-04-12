@@ -3,18 +3,18 @@ import requests
 from sebastian.clients.bibo.client import _parse_account_page
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
-from ..credentials import BiboCredentials
+from ..credentials import BiboAccountCredentials
 from . import _login
 
 _BASE_URL = "https://katalog.bibo-dresden.de/webOPACClient"
 
 
 class BiboClient:
-    def __init__(self, credentials: BiboCredentials):
+    def __init__(self, credentials: BiboAccountCredentials):
         self._session = requests.Session()
         self._login(credentials)
 
-    def _login(self, credentials: BiboCredentials) -> None:
+    def _login(self, credentials: BiboAccountCredentials) -> None:
         _login.login(self._session, credentials.username, credentials.password)
 
     def _fetch_account_page(self) -> str:

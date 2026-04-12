@@ -11,6 +11,7 @@ from sebastian.protocols.models import (
 from sebastian.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
+from sebastian.usecases.features.bibo_lending_sync import BiboAccounts
 
 _CALENDAR = Calendars.SharedPrimary
 
@@ -76,6 +77,7 @@ def _run(
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
         calendar_client=_FakeCalendarClient(events),
+        account=BiboAccounts.Oli,
     )
     return handler.handle(Request())
 
