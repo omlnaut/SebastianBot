@@ -89,3 +89,13 @@ class CalendarServiceWrapper:
         self._service.events().delete(
             calendarId=calendar_id, eventId=event_id
         ).execute()
+
+    def modify_event(self, calendar_id: str, event_id: str, date: date) -> None:
+        day_after = date + timedelta(days=1)
+        patch_body = {
+            "start": {"date": date.strftime("%Y-%m-%d")},
+            "end": {"date": day_after.strftime("%Y-%m-%d")},
+        }
+        self._service.events().patch(
+            calendarId=calendar_id, eventId=event_id, body=patch_body
+        ).execute()

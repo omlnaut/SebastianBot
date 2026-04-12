@@ -48,3 +48,9 @@ class CalendarEventClient:
     def delete_event(self, calendar: Calendars, event_id: str) -> None:
         calendar_id = to_id(calendar)
         self._service.delete_event(calendar_id, event_id)
+
+    def modify_calendar_event(
+        self, calendar: Calendars, event_id: str, date: date
+    ) -> None:
+        calendar_id = to_id(calendar)
+        self._service.modify_event(calendar_id, event_id, date)
