@@ -11,6 +11,9 @@ from cloud.functions.side_effects.complete_task.models import CompleteTaskEventG
 from cloud.functions.side_effects.create_calendar_event.models import (
     CreateCalendarEventEventGrid,
 )
+from cloud.functions.side_effects.delete_calendar_event.models import (
+    DeleteCalendarEventEventGrid,
+)
 from cloud.functions.side_effects.create_task.models import CreateTaskEventGrid
 from cloud.functions.side_effects.modify_mail_label.models import (
     ModifyMailLabelEventGrid,
@@ -25,6 +28,7 @@ from sebastian.protocols.models import (
     CompleteTask,
     CreateCalendarEvent,
     CreateTask,
+    DeleteCalendarEvent,
     ModifyMailLabel,
     SendMessage,
 )
@@ -34,6 +38,7 @@ EVENT_MAP: dict[type[BaseActorEvent], type[EventGridModel[Any]]] = {
     CompleteTask: CompleteTaskEventGrid,
     CreateCalendarEvent: CreateCalendarEventEventGrid,
     CreateTask: CreateTaskEventGrid,
+    DeleteCalendarEvent: DeleteCalendarEventEventGrid,
     ModifyMailLabel: ModifyMailLabelEventGrid,
     SendMessage: SendTelegramMessageEventGrid,
 }

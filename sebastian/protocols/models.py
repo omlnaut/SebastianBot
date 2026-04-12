@@ -37,3 +37,8 @@ class ModifyMailLabel(BaseActorEvent):
 class CompleteTask(BaseActorEvent):
     tasklist: TaskLists
     task_id: str = Field(min_length=1)
+
+
+class DeleteCalendarEvent(BaseActorEvent):
+    calendar: Calendars
+    event_id: str = Field(min_length=1)
