@@ -2,13 +2,18 @@ import logging
 from dataclasses import dataclass
 from typing import Sequence
 
-from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import BaseActorEvent, CompleteTask, CreateTask
+from sebastian.domain.calendar import CalendarEvent, Calendars
+from sebastian.protocols.models import (
+    BaseActorEvent,
+    CreateCalendarEvent,
+    DeleteCalendarEvent,
+    ModifyCalendarEvent,
+)
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
-from .protocols import BiboClient, BookLendingInfo, TaskClient
+from .protocols import BiboClient, BookLendingInfo, CalendarClient
 
-__all__ = ["Request", "Handler", "BiboClient", "TaskClient"]
+__all__ = ["Request", "Handler", "BiboClient", "CalendarClient"]
 
 
 @dataclass
@@ -17,86 +22,94 @@ class Request:
 
 
 class Handler(UseCaseHandler[Request]):
-    _tasklist = TaskLists.Bibo
+    _calendar = Calendars.SharedPrimary
 
-    def __init__(self, bibo_client: BiboClient, task_client: TaskClient):
+    def __init__(self, bibo_client: BiboClient, calendar_client: CalendarClient):
         self._bibo_client = bibo_client
-        self._task_client = task_client
+        self._calendar_client = calendar_client
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()
-        tasks = self._task_client.get_tasks(self._tasklist)
+        events = self._calendar_client.get_events(self._calendar)
 
-        bibo_tasks = {
-            book_id: task
-            for task in tasks
-            if (book_id := _extract_book_id(task.notes)) is not None
+        bibo_events = {
+            book_id: event
+            for event in events
+            if (book_id := _extract_book_id(event.description)) is not None
         }
         lending_by_id = {lending.id: lending for lending in lendings}
 
         logging.info(
             f"BiboLendingSync: {len(lendings)} open lendings, "
-            f"{len(bibo_tasks)} tracked bibo tasks"
+            f"{len(bibo_events)} tracked bibo events"
         )
 
-        creates: list[CreateTask] = []
-        completes: list[CompleteTask] = []
+        creates: list[CreateCalendarEvent] = []
+        modifies: list[ModifyCalendarEvent] = []
+        deletes: list[DeleteCalendarEvent] = []
 
         for lending in lendings:
-            existing = bibo_tasks.get(lending.id)
+            existing = bibo_events.get(lending.id)
             if existing is None:
-                creates.append(_make_create_task(lending, self._tasklist))
-            elif _due_date_differs(existing, lending):
+                creates.append(_make_create_event(lending, self._calendar))
+            elif _date_differs(existing, lending):
                 logging.info(
-                    f"BiboLendingSync: due date changed for book_id={lending.id}, "
-                    f"completing task {existing.title}"
+                    f"BiboLendingSync: date changed for book_id={lending.id}, "
+                    f"modifying event {existing.id}"
                 )
-                completes.append(
-                    CompleteTask(tasklist=self._tasklist, task_id=existing.id)
+                modifies.append(
+                    ModifyCalendarEvent(
+                        calendar=self._calendar,
+                        event_id=existing.id,
+                        date=lending.lending_timerange.to_date.date(),
+                    )
                 )
-                creates.append(_make_create_task(lending, self._tasklist))
 
-        for book_id, task in bibo_tasks.items():
+        for book_id, event in bibo_events.items():
             if book_id not in lending_by_id:
                 logging.info(
                     f"BiboLendingSync: lending for book_id={book_id} no longer open, "
-                    f"completing task {task.title}"
+                    f"deleting event {event.id}"
                 )
-                completes.append(CompleteTask(tasklist=self._tasklist, task_id=task.id))
+                deletes.append(
+                    DeleteCalendarEvent(calendar=self._calendar, event_id=event.id)
+                )
 
         logging.info(
-            f"BiboLendingSync: creating {len(creates)} tasks, "
-            f"completing {len(completes)} tasks"
+            f"BiboLendingSync: creating {len(creates)}, "
+            f"modifying {len(modifies)}, deleting {len(deletes)} events"
         )
-        return creates + completes
+        return creates + modifies + deletes
 
 
-def _extract_book_id(notes: str | None) -> str | None:
-    if not notes:
+def _extract_book_id(description: str | None) -> str | None:
+    if not description:
         return None
-    for line in notes.splitlines():
+    for line in description.splitlines():
         if line.startswith("book_id: "):
             return line[len("book_id: ") :]
     return None
 
 
-def _due_date_differs(task: Task, lending: BookLendingInfo) -> bool:
-    if task.due is None:
+def _date_differs(event: CalendarEvent, lending: BookLendingInfo) -> bool:
+    if event.start is None:
         return True
-    return task.due.date() != lending.lending_timerange.to_date.date()
+    return event.start.date() != lending.lending_timerange.to_date.date()
 
 
-def _make_create_task(lending: BookLendingInfo, tasklist: TaskLists) -> CreateTask:
-    notes = (
+def _make_create_event(
+    lending: BookLendingInfo, calendar: Calendars
+) -> CreateCalendarEvent:
+    description = (
         f"book_id: {lending.id}\n"
         f"title: {lending.title}\n"
         f"location: {lending.location}\n"
         f"from: {lending.lending_timerange.from_date.strftime('%Y-%m-%d')}\n"
         f"to: {lending.lending_timerange.to_date.strftime('%Y-%m-%d')}"
     )
-    return CreateTask(
+    return CreateCalendarEvent(
         title=f"Bibo: {lending.title}",
-        tasklist=tasklist,
-        notes=notes,
-        due=lending.lending_timerange.to_date,
+        calendar=calendar,
+        description=description,
+        date=lending.lending_timerange.to_date.date(),
     )

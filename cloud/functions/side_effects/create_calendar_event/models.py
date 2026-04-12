@@ -10,6 +10,7 @@ class CreateCalendarEventEventGrid(EventGridModel[CreateCalendarEvent]):
     calendar: Calendars
     title: str
     date: date
+    description: str | None = None
 
     @classmethod
     @override
@@ -18,4 +19,5 @@ class CreateCalendarEventEventGrid(EventGridModel[CreateCalendarEvent]):
             calendar=app_event.calendar,
             title=app_event.title,
             date=app_event.date,
+            description=app_event.description,
         )

@@ -43,9 +43,15 @@ class CalendarEventClient:
             calendar_id, time_min=time_min, time_max=time_max, q=q
         )
 
-    def create_event(self, calendar: Calendars, title: str, date: date) -> None:
+    def create_event(
+        self,
+        calendar: Calendars,
+        title: str,
+        date: date,
+        description: str | None = None,
+    ) -> None:
         calendar_id = to_id(calendar)
-        self._service.create_event(calendar_id, title, date)
+        self._service.create_event(calendar_id, title, date, description)
 
     def delete_event(self, calendar: Calendars, event_id: str) -> None:
         calendar_id = to_id(calendar)

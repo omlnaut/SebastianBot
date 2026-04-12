@@ -62,11 +62,11 @@ def resolve_delivery_ready(
 
 def resolve_bibo_lending_sync(
     bibo_client: bibo_lending_sync.BiboClient | None = None,
-    task_client: bibo_lending_sync.TaskClient | None = None,
+    calendar_client: bibo_lending_sync.CalendarClient | None = None,
 ) -> UseCaseHandler[bibo_lending_sync.Request]:
     return bibo_lending_sync.Handler(
         bibo_client=bibo_client or resolve_bibo_client(),
-        task_client=task_client or resolve_google_task_client(),
+        calendar_client=calendar_client or resolve_calendar_event_client(),
     )
 
 

@@ -12,10 +12,17 @@ class Request:
     calendar: Calendars
     title: str
     date: date
+    description: str | None = None
 
 
 class CalendarEventClient(Protocol):
-    def create_event(self, calendar: Calendars, title: str, date: date) -> None: ...
+    def create_event(
+        self,
+        calendar: Calendars,
+        title: str,
+        date: date,
+        description: str | None = None,
+    ) -> None: ...
 
 
 class Handler(UseCaseHandler[Request]):
@@ -27,6 +34,7 @@ class Handler(UseCaseHandler[Request]):
             calendar=request.calendar,
             title=request.title,
             date=request.date,
+            description=request.description,
         )
 
         message = f"📅 CALENDAR EVENT created: {request.title} on {request.date.strftime('%d-%m-%Y')} in {request.calendar}"

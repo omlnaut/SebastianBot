@@ -72,9 +72,11 @@ class CalendarServiceWrapper:
         ]
         return [_to_domain(event) for event in event_responses]
 
-    def create_event(self, calendar_id: str, title: str, date: date) -> None:
+    def create_event(
+        self, calendar_id: str, title: str, date: date, description: str | None = None
+    ) -> None:
         day_after = date + timedelta(days=1)
-        event_body = {
+        event_body: dict[str, object] = {
             "summary": title,
             "start": {
                 "date": date.strftime("%Y-%m-%d"),
@@ -83,6 +85,8 @@ class CalendarServiceWrapper:
                 "date": day_after.strftime("%Y-%m-%d"),
             },
         }
+        if description is not None:
+            event_body["description"] = description
         self._service.events().insert(calendarId=calendar_id, body=event_body).execute()
 
     def delete_event(self, calendar_id: str, event_id: str) -> None:

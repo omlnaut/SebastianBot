@@ -1,13 +1,18 @@
 from datetime import datetime, timezone
 from typing import Sequence
 
-from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import BaseActorEvent, CompleteTask, CreateTask
+from sebastian.domain.calendar import CalendarEvent, Calendars
+from sebastian.protocols.models import (
+    BaseActorEvent,
+    CreateCalendarEvent,
+    DeleteCalendarEvent,
+    ModifyCalendarEvent,
+)
 from sebastian.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
-_TASKLIST = TaskLists.Bibo
+_CALENDAR = Calendars.SharedPrimary
 
 
 def _make_lending(
@@ -25,13 +30,15 @@ def _make_lending(
     )
 
 
-def _make_task(
+def _make_event(
     book_id: str | None = "123456789",
-    due: datetime | None = datetime(2026, 4, 1, tzinfo=timezone.utc),
-    task_id: str = "task-1",
-) -> Task:
-    notes = f"book_id: {book_id}\ntitle: Some Book" if book_id else None
-    return Task(id=task_id, tasklist=_TASKLIST, title="bibo", due=due, notes=notes)
+    start: datetime | None = datetime(2026, 4, 1, tzinfo=timezone.utc),
+    event_id: str = "event-1",
+) -> CalendarEvent:
+    description = f"book_id: {book_id}\ntitle: Some Book" if book_id else None
+    return CalendarEvent(
+        id=event_id, title="Bibo: Some Book", description=description, start=start
+    )
 
 
 class _FakeBiboClient:
@@ -42,40 +49,40 @@ class _FakeBiboClient:
         return self._lendings
 
 
-class _FakeTaskClient:
-    def __init__(self, tasks: list[Task]):
-        self._tasks = tasks
+class _FakeCalendarClient:
+    def __init__(self, events: list[CalendarEvent]):
+        self._events = events
 
-    def get_tasks(self, tasklist: TaskLists) -> list[Task]:
-        return self._tasks
+    def get_events(self, calendar: Calendars) -> list[CalendarEvent]:
+        return self._events
 
 
 def _run(
-    lendings: list[BookLendingInfo], tasks: list[Task]
+    lendings: list[BookLendingInfo], events: list[CalendarEvent]
 ) -> Sequence[BaseActorEvent]:
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
-        task_client=_FakeTaskClient(tasks),
+        calendar_client=_FakeCalendarClient(events),
     )
     return handler.handle(Request())
 
 
-def test_new_lending_creates_task():
+def test_new_lending_creates_event():
     lending = _make_lending()
 
-    result = _run(lendings=[lending], tasks=[])
+    result = _run(lendings=[lending], events=[])
 
-    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
-    assert len([t for t in result if isinstance(t, CompleteTask)]) == 0
-    task = [t for t in result if isinstance(t, CreateTask)][0]
-    assert task.title == "Bibo: Some Book"
-    assert task.tasklist == _TASKLIST
-    assert task.due == lending.lending_timerange.to_date
-    assert task.notes is not None
-    assert "book_id: 123456789" in task.notes
+    assert len([e for e in result if isinstance(e, CreateCalendarEvent)]) == 1
+    assert len([e for e in result if isinstance(e, DeleteCalendarEvent)]) == 0
+    event = [e for e in result if isinstance(e, CreateCalendarEvent)][0]
+    assert event.title == "Bibo: Some Book"
+    assert event.calendar == _CALENDAR
+    assert event.date == lending.lending_timerange.to_date.date()
+    assert event.description is not None
+    assert "book_id: 123456789" in event.description
 
 
-def test_new_lending_notes_contain_all_fields():
+def test_new_lending_description_contains_all_fields():
     lending = _make_lending(
         book_id="987654321",
         title="Another Book",
@@ -84,80 +91,71 @@ def test_new_lending_notes_contain_all_fields():
         to_date=datetime(2026, 4, 10, tzinfo=timezone.utc),
     )
 
-    result = _run(lendings=[lending], tasks=[])
+    result = _run(lendings=[lending], events=[])
 
-    notes = [t for t in result if isinstance(t, CreateTask)][0].notes
-    assert notes is not None
-    assert "book_id: 987654321" in notes
-    assert "title: Another Book" in notes
-    assert "location: Floor 2" in notes
-    assert "from: 2026-03-05" in notes
-    assert "to: 2026-04-10" in notes
+    description = [e for e in result if isinstance(e, CreateCalendarEvent)][
+        0
+    ].description
+    assert description is not None
+    assert "book_id: 987654321" in description
+    assert "title: Another Book" in description
+    assert "location: Floor 2" in description
+    assert "from: 2026-03-05" in description
+    assert "to: 2026-04-10" in description
 
 
-def test_existing_task_same_due_no_action():
+def test_existing_event_same_date_no_action():
     due = datetime(2026, 4, 1, tzinfo=timezone.utc)
     lending = _make_lending(to_date=due)
-    task = _make_task(due=due)
+    event = _make_event(start=due)
 
-    result = _run(lendings=[lending], tasks=[task])
+    result = _run(lendings=[lending], events=[event])
 
-    assert [t for t in result if isinstance(t, CreateTask)] == []
-    assert [t for t in result if isinstance(t, CompleteTask)] == []
+    assert [e for e in result if isinstance(e, CreateCalendarEvent)] == []
+    assert [e for e in result if isinstance(e, ModifyCalendarEvent)] == []
+    assert [e for e in result if isinstance(e, DeleteCalendarEvent)] == []
 
 
-def test_due_date_changed_completes_and_recreates():
+def test_date_changed_emits_modify_event():
     old_due = datetime(2026, 3, 20, tzinfo=timezone.utc)
     new_due = datetime(2026, 4, 5, tzinfo=timezone.utc)
     lending = _make_lending(to_date=new_due)
-    task = _make_task(due=old_due, task_id="task-old")
+    event = _make_event(start=old_due, event_id="event-old")
 
-    result = _run(lendings=[lending], tasks=[task])
+    result = _run(lendings=[lending], events=[event])
 
-    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
-    assert [t for t in result if isinstance(t, CompleteTask)][0] == CompleteTask(
-        tasklist=_TASKLIST, task_id="task-old"
-    )
-    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
-    assert [t for t in result if isinstance(t, CreateTask)][0].due == new_due
+    assert [e for e in result if isinstance(e, CreateCalendarEvent)] == []
+    assert [e for e in result if isinstance(e, DeleteCalendarEvent)] == []
+    assert len([e for e in result if isinstance(e, ModifyCalendarEvent)]) == 1
+    modify = [e for e in result if isinstance(e, ModifyCalendarEvent)][0]
+    assert modify.calendar == _CALENDAR
+    assert modify.event_id == "event-old"
+    assert modify.date == new_due.date()
 
 
-def test_task_with_no_due_date_treated_as_changed():
-    lending = _make_lending(to_date=datetime(2026, 4, 1, tzinfo=timezone.utc))
-    task = _make_task(task_id="task-noduedate", due=None)
+def test_returned_book_event_is_deleted():
+    event = _make_event(event_id="event-returned", book_id="123456789")
 
-    result = _run(lendings=[lending], tasks=[task])
+    result = _run(lendings=[], events=[event])
 
-    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
-    assert [t for t in result if isinstance(t, CompleteTask)][
+    assert len([e for e in result if isinstance(e, DeleteCalendarEvent)]) == 1
+    assert [e for e in result if isinstance(e, DeleteCalendarEvent)][
         0
-    ].task_id == "task-noduedate"
-    assert len([t for t in result if isinstance(t, CreateTask)]) == 1
+    ] == DeleteCalendarEvent(calendar=_CALENDAR, event_id="event-returned")
+    assert [e for e in result if isinstance(e, CreateCalendarEvent)] == []
 
 
-def test_returned_book_task_is_completed():
-    task = _make_task(task_id="task-returned", book_id="123456789")
+def test_event_without_book_id_is_ignored():
+    event = _make_event(event_id="event-noid", book_id=None)
 
-    result = _run(lendings=[], tasks=[task])
+    result = _run(lendings=[], events=[event])
 
-    assert len([t for t in result if isinstance(t, CompleteTask)]) == 1
-    assert [t for t in result if isinstance(t, CompleteTask)][0] == CompleteTask(
-        tasklist=_TASKLIST, task_id="task-returned"
-    )
-    assert [t for t in result if isinstance(t, CreateTask)] == []
+    assert [e for e in result if isinstance(e, DeleteCalendarEvent)] == []
+    assert [e for e in result if isinstance(e, CreateCalendarEvent)] == []
 
 
-def test_task_without_book_id_is_ignored():
-    task = _make_task(task_id="task-noid", book_id=None)
-
-    result = _run(lendings=[], tasks=[task])
-
-    assert [t for t in result if isinstance(t, CompleteTask)] == []
-    assert [t for t in result if isinstance(t, CreateTask)] == []
-
-
-def test_no_lendings_no_tasks_returns_empty():
-    result = _run(lendings=[], tasks=[])
+def test_no_lendings_no_events_returns_empty():
+    result = _run(lendings=[], events=[])
 
     assert result == []
 
@@ -175,31 +173,32 @@ def test_mixed_scenario():
         book_id="333333333", title="Changed Book", to_date=changed_new_due
     )
 
-    task_unchanged = _make_task(
-        task_id="task-unchanged", book_id="222222222", due=unchanged_due
+    event_unchanged = _make_event(
+        event_id="event-unchanged", book_id="222222222", start=unchanged_due
     )
-    task_changed = _make_task(
-        task_id="task-changed", book_id="333333333", due=changed_old_due
+    event_changed = _make_event(
+        event_id="event-changed", book_id="333333333", start=changed_old_due
     )
-    task_returned = _make_task(
-        task_id="task-returned", book_id="444444444", due=unchanged_due
+    event_returned = _make_event(
+        event_id="event-returned", book_id="444444444", start=unchanged_due
     )
 
     result = _run(
         lendings=[lending_new, lending_unchanged, lending_changed],
-        tasks=[task_unchanged, task_changed, task_returned],
+        events=[event_unchanged, event_changed, event_returned],
     )
 
-    created_ids = {t.title for t in [t for t in result if isinstance(t, CreateTask)]}
-    assert "Bibo: New Book" in created_ids
-    assert "Bibo: Changed Book" in created_ids
-    assert "Bibo: Unchanged Book" not in created_ids
-    assert len([t for t in result if isinstance(t, CreateTask)]) == 2
+    created_titles = {e.title for e in result if isinstance(e, CreateCalendarEvent)}
+    assert "Bibo: New Book" in created_titles
+    assert "Bibo: Unchanged Book" not in created_titles
+    assert len([e for e in result if isinstance(e, CreateCalendarEvent)]) == 1
 
-    completed_ids = {
-        t.task_id for t in [t for t in result if isinstance(t, CompleteTask)]
-    }
-    assert "task-changed" in completed_ids
-    assert "task-returned" in completed_ids
-    assert "task-unchanged" not in completed_ids
-    assert len([t for t in result if isinstance(t, CompleteTask)]) == 2
+    modified_ids = {e.event_id for e in result if isinstance(e, ModifyCalendarEvent)}
+    assert "event-changed" in modified_ids
+    assert "event-unchanged" not in modified_ids
+    assert len([e for e in result if isinstance(e, ModifyCalendarEvent)]) == 1
+
+    deleted_ids = {e.event_id for e in result if isinstance(e, DeleteCalendarEvent)}
+    assert "event-returned" in deleted_ids
+    assert "event-unchanged" not in deleted_ids
+    assert len([e for e in result if isinstance(e, DeleteCalendarEvent)]) == 1
