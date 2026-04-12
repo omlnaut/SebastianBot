@@ -62,7 +62,12 @@ def test_eventgrid_info_structure(
         def extract_inherited_classnames(
             node: astroid.nodes.ClassDef, base_name: str
         ) -> str | None:
-            base_names = [b.name for b in node.bases if hasattr(b, "name")]
+            base_names: list[str] = []
+            for b in node.bases:
+                if hasattr(b, "name"):
+                    base_names.append(b.name)
+                elif hasattr(b, "value") and hasattr(b.value, "name"):
+                    base_names.append(b.value.name)
             if base_name in base_names:
                 return node.name
             return None
