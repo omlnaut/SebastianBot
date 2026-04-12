@@ -11,6 +11,7 @@ from sebastian.usecases.side_effects import (
     create_calendar_event,
     create_task,
     delete_calendar_event,
+    modify_calendar_event,
     modify_mail_labels,
     send_telegram_message,
 )
@@ -127,6 +128,14 @@ def resolve_delete_calendar_event(
     calendar_event_client: delete_calendar_event.CalendarEventClient | None = None,
 ) -> UseCaseHandler[delete_calendar_event.Request]:
     return delete_calendar_event.Handler(
+        calendar_event_client=calendar_event_client or resolve_calendar_event_client(),
+    )
+
+
+def resolve_modify_calendar_event(
+    calendar_event_client: modify_calendar_event.CalendarEventClient | None = None,
+) -> UseCaseHandler[modify_calendar_event.Request]:
+    return modify_calendar_event.Handler(
         calendar_event_client=calendar_event_client or resolve_calendar_event_client(),
     )
 
