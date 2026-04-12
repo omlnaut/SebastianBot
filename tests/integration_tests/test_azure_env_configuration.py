@@ -108,6 +108,7 @@ def test_eventgrid_info_structure(
             pytest.fail(f"EventGridInfo validation failed: {e}")
 
     env_names = extract_event_grid_models()
+    assert len(env_names) > 0, "No EventGridModel subclasses found in cloud/functions"
     for env_name in env_names:
         env_value = fetch_env_value(env_name)
         validate_env_var(env_value)
