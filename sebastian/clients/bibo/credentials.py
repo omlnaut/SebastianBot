@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
 
-class BiboCredentials(BaseModel):
+class BiboAccountCredentials(BaseModel):
     username: str
     password: str
+
+
+class BiboCredentials(BaseModel):
+    accounts: dict[str, BiboAccountCredentials]
