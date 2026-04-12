@@ -31,3 +31,6 @@ from cloud.functions.side_effects.create_calendar_event.function import (
 from cloud.functions.side_effects.delete_calendar_event.function import (
     delete_calendar_event,
 )
+from cloud.functions.side_effects.modify_calendar_event.function import (
+    modify_calendar_event,
+)

@@ -42,3 +42,9 @@ class CompleteTask(BaseActorEvent):
 class DeleteCalendarEvent(BaseActorEvent):
     calendar: Calendars
     event_id: str = Field(min_length=1)
+
+
+class ModifyCalendarEvent(BaseActorEvent):
+    calendar: Calendars
+    event_id: str = Field(min_length=1)
+    date: date
