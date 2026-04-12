@@ -11,6 +11,8 @@ def to_id(calendar: Calendars) -> str:
     match calendar:
         case Calendars.Primary:
             return "oneironaut.oml@gmail.com"
+        case Calendars.SharedPrimary:
+            return "0l0c1ieklrasrfv48equjs3tdk@group.calendar.google.com"
         case _:
             raise ValueError(f"Unsupported calendar: {calendar}")
 
@@ -41,9 +43,15 @@ class CalendarEventClient:
             calendar_id, time_min=time_min, time_max=time_max, q=q
         )
 
-    def create_event(self, calendar: Calendars, title: str, date: date) -> None:
+    def create_event(
+        self,
+        calendar: Calendars,
+        title: str,
+        date: date,
+        description: str | None = None,
+    ) -> None:
         calendar_id = to_id(calendar)
-        self._service.create_event(calendar_id, title, date)
+        self._service.create_event(calendar_id, title, date, description)
 
     def delete_event(self, calendar: Calendars, event_id: str) -> None:
         calendar_id = to_id(calendar)

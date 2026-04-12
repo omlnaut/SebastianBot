@@ -36,6 +36,7 @@ def create_calendar_event(
             calendar=event.calendar,
             title=event.title,
             date=event.date,
+            description=event.description,
         )
 
     perform_usecase_from_eventgrid(

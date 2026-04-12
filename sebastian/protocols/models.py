@@ -22,6 +22,7 @@ class CreateCalendarEvent(BaseActorEvent):
     calendar: Calendars
     title: str = Field(min_length=1)
     date: date
+    description: str | None = None
 
 
 class SendMessage(BaseActorEvent):

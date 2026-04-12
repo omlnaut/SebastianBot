@@ -25,13 +25,17 @@ def _to_rfc3339(value: datetime | date) -> str:
     return datetime(value.year, value.month, value.day, tzinfo=timezone.utc).isoformat()
 
 
-def _to_domain(event: CalendarEventResponse) -> CalendarEvent:
+def _to_domain(event: CalendarEventResponse) -> CalendarEvent | None:
+    start = _to_datetime(event.start)
+    end = _to_datetime(event.end)
+    if start is None or end is None:
+        return None
     return CalendarEvent(
         id=event.id,
         title=event.summary,
         description=event.description,
-        start=_to_datetime(event.start),
-        end=_to_datetime(event.end),
+        start=start,
+        end=end,
     )
 
 
@@ -70,11 +74,17 @@ class CalendarServiceWrapper:
             CalendarEventResponse.model_validate(item)
             for item in response.get("items", [])
         ]
-        return [_to_domain(event) for event in event_responses]
+        return [
+            domain
+            for event in event_responses
+            if (domain := _to_domain(event)) is not None
+        ]
 
-    def create_event(self, calendar_id: str, title: str, date: date) -> None:
+    def create_event(
+        self, calendar_id: str, title: str, date: date, description: str | None = None
+    ) -> None:
         day_after = date + timedelta(days=1)
-        event_body = {
+        event_body: dict[str, object] = {
             "summary": title,
             "start": {
                 "date": date.strftime("%Y-%m-%d"),
@@ -83,6 +93,8 @@ class CalendarServiceWrapper:
                 "date": day_after.strftime("%Y-%m-%d"),
             },
         }
+        if description is not None:
+            event_body["description"] = description
         self._service.events().insert(calendarId=calendar_id, body=event_body).execute()
 
     def delete_event(self, calendar_id: str, event_id: str) -> None:
