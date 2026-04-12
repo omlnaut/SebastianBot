@@ -19,3 +19,4 @@ class CalendarEvent(BaseModel):
 
 class Calendars(Enum):
     Primary = auto()
+    SharedPrimary = auto()
