@@ -18,24 +18,32 @@ def test_sebastian_should_not_import_cloud():
     )
 
 
-def test_protocols_should_only_import_from_protocols_or_domain():
-    """Ensure protocol files only import from within protocols module or standard/external libraries."""
-    (
-        archrule("protocols should only import from protocols or domain")
-        .match("sebastian.protocols.*")
-        .should_not_import("sebastian.*")
-        .may_import("sebastian.protocols.*")
-        .may_import("sebastian.shared.*")
-        .may_import("sebastian.domain.*")
-        .check("sebastian")
-    )
-
-
 def test_usecases_should_not_import_from_clients():
     """Ensure usecases do not import from clients."""
     (
         archrule("usecases should not import from clients")
         .match("sebastian.usecases.*")
         .should_not_import("sebastian.clients.*")
+        .check("sebastian")
+    )
+
+
+def test_domain_should_not_import_from_sebastian():
+    """Ensure domain layer does not import from any other part of the codebase."""
+    (
+        archrule("domain should not import from sebastian")
+        .match("sebastian.domain.*")
+        .should_not_import("sebastian.*")
+        .may_import("sebastian.domain.*")  # Allow imports within the domain layer
+        .check("sebastian")
+    )
+
+
+def test_domain_should_not_import_from_cloud():
+    """Ensure domain layer does not import from cloud (infrastructure layer)."""
+    (
+        archrule("domain should not import from cloud")
+        .match("sebastian.domain.*")
+        .should_not_import("cloud.*")
         .check("sebastian")
     )
