@@ -4,7 +4,7 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-from sebastian.shared.dates import TimeRange
+from sebastian.usecases.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
 

@@ -2,7 +2,7 @@ from typing import get_type_hints
 
 from cloud.functions.side_effects.shared import EVENT_MAP
 from cloud.helper.event_grid import EventGridModel
-from sebastian.protocols.models import BaseActorEvent
+from sebastian.domain.side_effects import BaseActorEvent
 
 
 def test_all_base_actor_events_in_event_map():

@@ -4,7 +4,7 @@ from typing import Protocol
 from pydantic import BaseModel, Field
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.shared.dates import TimeRange
+from sebastian.usecases.shared.dates import TimeRange
 
 __all__ = ["BiboClient", "CalendarClient"]
 

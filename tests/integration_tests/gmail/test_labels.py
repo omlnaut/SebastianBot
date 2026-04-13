@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.domain.gmail import FullMailResponse, GmailLabel
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
 def test_modify_labels(gmail_client: GmailClient):

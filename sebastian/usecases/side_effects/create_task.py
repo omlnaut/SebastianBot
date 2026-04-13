@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional, Protocol, Sequence
 
 from sebastian.domain.task import Task, TaskLists
-from sebastian.protocols.models import BaseActorEvent, SendMessage
-from sebastian.shared.dates import get_end_of_day
+from sebastian.domain.side_effects import BaseActorEvent, SendMessage
+from sebastian.usecases.shared.dates import get_end_of_day
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 

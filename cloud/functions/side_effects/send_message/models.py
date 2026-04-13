@@ -1,7 +1,7 @@
 from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
-from sebastian.protocols.models import SendMessage
+from sebastian.domain.side_effects import SendMessage
 
 
 class SendTelegramMessageEventGrid(EventGridModel[SendMessage]):

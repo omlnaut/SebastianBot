@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.protocols.models import (
+from sebastian.domain.side_effects import (
     BaseActorEvent,
     CreateCalendarEvent,
     DeleteCalendarEvent,

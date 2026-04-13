@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from sebastian.shared.dates import get_end_of_day, is_within_timedelta
+from sebastian.usecases.shared.dates import get_end_of_day, is_within_timedelta
 
 
 def test_get_end_of_day_specific_day():

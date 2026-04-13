@@ -26,7 +26,7 @@ from cloud.functions.side_effects.send_message.models import (
 )
 from cloud.helper import parse_payload
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
-from sebastian.protocols.models import (
+from sebastian.domain.side_effects import (
     BaseActorEvent,
     CompleteTask,
     CreateCalendarEvent,
