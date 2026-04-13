@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
+from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
 from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
 from sebastian.shared.gmail.query_builder import GmailQueryBuilder
@@ -27,15 +28,7 @@ class Handler(UseCaseHandler[Request]):
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         time_threshold = datetime.now(timezone.utc) - request.hours_back
 
-        query = (
-            GmailQueryBuilder()
-            .from_email("order-update@amazon.de")
-            .subject("Ihr Paket kann bei DHL", exact=True)
-            .after_date(time_threshold)
-            .build()
-        )
-
-        mails = self.gmail_client.fetch_mails(query)
+        mails = _fetch_pickup_mails(self.gmail_client, time_threshold)
         logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
         pickups: list[CreateTask] = []
@@ -51,6 +44,19 @@ class Handler(UseCaseHandler[Request]):
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
         return pickups + errors
+
+
+def _fetch_pickup_mails(
+    gmail_client: GmailClient, time_threshold: datetime
+) -> Sequence[FullMailResponse]:
+    query = (
+        GmailQueryBuilder()
+        .from_email("pickup-point.amazon.de")
+        .subject("Paket zur Abholung bereit", exact=True)
+        .after_date(time_threshold)
+        .build()
+    )
+    return gmail_client.fetch_mails(query)
 
 
 def _map_to_create_task(pickup: PickupData) -> CreateTask:
