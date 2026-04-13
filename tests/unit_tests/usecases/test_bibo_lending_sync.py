@@ -2,13 +2,13 @@ from datetime import date, datetime, timezone
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.protocols.models import (
+from sebastian.domain.side_effects import (
     BaseActorEvent,
     CreateCalendarEvent,
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
-from sebastian.shared.dates import TimeRange
+from sebastian.usecases.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 from sebastian.usecases.features.bibo_lending_sync import BiboAccounts

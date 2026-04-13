@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Sequence
 
-from sebastian.protocols.models import BaseActorEvent
+from sebastian.domain.side_effects import BaseActorEvent
 
 
 class UseCaseHandler[TRequest](ABC):

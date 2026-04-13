@@ -5,8 +5,8 @@ from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.domain.side_effects import BaseActorEvent, CreateTask, SendMessage
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import PickupData, parse_dhl_pickup_email_html

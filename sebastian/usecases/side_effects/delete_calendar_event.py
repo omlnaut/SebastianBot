@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol, Sequence
 
 from sebastian.domain.calendar import Calendars
-from sebastian.protocols.models import BaseActorEvent
+from sebastian.domain.side_effects import BaseActorEvent
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 

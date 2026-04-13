@@ -4,8 +4,8 @@ from typing import Sequence
 
 from sebastian.domain.mangas import MangaChapter, MangaPublisher, MangaUpdateManga
 from sebastian.domain.task import TaskLists
-from sebastian.protocols.models import BaseActorEvent, CreateTask, SendMessage
-from sebastian.shared.dates import is_within_timedelta
+from sebastian.domain.side_effects import BaseActorEvent, CreateTask, SendMessage
+from sebastian.usecases.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import MangaUpdateClient

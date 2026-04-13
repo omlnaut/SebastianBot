@@ -3,7 +3,7 @@ from datetime import date
 from typing import Protocol, Sequence
 
 from sebastian.domain.calendar import Calendars
-from sebastian.protocols.models import BaseActorEvent, SendMessage
+from sebastian.domain.side_effects import BaseActorEvent, SendMessage
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 

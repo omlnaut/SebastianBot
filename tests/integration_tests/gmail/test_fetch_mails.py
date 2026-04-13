@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from sebastian.clients.google.gmail.client import GmailClient
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
 def test_fetch_mails(gmail_client: GmailClient):

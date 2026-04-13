@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from cloud.helper.event_grid import EventGridModel
 from sebastian.domain.gmail import GmailLabel
-from sebastian.protocols.models import ModifyMailLabel
+from sebastian.domain.side_effects import ModifyMailLabel
 
 
 class ArchiveEmailEventGrid(BaseModel):

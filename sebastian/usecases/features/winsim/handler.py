@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
-from sebastian.protocols.models import BaseActorEvent, SendMessage
-from sebastian.shared.gmail.query_builder import GmailQueryBuilder
+from sebastian.domain.side_effects import BaseActorEvent, SendMessage
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import GmailClient, GoogleDriveClient

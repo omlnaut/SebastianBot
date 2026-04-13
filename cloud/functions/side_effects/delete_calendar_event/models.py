@@ -2,7 +2,7 @@ from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
 from sebastian.domain.calendar import Calendars
-from sebastian.protocols.models import DeleteCalendarEvent
+from sebastian.domain.side_effects import DeleteCalendarEvent
 
 
 class DeleteCalendarEventEventGrid(EventGridModel[DeleteCalendarEvent]):

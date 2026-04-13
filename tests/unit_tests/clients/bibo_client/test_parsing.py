@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 from sebastian.clients.bibo.client._parse_account_page import parse_account_page
-from sebastian.shared.dates import TimeRange
+from sebastian.usecases.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
 
 

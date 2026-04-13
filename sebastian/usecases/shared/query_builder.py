@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sebastian.shared.dates import to_timestamp
+from sebastian.usecases.shared.dates import to_timestamp
 
 
 class GmailQueryBuilder:
