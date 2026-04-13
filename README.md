@@ -1,6 +1,6 @@
 # SebastianBot
 
-A personal hobby project focused on automating boring everyday tasks. Built as an exploration of Azure Functions, clean architecture, and GitHub Copilot agent-assisted development.
+A personal hobby project focused on automating boring everyday tasks. Built as an exploration of Azure Functions, pragmatic clean architecture, and GitHub Copilot agent-assisted development.
 
 ## Goals
 
