@@ -14,6 +14,18 @@ def test_fetch_mails(gmail_client: GmailClient):
     assert len(emails) > 0
 
 
+# todo: test against fixed mail for reliable test results
+def test_fetch_mails_has_read_state(gmail_client: GmailClient):
+    date_24h_ago = datetime.now() - timedelta(hours=24)
+    query = GmailQueryBuilder().after_date(date_24h_ago).build()
+
+    emails = gmail_client.fetch_mails(query)
+
+    assert len(emails) > 0
+    assert all(isinstance(mail.is_unread, bool) for mail in emails)
+    assert all(mail.is_unread == ("UNREAD" in mail.labelIds) for mail in emails)
+
+
 def test_query_builder_on_date(gmail_client: GmailClient):
     query = (
         GmailQueryBuilder()
