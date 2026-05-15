@@ -12,7 +12,7 @@ class GmailClient:
         self._service = GmailServiceWrapper(credentials)
 
     def fetch_mails(self, query: str) -> list[FullMailResponse]:
-        """Fetch full emails matching the query, including read state in `is_unread`. Use GmailQueryBuilder from `sebastian.usecases.shared.query_builder` to build the query."""
+        """Fetch full emails matching the query. Use GmailQueryBuilder from `sebastian.usecases.shared.query_builder` to build the query."""
         message_ids = self._service.fetch_message_ids(query)
         emails = [self._service.fetch_full_mail(msg_id.id) for msg_id in message_ids]
         return emails
