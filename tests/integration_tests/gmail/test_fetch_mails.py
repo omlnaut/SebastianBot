@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from sebastian.clients.google.gmail.client import GmailClient
+from sebastian.domain.gmail import GmailLabel
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
@@ -21,10 +22,32 @@ def test_fetch_mails_has_read_state(gmail_client: GmailClient):
 
     assert len(emails) > 0
     assert all(isinstance(mail.is_read, bool) for mail in emails)
-    for mail in emails:
+
+    target_mail = next((mail for mail in emails if mail.is_read), None)
+    assert target_mail is not None, "Expected at least one already-read email"
+
+    try:
+        gmail_client.modify_labels(target_mail.id, add_labels=[GmailLabel.Unread])
+
+        updated_mails = gmail_client.fetch_mails(query)
+        updated_mail = next(
+            (mail for mail in updated_mails if mail.id == target_mail.id), None
+        )
+        assert updated_mail is not None, "Email disappeared after updating labels"
         assert (
-            mail.is_read is True
-        ), f"Expected email with subject {mail.snippet[:20]} to be read, but it was marked as unread."
+            updated_mail.is_read is False
+        ), f"Expected email with subject {updated_mail.snippet[:20]} to be unread after adding UNREAD label"
+    finally:
+        gmail_client.modify_labels(target_mail.id, remove_labels=[GmailLabel.Unread])
+
+    restored_mails = gmail_client.fetch_mails(query)
+    restored_mail = next(
+        (mail for mail in restored_mails if mail.id == target_mail.id), None
+    )
+    assert restored_mail is not None, "Email disappeared after restoring labels"
+    assert (
+        restored_mail.is_read is True
+    ), f"Expected email with subject {restored_mail.snippet[:20]} to be read after removing UNREAD label"
 
 
 def test_query_builder_on_date(gmail_client: GmailClient):
