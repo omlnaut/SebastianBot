@@ -109,6 +109,7 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
         id=response["id"],
         threadId=response["threadId"],
         labelIds=response["labelIds"],
+        is_read="UNREAD" not in response["labelIds"],
         snippet=response["snippet"],
         historyId=response["historyId"],
         internalDate=response["internalDate"],

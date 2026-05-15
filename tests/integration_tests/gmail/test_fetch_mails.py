@@ -14,6 +14,19 @@ def test_fetch_mails(gmail_client: GmailClient):
     assert len(emails) > 0
 
 
+def test_fetch_mails_has_read_state(gmail_client: GmailClient):
+    query = GmailQueryBuilder().on_date(datetime(2026, 1, 15)).build()
+
+    emails = gmail_client.fetch_mails(query)
+
+    assert len(emails) > 0
+    assert all(isinstance(mail.is_read, bool) for mail in emails)
+    for mail in emails:
+        assert (
+            mail.is_read is True
+        ), f"Expected email with subject {mail.snippet[:20]} to be read, but it was marked as unread."
+
+
 def test_query_builder_on_date(gmail_client: GmailClient):
     query = (
         GmailQueryBuilder()
