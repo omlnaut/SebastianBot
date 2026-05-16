@@ -5,7 +5,12 @@ from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import BaseActorEvent, CreateTask, SendMessage
+from sebastian.domain.side_effects import (
+    BaseActorEvent,
+    CreateTask,
+    ModifyMailLabel,
+    SendMessage,
+)
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -33,6 +38,7 @@ class Handler(UseCaseHandler[Request]):
 
         pickups: list[CreateTask] = []
         errors: list[SendMessage] = []
+        mark_as_read: list[ModifyMailLabel] = []
 
         for mail in mails:
             try:
@@ -40,10 +46,11 @@ class Handler(UseCaseHandler[Request]):
                     mail.content, self.gemini_client
                 )
                 pickups.append(_map_to_create_task(pickup_data))
+                mark_as_read.append(ModifyMailLabel.MarkAsRead(mail.id))
             except Exception as e:
                 errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
-        return pickups + errors
+        return pickups + errors + mark_as_read
 
 
 def _fetch_pickup_mails(

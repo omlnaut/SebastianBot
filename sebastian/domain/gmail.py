@@ -8,6 +8,7 @@ class GmailLabel(Enum):
     """Enum mapping readable label names to Gmail label IDs. Fill in actual label IDs as needed."""
 
     ToRead = "Label_2648990123443534971"
+    Unread = "UNREAD"
 
 
 @dataclass

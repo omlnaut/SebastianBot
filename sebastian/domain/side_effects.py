@@ -34,6 +34,14 @@ class ModifyMailLabel(BaseActorEvent):
     add_labels: list[GmailLabel] = Field(default_factory=list[GmailLabel])
     remove_labels: list[GmailLabel] = Field(default_factory=list[GmailLabel])
 
+    @classmethod
+    def MarkAsRead(cls, email_id: str) -> "ModifyMailLabel":
+        return cls(email_id=email_id, remove_labels=[GmailLabel.Unread])
+
+    @classmethod
+    def MarkAsUnread(cls, email_id: str) -> "ModifyMailLabel":
+        return cls(email_id=email_id, add_labels=[GmailLabel.Unread])
+
 
 class CompleteTask(BaseActorEvent):
     tasklist: TaskLists
