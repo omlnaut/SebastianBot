@@ -9,7 +9,8 @@ from cloud.functions.features.bibo_lending_sync_function import (
 )
 from cloud.functions.features.delivery_ready_function import check_delivery_ready
 from cloud.functions.features.MangaUpdateFunction import check_manga_update
-from cloud.functions.features.mietplan_function import check_mietplan
+
+# from cloud.functions.features.mietplan_function import check_mietplan
 from cloud.functions.features.return_tracker_function import check_return_tracker
 from cloud.functions.features.winsim_function import check_winsim_invoices
 from cloud.functions.side_effects.complete_task.function import complete_task
