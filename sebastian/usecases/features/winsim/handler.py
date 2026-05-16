@@ -4,7 +4,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
-from sebastian.domain.side_effects import BaseActorEvent, SendMessage
+from sebastian.domain.gmail import PdfAttachment
+from sebastian.domain.side_effects import BaseActorEvent, ModifyMailLabel, SendMessage
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -41,43 +42,42 @@ class Handler(UseCaseHandler[Request]):
         mails = self._gmail_client.fetch_mails(query)
         logging.info(f"Fetched {len(mails)} WinSim mails")
 
-        pdfs = [
-            pdf
-            for mail in mails
-            for pdf in self._gmail_client.download_pdf_attachments(mail)
-        ]
-
         uploaded_file_ids: list[str] = []
-        errors: list[SendMessage] = []
+        events: list[BaseActorEvent] = []
 
-        for pdf in pdfs:
-            try:
-                filename = _generate_filename()
-                upload_request = UploadFileRequest(
-                    content=pdf.data,
-                    filename=filename,
-                    folder_id=self._winsim_folder_id,
-                    mime_type="application/pdf",
-                )
-                response = self._drive_client.upload_file(upload_request)
-                uploaded_file_ids.append(response.file_id)
-                logging.info(
-                    f"Uploaded {pdf.filename} as {filename} (id: {response.file_id})"
-                )
-            except Exception as e:
-                errors.append(
-                    SendMessage(message=f"Error uploading {pdf.filename}: {str(e)}")
-                )
+        for mail in mails:
+            pdfs = self._gmail_client.download_pdf_attachments(mail)
+            for pdf in pdfs:
+                try:
+                    filename = _generate_filename()
+                    uploaded_file_ids.append(self._upload_file(pdf, filename))
+                    events.append(ModifyMailLabel.MarkAsRead(mail.id))
+                except Exception as e:
+                    events.append(
+                        SendMessage(message=f"Error uploading {pdf.filename}: {str(e)}")
+                    )
 
-        messages = errors
         if n_uploads := len(uploaded_file_ids):
-            messages.append(
+            events.append(
                 SendMessage(
                     message=f"📄 WinSim: Uploaded {n_uploads} invoice(s) to Google Drive"
                 )
             )
 
-        return messages
+        return events
+
+    def _upload_file(self, pdf: PdfAttachment, filename: str) -> str:
+        upload_request = UploadFileRequest(
+            content=pdf.data,
+            filename=filename,
+            folder_id=self._winsim_folder_id,
+            mime_type="application/pdf",
+        )
+        response = self._drive_client.upload_file(upload_request)
+
+        logging.info(f"Uploaded {pdf.filename} as {filename} (id: {response.file_id})")
+
+        return response.file_id
 
 
 def _generate_filename() -> str:

@@ -5,7 +5,12 @@ from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import BaseActorEvent, CreateTask, SendMessage
+from sebastian.domain.side_effects import (
+    BaseActorEvent,
+    CreateTask,
+    ModifyMailLabel,
+    SendMessage,
+)
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -30,17 +35,17 @@ class Handler(UseCaseHandler[Request]):
 
         mails = self._fetch_return_emails(time_threshold)
 
-        tasks: list[CreateTask] = []
-        errors: list[SendMessage] = []
+        effects: list[BaseActorEvent] = []
 
         for mail in mails:
             try:
                 return_data = parse_return_email_html(mail.content, self._gemini_client)
-                tasks.append(_map_to_create_task(return_data))
+                effects.append(_map_to_create_task(return_data))
+                effects.append(ModifyMailLabel.MarkAsRead(mail.id))
             except Exception as e:
-                errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
+                effects.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
-        return tasks + errors
+        return effects
 
     def _fetch_return_emails(
         self, time_threshold: datetime

@@ -36,21 +36,19 @@ class Handler(UseCaseHandler[Request]):
         mails = _fetch_pickup_mails(self.gmail_client, time_threshold)
         logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
-        pickups: list[CreateTask] = []
-        errors: list[SendMessage] = []
-        mark_as_read: list[ModifyMailLabel] = []
+        effects: list[BaseActorEvent] = []
 
         for mail in mails:
             try:
                 pickup_data = parse_dhl_pickup_email_html(
                     mail.content, self.gemini_client
                 )
-                pickups.append(_map_to_create_task(pickup_data))
-                mark_as_read.append(ModifyMailLabel.MarkAsRead(mail.id))
+                effects.append(_map_to_create_task(pickup_data))
+                effects.append(ModifyMailLabel.MarkAsRead(mail.id))
             except Exception as e:
-                errors.append(SendMessage(message=f"Error parsing email: {str(e)}"))
+                effects.append(SendMessage(message=f"Error parsing email: {str(e)}"))
 
-        return pickups + errors + mark_as_read
+        return effects
 
 
 def _fetch_pickup_mails(
