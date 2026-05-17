@@ -3,6 +3,7 @@ from datetime import date
 
 from cloud.dependencies.clients import resolve_calendar_event_client
 from sebastian.domain.calendar import Calendars
+from sebastian.domain.date_filter import DateFilter
 
 
 def test_create_event_with_description():
@@ -21,7 +22,10 @@ def test_create_event_with_description():
         )
 
         # Assert
-        events = client.get_events(Calendars.Primary, q=test_title, time_min=test_date)
+        date_filter = DateFilter.from_dates(start=test_date)
+        events = client.get_events(
+            Calendars.Primary, q=test_title, date_filter=date_filter
+        )
         assert len(events) == 1
         event = events[0]
         event_id = event.id

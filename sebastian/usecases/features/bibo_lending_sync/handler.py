@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
+from sebastian.domain.task import TaskLabels
 from sebastian.domain.side_effects import (
     BaseActorEvent,
     CreateCalendarEvent,
@@ -33,7 +34,7 @@ class Handler(UseCaseHandler[Request]):
     ):
         self._bibo_client = bibo_client
         self._calendar_client = calendar_client
-        self._sync_tag = f"BIBO_SYNC_{account.value.upper()}"
+        self._sync_tag = f"{TaskLabels.BiboSync.value}_{account.value.upper()}"
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         lendings = self._bibo_client.fetch_open_lendings()

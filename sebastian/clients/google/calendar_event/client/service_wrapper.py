@@ -6,6 +6,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from sebastian.domain.calendar import CalendarEvent
+from sebastian.domain.date_filter import DateFilter
 
 from ._models import CalendarEventResponse, CalendarListEntry, EventDateTime
 
@@ -21,8 +22,8 @@ def _to_datetime(value: EventDateTime | None) -> datetime | None:
     return None
 
 
-def _to_rfc3339(value: datetime | date) -> str:
-    return datetime(value.year, value.month, value.day, tzinfo=timezone.utc).isoformat()
+def _to_rfc3339(value: datetime) -> str:
+    return value.isoformat()
 
 
 def _to_domain(event: CalendarEventResponse) -> CalendarEvent | None:
@@ -54,19 +55,19 @@ class CalendarServiceWrapper:
     def list_events(
         self,
         calendar_id: str,
-        time_min: date | None = None,
-        time_max: date | None = None,
+        date_filter: DateFilter | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]:
         kwargs: dict[str, object] = {
             "calendarId": calendar_id,
             "singleEvents": True,
         }
-        if time_min is not None:
-            kwargs["timeMin"] = _to_rfc3339(time_min)
-            kwargs["orderBy"] = "startTime"
-        if time_max is not None:
-            kwargs["timeMax"] = _to_rfc3339(time_max)
+        if date_filter is not None:
+            if date_filter.start is not None:
+                kwargs["timeMin"] = _to_rfc3339(date_filter.start)
+                kwargs["orderBy"] = "startTime"
+            if date_filter.end is not None:
+                kwargs["timeMax"] = _to_rfc3339(date_filter.end)
         if q is not None:
             kwargs["q"] = q
         response = self._service.events().list(**kwargs).execute()

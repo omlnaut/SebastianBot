@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import TaskLabels, TaskLists
 from sebastian.domain.side_effects import (
     BaseActorEvent,
     CreateTask,
@@ -75,5 +75,6 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
         notes += f"\nBis: {pickup.due_date.strftime('%d.%m.%Y')}"
     if pickup.tracking_number:
         notes += f"\nTracking: {pickup.tracking_number}"
+    notes += f"\n{TaskLabels.DeliveryReady.value}"
 
     return CreateTask(title=title, notes=notes, tasklist=TaskLists.Default)

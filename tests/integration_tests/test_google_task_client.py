@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
 from cloud.dependencies.clients import resolve_google_task_client
 from sebastian.clients.google.task.client import GoogleTaskClient
+from sebastian.domain.date_filter import DateFilter
 from sebastian.domain.task import TaskLists
 from tests.helper import first_or_none
 
@@ -61,3 +62,28 @@ def test_google_task_client_integration(google_task_client: GoogleTaskClient):
     task_id = fetch_task_id()
     set_task_as_completed(task_id)
     check_task_is_completed(task_id)
+
+
+def test_get_tasks_for_date_returns_only_completed_when_including_completed(
+    google_task_client: GoogleTaskClient,
+):
+    target_due_date = date(2026, 4, 28)
+    due_filter = DateFilter.on(target_due_date)
+
+    open_tasks_for_target_date = google_task_client.get_tasks(
+        tasklist=TaskLists.Default,
+        due=due_filter,
+    )
+    assert open_tasks_for_target_date == []
+
+    tasks_for_target_date = google_task_client.get_tasks(
+        tasklist=TaskLists.Default,
+        include_completed=True,
+        due=due_filter,
+    )
+
+    assert all(
+        task.due is not None and task.due.date() == target_due_date
+        for task in tasks_for_target_date
+    )
+    assert len(tasks_for_target_date) == 1

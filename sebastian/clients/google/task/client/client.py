@@ -5,6 +5,7 @@ from google.oauth2.credentials import Credentials
 from sebastian.clients.google.task.client._models import TaskList, TaskResponse
 from sebastian.clients.google.task.client.service_wrapper import TaskServiceWrapper
 from sebastian.clients.google.task.client.taskslists import to_id
+from sebastian.domain.date_filter import DateFilter
 from sebastian.domain.task import Task, TaskLists
 
 from .create_task_with_notes import build_task_body, post_create_task
@@ -31,7 +32,12 @@ class GoogleTaskClient:
             link=parsed.webViewLink,
         )
 
-    def get_tasks(self, tasklist: TaskLists = TaskLists.Default) -> list[Task]:
+    def get_tasks(
+        self,
+        tasklist: TaskLists = TaskLists.Default,
+        include_completed: bool = False,
+        due: DateFilter | None = None,
+    ) -> list[Task]:
         def _response_to_domain(response: TaskResponse) -> Task:
             return Task(
                 id=response.id,
@@ -42,7 +48,12 @@ class GoogleTaskClient:
                 link=response.webViewLink,
             )
 
-        tasks_response = self._service.get_tasks(to_id(tasklist))
+        tasks_response = self._service.get_tasks(
+            to_id(tasklist),
+            include_completed=include_completed,
+            due_min=due.start if due is not None else None,
+            due_max=due.end if due is not None else None,
+        )
         return [_response_to_domain(task) for task in tasks_response]
 
     def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:

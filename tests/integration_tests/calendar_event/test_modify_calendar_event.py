@@ -2,6 +2,7 @@ from datetime import date
 
 from cloud.dependencies.clients import resolve_calendar_event_client
 from sebastian.domain.calendar import Calendars
+from sebastian.domain.date_filter import DateFilter
 
 
 def test_modify_calendar_event():
@@ -12,7 +13,10 @@ def test_modify_calendar_event():
     new_date = date(2026, 4, 22)
 
     client.create_event(Calendars.Primary, test_title, original_date)
-    events = client.get_events(Calendars.Primary, q=test_title, time_min=original_date)
+    date_filter_original = DateFilter.from_dates(start=original_date)
+    events = client.get_events(
+        Calendars.Primary, q=test_title, date_filter=date_filter_original
+    )
     assert len(events) == 1
     event_id = events[0].id
 
@@ -20,7 +24,10 @@ def test_modify_calendar_event():
     client.modify_calendar_event(Calendars.Primary, event_id, new_date)
 
     # Assert
-    events_after = client.get_events(Calendars.Primary, q=test_title, time_min=new_date)
+    date_filter_new = DateFilter.from_dates(start=new_date)
+    events_after = client.get_events(
+        Calendars.Primary, q=test_title, date_filter=date_filter_new
+    )
     assert len(events_after) == 1
     assert events_after[0].start is not None
     assert events_after[0].start.date() == new_date

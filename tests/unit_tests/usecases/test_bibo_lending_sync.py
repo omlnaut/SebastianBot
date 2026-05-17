@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
@@ -8,6 +8,7 @@ from sebastian.domain.side_effects import (
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
+from sebastian.domain.date_filter import DateFilter
 from sebastian.usecases.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
@@ -64,8 +65,7 @@ class _FakeCalendarClient:
     def get_events(
         self,
         calendar: Calendars,
-        time_min: date | None = None,
-        time_max: date | None = None,
+        date_filter: DateFilter | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]:
         return self._events

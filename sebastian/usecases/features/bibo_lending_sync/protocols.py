@@ -1,9 +1,9 @@
-from datetime import date
 from typing import Protocol
 
 from pydantic import BaseModel, Field
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
+from sebastian.domain.date_filter import DateFilter
 from sebastian.usecases.shared.dates import TimeRange
 
 __all__ = ["BiboClient", "CalendarClient"]
@@ -24,7 +24,6 @@ class CalendarClient(Protocol):
     def get_events(
         self,
         calendar: Calendars,
-        time_min: date | None = None,
-        time_max: date | None = None,
+        date_filter: DateFilter | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]: ...
