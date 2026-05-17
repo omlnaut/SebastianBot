@@ -5,7 +5,8 @@ from google.oauth2.credentials import Credentials
 from sebastian.clients.google.task.client._models import TaskList, TaskResponse
 from sebastian.clients.google.task.client.service_wrapper import TaskServiceWrapper
 from sebastian.clients.google.task.client.taskslists import to_id
-from sebastian.domain.task import DateFilter, Task, TaskLists
+from sebastian.domain.date_filter import DateFilter
+from sebastian.domain.task import Task, TaskLists
 
 from .create_task_with_notes import build_task_body, post_create_task
 

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
@@ -8,7 +8,7 @@ from sebastian.domain.side_effects import (
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
-from sebastian.domain.task import DateFilter
+from sebastian.domain.date_filter import DateFilter
 from sebastian.usecases.shared.dates import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
 from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo

@@ -6,7 +6,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from sebastian.domain.calendar import CalendarEvent
-from sebastian.domain.task import DateFilter
+from sebastian.domain.date_filter import DateFilter
 
 from ._models import CalendarEventResponse, CalendarListEntry, EventDateTime
 

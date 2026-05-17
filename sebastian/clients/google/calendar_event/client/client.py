@@ -3,7 +3,7 @@ from datetime import date
 from google.oauth2.credentials import Credentials
 
 from sebastian.domain.calendar import Calendar, CalendarEvent, Calendars
-from sebastian.domain.task import DateFilter
+from sebastian.domain.date_filter import DateFilter
 
 from .service_wrapper import CalendarServiceWrapper
 
@@ -39,9 +39,7 @@ class CalendarEventClient:
         q: str | None = None,
     ) -> list[CalendarEvent]:
         calendar_id = to_id(calendar)
-        return self._service.list_events(
-            calendar_id, date_filter=date_filter, q=q
-        )
+        return self._service.list_events(calendar_id, date_filter=date_filter, q=q)
 
     def create_event(
         self,

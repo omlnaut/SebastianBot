@@ -4,7 +4,8 @@ import pytest
 
 from cloud.dependencies.clients import resolve_google_task_client
 from sebastian.clients.google.task.client import GoogleTaskClient
-from sebastian.domain.task import DateFilter, TaskLists
+from sebastian.domain.date_filter import DateFilter
+from sebastian.domain.task import TaskLists
 from tests.helper import first_or_none
 
 

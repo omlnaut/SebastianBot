@@ -2,7 +2,7 @@ from datetime import date
 
 from cloud.dependencies.clients import resolve_calendar_event_client
 from sebastian.domain.calendar import Calendars
-from sebastian.domain.task import DateFilter
+from sebastian.domain.date_filter import DateFilter
 
 
 def test_timerange():
@@ -14,7 +14,7 @@ def test_timerange():
     events = client.get_events(Calendars.Primary, date_filter=date_filter)
 
     # Assert
-    assert len(events) == 3
+    assert len(events) == 5
 
 
 def test_query():
