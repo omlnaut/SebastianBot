@@ -28,7 +28,7 @@ class DhlClient:
         "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
     )
 
-    def has_packstation_status(
+    def is_retrieved(
         self, tracking_number: str, language: str = "de", domain: str = "de"
     ) -> bool:
         try:
@@ -50,7 +50,7 @@ class DhlClient:
             response_data.raise_for_status()
             parsed = _DhlResponse.model_validate(response_data.json())
             current_status = parsed.sendungen[0].sendungsdetails.sendungsverlauf.status
-            return "packstation" in current_status.lower()
+            return "abholung aus packstation" in current_status.lower()
         except requests.RequestException as exc:
             raise RuntimeError(
                 f"Failed to fetch DHL tracking data for {tracking_number}"

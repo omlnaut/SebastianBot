@@ -44,7 +44,7 @@ def test_has_packstation_status_returns_true_when_status_contains_packstation(
 
     monkeypatch.setattr(requests, "get", _fake_get)
 
-    assert client.has_packstation_status("00340434684233582597") is True
+    assert client.is_retrieved("00340434684233582597") is True
 
 
 def test_has_packstation_status_returns_false_when_packstation_is_missing(
@@ -67,7 +67,7 @@ def test_has_packstation_status_returns_false_when_packstation_is_missing(
 
     monkeypatch.setattr(requests, "get", _fake_get)
 
-    assert client.has_packstation_status("00340434684233582597") is False
+    assert client.is_retrieved("00340434684233582597") is False
 
 
 def test_has_packstation_status_uses_current_status_only(
@@ -97,7 +97,7 @@ def test_has_packstation_status_uses_current_status_only(
 
     monkeypatch.setattr(requests, "get", _fake_get)
 
-    assert client.has_packstation_status("00340434684233582597") is False
+    assert client.is_retrieved("00340434684233582597") is False
 
 
 def test_has_packstation_status_raises_when_shipments_missing(
@@ -111,7 +111,7 @@ def test_has_packstation_status_raises_when_shipments_missing(
     monkeypatch.setattr(requests, "get", _fake_get)
 
     with pytest.raises(RuntimeError, match="Failed to parse DHL tracking data"):
-        client.has_packstation_status("00340434684233582597")
+        client.is_retrieved("00340434684233582597")
 
 
 def test_has_packstation_status_raises_when_response_invalid(
@@ -125,7 +125,7 @@ def test_has_packstation_status_raises_when_response_invalid(
     monkeypatch.setattr(requests, "get", _fake_get)
 
     with pytest.raises(RuntimeError, match="Failed to parse DHL tracking data"):
-        client.has_packstation_status("00340434684233582597")
+        client.is_retrieved("00340434684233582597")
 
 
 def test_has_packstation_status_raises_when_request_fails(
@@ -139,7 +139,7 @@ def test_has_packstation_status_raises_when_request_fails(
     monkeypatch.setattr(requests, "get", _fake_get)
 
     with pytest.raises(RuntimeError, match="Failed to fetch DHL tracking data"):
-        client.has_packstation_status("00340434684233582597")
+        client.is_retrieved("00340434684233582597")
 
 
 def test_has_packstation_status_raises_when_json_is_invalid(
@@ -153,4 +153,4 @@ def test_has_packstation_status_raises_when_json_is_invalid(
     monkeypatch.setattr(requests, "get", _fake_get)
 
     with pytest.raises(RuntimeError, match="Failed to parse DHL tracking data"):
-        client.has_packstation_status("00340434684233582597")
+        client.is_retrieved("00340434684233582597")

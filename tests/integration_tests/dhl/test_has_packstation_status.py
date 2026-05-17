@@ -80,4 +80,4 @@ def test_has_packstation_status_from_last_complete_month_delivery_ready_tasks(
         "No tracking number found in completed DELIVERY_READY tasks from the "
         "last complete month. Expected notes to include 'Tracking: <id>'."
     )
-    assert dhl_client.has_packstation_status(tracking_id) is True
+    assert dhl_client.is_retrieved(tracking_id) is True
