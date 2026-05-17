@@ -48,3 +48,25 @@ class DateFilter:
         cls, start: datetime | None = None, end: datetime | None = None
     ) -> "DateFilter":
         return cls(start=start, end=end)
+
+    @classmethod
+    def from_dates(
+        cls, start: date | None = None, end: date | None = None
+    ) -> "DateFilter":
+        """Create DateFilter from date objects (UTC at start of day for start, end of day for end)."""
+        start_dt = None
+        if start is not None:
+            start_dt = datetime.combine(start, datetime.min.time(), tzinfo=timezone.utc)
+
+        end_dt = None
+        if end is not None:
+            end_dt = datetime.combine(end, datetime.max.time(), tzinfo=timezone.utc)
+
+        return cls(start=start_dt, end=end_dt)
+
+    @classmethod
+    def from_datetimes(
+        cls, start: datetime | None = None, end: datetime | None = None
+    ) -> "DateFilter":
+        """Create DateFilter from datetime objects (must be timezone-aware)."""
+        return cls(start=start, end=end)

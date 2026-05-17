@@ -2,6 +2,7 @@ from datetime import date
 
 from cloud.dependencies.clients import resolve_calendar_event_client
 from sebastian.domain.calendar import Calendars
+from sebastian.domain.task import DateFilter
 
 
 def test_delete_event():
@@ -11,7 +12,8 @@ def test_delete_event():
     test_date = date(2026, 4, 15)
     client.create_event(Calendars.Primary, test_title, test_date)
 
-    events = client.get_events(Calendars.Primary, q=test_title, time_min=test_date)
+    date_filter = DateFilter.from_dates(start=test_date)
+    events = client.get_events(Calendars.Primary, q=test_title, date_filter=date_filter)
     assert len(events) == 1
     event_id = events[0].id
 
@@ -20,6 +22,6 @@ def test_delete_event():
 
     # Assert
     events_after = client.get_events(
-        Calendars.Primary, q=test_title, time_min=test_date
+        Calendars.Primary, q=test_title, date_filter=date_filter
     )
     assert len(events_after) == 0

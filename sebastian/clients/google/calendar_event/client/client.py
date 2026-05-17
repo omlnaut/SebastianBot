@@ -3,6 +3,7 @@ from datetime import date
 from google.oauth2.credentials import Credentials
 
 from sebastian.domain.calendar import Calendar, CalendarEvent, Calendars
+from sebastian.domain.task import DateFilter
 
 from .service_wrapper import CalendarServiceWrapper
 
@@ -34,13 +35,12 @@ class CalendarEventClient:
     def get_events(
         self,
         calendar: Calendars,
-        time_min: date | None = None,
-        time_max: date | None = None,
+        date_filter: DateFilter | None = None,
         q: str | None = None,
     ) -> list[CalendarEvent]:
         calendar_id = to_id(calendar)
         return self._service.list_events(
-            calendar_id, time_min=time_min, time_max=time_max, q=q
+            calendar_id, date_filter=date_filter, q=q
         )
 
     def create_event(
