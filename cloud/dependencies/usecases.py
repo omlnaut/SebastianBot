@@ -1,5 +1,6 @@
 from sebastian.usecases.features import (
     bibo_lending_sync,
+    check_parcel_received,
     delivery_ready,
     manga_update,
     mietplan,
@@ -18,6 +19,7 @@ from sebastian.usecases.side_effects import (
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .clients import (
+    resolve_dhl_client,
     resolve_bibo_client,
     resolve_calendar_event_client,
     resolve_gemini_client,
@@ -57,6 +59,16 @@ def resolve_delivery_ready(
     return delivery_ready.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
+    )
+
+
+def resolve_check_parcel_received(
+    task_client: check_parcel_received.TaskClient | None = None,
+    dhl_client: check_parcel_received.DhlClient | None = None,
+) -> UseCaseHandler[check_parcel_received.Request]:
+    return check_parcel_received.Handler(
+        task_client=task_client or resolve_google_task_client(),
+        dhl_client=dhl_client or resolve_dhl_client(),
     )
 
 

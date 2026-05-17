@@ -4,6 +4,7 @@ from google.oauth2.credentials import Credentials
 
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.bibo.client import BiboClient
+from sebastian.clients.dhl.client import DhlClient
 from sebastian.domain.bibo import BiboAccounts
 from sebastian.clients.google.calendar_event.client import CalendarEventClient
 from sebastian.clients.google.drive.client import GoogleDriveClient
@@ -75,3 +76,8 @@ def resolve_bibo_client(account: BiboAccounts) -> BiboClient:
     credentials = get_secret(SecretKeys.BiboCredentials)
     account_credentials = credentials.accounts[account.value]
     return BiboClient(account_credentials)
+
+
+@lru_cache()
+def resolve_dhl_client() -> DhlClient:
+    return DhlClient()
