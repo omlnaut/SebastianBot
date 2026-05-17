@@ -10,6 +10,11 @@ class TaskLists(Enum):
     Bibo = auto()
 
 
+class TaskLabels(str, Enum):
+    DeliveryReady = "DELIVERY_READY"
+    BiboSync = "BIBO_SYNC"
+
+
 class Task(BaseModel):
     id: str = Field(..., min_length=1)
     tasklist: TaskLists
