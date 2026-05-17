@@ -1,4 +1,6 @@
 # pyright: basic
+from datetime import datetime
+
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
@@ -17,12 +19,25 @@ class TaskServiceWrapper:
         )
         return TaskResponse(**created)
 
-    def get_tasks(self, tasklist_id: str) -> list[TaskResponse]:
-        tasks = (
-            self._service.tasks()
-            .list(tasklist=tasklist_id, showCompleted=False)
-            .execute()
-        )
+    def get_tasks(
+        self,
+        tasklist_id: str,
+        include_completed: bool = False,
+        due_min: datetime | None = None,
+        due_max: datetime | None = None,
+    ) -> list[TaskResponse]:
+        list_params: dict[str, str | bool] = {
+            "tasklist": tasklist_id,
+            "showCompleted": include_completed,
+            "showHidden": include_completed,
+        }
+
+        if due_min is not None:
+            list_params["dueMin"] = due_min.isoformat()
+        if due_max is not None:
+            list_params["dueMax"] = due_max.isoformat()
+
+        tasks = self._service.tasks().list(**list_params).execute()
         return [TaskResponse(**task) for task in tasks.get("items", [])]
 
     def set_task_to_complete(self, tasklist_id: str, task_id: str) -> TaskResponse:

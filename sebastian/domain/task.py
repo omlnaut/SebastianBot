@@ -1,4 +1,5 @@
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 
 from pydantic import BaseModel, Field
@@ -17,3 +18,33 @@ class Task(BaseModel):
     due: datetime | None = None
     notes: str | None = None
     link: str | None = None
+
+
+@dataclass(frozen=True)
+class DateFilter:
+    start: datetime | None = None
+    end: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if self.start is None and self.end is None:
+            raise ValueError("At least one boundary must be set.")
+
+        if self.start is not None and self.start.tzinfo is None:
+            raise ValueError("start must be timezone-aware.")
+
+        if self.end is not None and self.end.tzinfo is None:
+            raise ValueError("end must be timezone-aware.")
+
+        if self.start is not None and self.end is not None and self.start > self.end:
+            raise ValueError("start must be before or equal to end.")
+
+    @classmethod
+    def on(cls, target_day: date) -> "DateFilter":
+        start = datetime.combine(target_day, datetime.min.time(), tzinfo=timezone.utc)
+        return cls(start=start, end=start + timedelta(days=1))
+
+    @classmethod
+    def range(
+        cls, start: datetime | None = None, end: datetime | None = None
+    ) -> "DateFilter":
+        return cls(start=start, end=end)
