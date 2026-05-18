@@ -93,7 +93,7 @@ class Handler(UseCaseHandler[Request]):
 
 
 def fetch_return_emails(
-    gmail_client: GmailClient, before_date: datetime | None = None
+    gmail_client: GmailClient,
 ) -> Sequence[FullMailResponse]:
     """
     Fetch return emails from Amazon using the Gmail API, filtering by sender, subject, and date.
@@ -105,9 +105,6 @@ def fetch_return_emails(
         .subject("Ihre Rücksendung von", exact=False)
         .is_unread()
     )
-    if before_date:
-        query_parts.before_date(before_date)
-
     query = query_parts.build()
     mails = gmail_client.fetch_mails(query)
     logging.info(f"Fetched {len(mails)} return emails from Amazon")
