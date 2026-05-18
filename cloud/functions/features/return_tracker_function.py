@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 
 from azure.functions import TimerRequest
 
@@ -19,7 +18,4 @@ from ..TriggerTimes import TriggerTimes
 )
 def check_return_tracker(mytimer: TimerRequest) -> None:
     logging.info("ReturnTracker timer function processed a request.")
-    perform_usecase_from_request(
-        return_tracker.Request(time_back=timedelta(hours=1)),
-        resolve_return_tracker,
-    )
+    perform_usecase_from_request(return_tracker.Request(), resolve_return_tracker)

@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 
 from azure.functions import TimerRequest
 
@@ -22,6 +21,4 @@ def check_delivery_ready(
 ) -> None:
     logging.info("DeliveryReady timer function processed a request.")
 
-    perform_usecase_from_request(
-        delivery_ready.Request(hours_back=timedelta(hours=1)), resolve_delivery_ready
-    )
+    perform_usecase_from_request(delivery_ready.Request(), resolve_delivery_ready)

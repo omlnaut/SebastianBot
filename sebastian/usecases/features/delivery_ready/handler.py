@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
@@ -12,56 +13,131 @@ from sebastian.domain.side_effects import (
     SendMessage,
 )
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
+from sebastian.usecases.shared.gemini_exceptions import (
+    GeminiRetryConfiguration,
+    TransientGeminiError,
+)
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import PickupData, parse_dhl_pickup_email_html
 from .protocols import GeminiClient, GmailClient
 
-__all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
+__all__ = [
+    "Request",
+    "Handler",
+    "GmailClient",
+    "GeminiClient",
+]
 
 
 @dataclass
 class Request:
-    hours_back: timedelta = timedelta(hours=1)
+    pass
 
 
 class Handler(UseCaseHandler[Request]):
-    def __init__(self, gmail_client: GmailClient, gemini_client: GeminiClient):
+    def __init__(
+        self,
+        gmail_client: GmailClient,
+        gemini_client: GeminiClient,
+        retry_configuration: GeminiRetryConfiguration,
+    ):
         self.gmail_client = gmail_client
         self.gemini_client = gemini_client
+        self.retry_configuration = retry_configuration
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
-        time_threshold = datetime.now(timezone.utc) - request.hours_back
-
-        mails = _fetch_pickup_mails(self.gmail_client, time_threshold)
+        now = datetime.now(timezone.utc)
+        mails = _fetch_pickup_mails(self.gmail_client)
         logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
         effects: list[BaseActorEvent] = []
 
         for mail in mails:
+            age = _mail_age(mail, now)
+            if age is None:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Invalid internalDate: {mail.internalDate}",
+                    )
+                )
+                continue
+
+            if age > self.retry_configuration.retry_horizon:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Retry horizon exceeded ({age})",
+                    )
+                )
+                continue
+
             try:
-                pickup_data = parse_dhl_pickup_email_html(
-                    mail.content, self.gemini_client
+                pickup_data = _parse_with_transient_retry(
+                    mail.content,
+                    self.gemini_client,
+                    self.retry_configuration.immediate_retry_delay_seconds,
                 )
                 effects.append(_map_to_create_task(pickup_data))
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
+            except TransientGeminiError as e:
+                logging.warning(
+                    f"Transient Gemini error for delivery mail {mail.id}. Keeping unread for retry. Error: {str(e)}"
+                )
             except Exception as e:
-                effects.append(SendMessage(message=f"Error parsing email: {str(e)}"))
+                effects.extend(
+                    _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
+                )
 
         return effects
 
 
-def _fetch_pickup_mails(
-    gmail_client: GmailClient, time_threshold: datetime
-) -> Sequence[FullMailResponse]:
+def _fetch_pickup_mails(gmail_client: GmailClient) -> Sequence[FullMailResponse]:
     query = (
         GmailQueryBuilder()
         .from_email("pickup-point.amazon.de")
         .subject("Paket zur Abholung bereit", exact=True)
-        .after_date(time_threshold)
+        .is_unread()
         .build()
     )
     return gmail_client.fetch_mails(query)
+
+
+def _parse_with_transient_retry(
+    html: str,
+    gemini_client: GeminiClient,
+    immediate_retry_delay_seconds: float,
+) -> PickupData:
+    try:
+        return parse_dhl_pickup_email_html(html, gemini_client)
+    except TransientGeminiError:
+        time.sleep(immediate_retry_delay_seconds)
+        return parse_dhl_pickup_email_html(html, gemini_client)
+
+
+def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
+    try:
+        timestamp = int(mail.internalDate) / 1000
+    except ValueError:
+        return None
+
+    received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    return now - received_at
+
+
+def _terminal_failure_effects(
+    mail: FullMailResponse, reason: str
+) -> list[BaseActorEvent]:
+    return [
+        SendMessage(
+            message=(
+                "DeliveryReady mail processing failed terminally. "
+                f"mail_id={mail.id}; reason={reason}"
+            )
+        ),
+        ModifyMailLabel.MarkAsRead(mail.id),
+    ]
 
 
 def _map_to_create_task(pickup: PickupData) -> CreateTask:

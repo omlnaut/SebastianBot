@@ -4,6 +4,10 @@ from google import genai
 from pydantic import BaseModel
 
 from sebastian.clients.google.gemini.credentials import GeminiApiKey
+from sebastian.usecases.shared.gemini_exceptions import (
+    NonRetryableGeminiError,
+    TransientGeminiError,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -16,6 +20,23 @@ class GeminiClient:
     def __init__(self, credentials: GeminiApiKey) -> None:
         self._client = genai.Client(api_key=credentials.api_key)
 
+    def _is_transient_error(self, error: Exception) -> bool:
+        text = str(error).lower()
+        transient_markers = [
+            "overloaded",
+            "resource exhausted",
+            "resource_exhausted",
+            "rate limit",
+            "429",
+            "service unavailable",
+            "temporarily unavailable",
+            "try again later",
+            "deadline exceeded",
+            "timeout",
+            "unavailable",
+        ]
+        return any(marker in text for marker in transient_markers)
+
     def get_response(self, prompt: str, response_schema: type[T]) -> T:
         """
         Generate content using Gemini model with structured output.
@@ -27,15 +48,23 @@ class GeminiClient:
         Returns:
             Parsed response as an instance of the response_schema type
         """
-        response = self._client.models.generate_content(  # type: ignore
-            model="gemini-2.5-flash-lite",
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json",
-                "response_schema": response_schema,
-            },
-        )
+        try:
+            response = self._client.models.generate_content(  # type: ignore
+                model="gemini-2.5-flash-lite",
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": response_schema,
+                },
+            )
+        except Exception as e:
+            if self._is_transient_error(e):
+                raise TransientGeminiError(str(e)) from e
+            raise NonRetryableGeminiError(str(e)) from e
+
         if isinstance(response.parsed, response_schema):
             return response.parsed
 
-        raise Exception(f"Failed to parse response from Gemini model: {response.text}")
+        raise NonRetryableGeminiError(
+            f"Failed to parse response from Gemini model: {response.text}"
+        )

@@ -16,6 +16,9 @@ from sebastian.usecases.side_effects import (
     modify_mail_labels,
     send_telegram_message,
 )
+from sebastian.usecases.shared.gemini_exceptions import (
+    GeminiRetryConfiguration,
+)
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .clients import (
@@ -55,10 +58,12 @@ def resolve_mangaupdate_service(
 def resolve_delivery_ready(
     gmail_client: delivery_ready.GmailClient | None = None,
     gemini_client: delivery_ready.GeminiClient | None = None,
+    retry_configuration: GeminiRetryConfiguration | None = None,
 ) -> UseCaseHandler[delivery_ready.Request]:
     return delivery_ready.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
+        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
     )
 
 
@@ -99,10 +104,12 @@ def resolve_winsim(
 def resolve_return_tracker(
     gmail_client: return_tracker.GmailClient | None = None,
     gemini_client: return_tracker.GeminiClient | None = None,
+    retry_configuration: GeminiRetryConfiguration | None = None,
 ) -> UseCaseHandler[return_tracker.Request]:
     return return_tracker.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
+        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
     )
 
 

@@ -35,6 +35,11 @@ class GmailQueryBuilder:
             self._query_parts.append(f"subject:{text}")
         return self
 
+    def is_unread(self) -> "GmailQueryBuilder":
+        """Limit query to unread emails"""
+        self._query_parts.append("is:unread")
+        return self
+
     def after_date(self, date: datetime | int) -> "GmailQueryBuilder":
         """Add after: filter using Unix timestamp"""
         timestamp = to_timestamp(date)

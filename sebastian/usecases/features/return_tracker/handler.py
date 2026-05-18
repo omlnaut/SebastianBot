@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
@@ -12,6 +13,10 @@ from sebastian.domain.side_effects import (
     SendMessage,
 )
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
+from sebastian.usecases.shared.gemini_exceptions import (
+    GeminiRetryConfiguration,
+    TransientGeminiError,
+)
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import ReturnData, parse_return_email_html
@@ -22,41 +27,73 @@ __all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
 
 @dataclass
 class Request:
-    time_back: timedelta = timedelta(hours=1)
+    pass
 
 
 class Handler(UseCaseHandler[Request]):
-    def __init__(self, gmail_client: GmailClient, gemini_client: GeminiClient):
+    def __init__(
+        self,
+        gmail_client: GmailClient,
+        gemini_client: GeminiClient,
+        retry_configuration: GeminiRetryConfiguration,
+    ):
         self._gmail_client = gmail_client
         self._gemini_client = gemini_client
+        self._retry_configuration = retry_configuration
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
-        time_threshold = datetime.now(timezone.utc) - request.time_back
-
-        mails = self._fetch_return_emails(time_threshold)
+        now = datetime.now(timezone.utc)
+        mails = self._fetch_return_emails()
 
         effects: list[BaseActorEvent] = []
 
         for mail in mails:
+            age = _mail_age(mail, now)
+            if age is None:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Invalid internalDate: {mail.internalDate}",
+                    )
+                )
+                continue
+
+            if age > self._retry_configuration.retry_horizon:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Retry horizon exceeded ({age})",
+                    )
+                )
+                continue
+
             try:
-                return_data = parse_return_email_html(mail.content, self._gemini_client)
+                return_data = _parse_with_transient_retry(
+                    mail.content,
+                    self._gemini_client,
+                    self._retry_configuration.immediate_retry_delay_seconds,
+                )
                 effects.append(_map_to_create_task(return_data))
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
+            except TransientGeminiError as e:
+                logging.warning(
+                    f"Transient Gemini error for return mail {mail.id}. Keeping unread for retry. Error: {str(e)}"
+                )
             except Exception as e:
-                effects.append(SendMessage(message=f"Error parsing email: {str(e)}"))
+                effects.extend(
+                    _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
+                )
 
         return effects
 
-    def _fetch_return_emails(
-        self, time_threshold: datetime
-    ) -> Sequence[FullMailResponse]:
-        mails = fetch_return_emails(self._gmail_client, after_date=time_threshold)
+    def _fetch_return_emails(self) -> Sequence[FullMailResponse]:
+        mails = fetch_return_emails(self._gmail_client)
 
         return mails
 
 
 def fetch_return_emails(
-    gmail_client: GmailClient, after_date: datetime, before_date: datetime | None = None
+    gmail_client: GmailClient,
 ) -> Sequence[FullMailResponse]:
     """
     Fetch return emails from Amazon using the Gmail API, filtering by sender, subject, and date.
@@ -66,11 +103,8 @@ def fetch_return_emails(
         GmailQueryBuilder()
         .from_email("rueckgabe@amazon.de")
         .subject("Ihre Rücksendung von", exact=False)
-        .after_date(after_date)
+        .is_unread()
     )
-    if before_date:
-        query_parts.before_date(before_date)
-
     query = query_parts.build()
     mails = gmail_client.fetch_mails(query)
     logging.info(f"Fetched {len(mails)} return emails from Amazon")
@@ -82,6 +116,42 @@ def fetch_return_emails(
     ]
     logging.info(f"Filtered {len(filtered_mails)} accepted return emails from Amazon")
     return filtered_mails
+
+
+def _parse_with_transient_retry(
+    html: str,
+    gemini_client: GeminiClient,
+    immediate_retry_delay_seconds: float,
+) -> ReturnData:
+    try:
+        return parse_return_email_html(html, gemini_client)
+    except TransientGeminiError:
+        time.sleep(immediate_retry_delay_seconds)
+        return parse_return_email_html(html, gemini_client)
+
+
+def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
+    try:
+        timestamp = int(mail.internalDate) / 1000
+    except ValueError:
+        return None
+
+    received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    return now - received_at
+
+
+def _terminal_failure_effects(
+    mail: FullMailResponse, reason: str
+) -> list[BaseActorEvent]:
+    return [
+        SendMessage(
+            message=(
+                "ReturnTracker mail processing failed terminally. "
+                f"mail_id={mail.id}; reason={reason}"
+            )
+        ),
+        ModifyMailLabel.MarkAsRead(mail.id),
+    ]
 
 
 def _map_to_create_task(return_data: ReturnData) -> CreateTask:
