@@ -1,4 +1,5 @@
 import logging
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
@@ -12,12 +13,16 @@ from sebastian.domain.side_effects import (
     SendMessage,
 )
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
+from sebastian.usecases.shared.gemini_exceptions import TransientGeminiError
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import ReturnData, parse_return_email_html
 from .protocols import GeminiClient, GmailClient
 
 __all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
+
+_RETRY_HORIZON = timedelta(days=7)
+_IMMEDIATE_RETRY_DELAY_SECONDS = 2.0
 
 
 @dataclass
@@ -31,19 +36,47 @@ class Handler(UseCaseHandler[Request]):
         self._gemini_client = gemini_client
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
-        time_threshold = datetime.now(timezone.utc) - request.time_back
+        now = datetime.now(timezone.utc)
+        time_threshold = now - request.time_back
 
         mails = self._fetch_return_emails(time_threshold)
 
         effects: list[BaseActorEvent] = []
 
         for mail in mails:
+            age = _mail_age(mail, now)
+            if age is None:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Invalid internalDate: {mail.internalDate}",
+                    )
+                )
+                continue
+
+            if age > _RETRY_HORIZON:
+                effects.extend(
+                    _terminal_failure_effects(
+                        mail,
+                        reason=f"Retry horizon exceeded ({age})",
+                    )
+                )
+                continue
+
             try:
-                return_data = parse_return_email_html(mail.content, self._gemini_client)
+                return_data = _parse_with_transient_retry(
+                    mail.content, self._gemini_client
+                )
                 effects.append(_map_to_create_task(return_data))
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
+            except TransientGeminiError as e:
+                logging.warning(
+                    f"Transient Gemini error for return mail {mail.id}. Keeping unread for retry. Error: {str(e)}"
+                )
             except Exception as e:
-                effects.append(SendMessage(message=f"Error parsing email: {str(e)}"))
+                effects.extend(
+                    _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
+                )
 
         return effects
 
@@ -66,6 +99,7 @@ def fetch_return_emails(
         GmailQueryBuilder()
         .from_email("rueckgabe@amazon.de")
         .subject("Ihre Rücksendung von", exact=False)
+        .is_unread()
         .after_date(after_date)
     )
     if before_date:
@@ -82,6 +116,38 @@ def fetch_return_emails(
     ]
     logging.info(f"Filtered {len(filtered_mails)} accepted return emails from Amazon")
     return filtered_mails
+
+
+def _parse_with_transient_retry(html: str, gemini_client: GeminiClient) -> ReturnData:
+    try:
+        return parse_return_email_html(html, gemini_client)
+    except TransientGeminiError:
+        time.sleep(_IMMEDIATE_RETRY_DELAY_SECONDS)
+        return parse_return_email_html(html, gemini_client)
+
+
+def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
+    try:
+        timestamp = int(mail.internalDate) / 1000
+    except ValueError:
+        return None
+
+    received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    return now - received_at
+
+
+def _terminal_failure_effects(
+    mail: FullMailResponse, reason: str
+) -> list[BaseActorEvent]:
+    return [
+        SendMessage(
+            message=(
+                "ReturnTracker mail processing failed terminally. "
+                f"mail_id={mail.id}; reason={reason}"
+            )
+        ),
+        ModifyMailLabel.MarkAsRead(mail.id),
+    ]
 
 
 def _map_to_create_task(return_data: ReturnData) -> CreateTask:

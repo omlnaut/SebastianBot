@@ -20,6 +20,6 @@ from ..TriggerTimes import TriggerTimes
 def check_return_tracker(mytimer: TimerRequest) -> None:
     logging.info("ReturnTracker timer function processed a request.")
     perform_usecase_from_request(
-        return_tracker.Request(time_back=timedelta(hours=1)),
+        return_tracker.Request(time_back=timedelta(hours=48)),
         resolve_return_tracker,
     )
