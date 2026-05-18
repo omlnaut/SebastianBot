@@ -7,6 +7,7 @@ from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.side_effects import CreateTask, ModifyMailLabel, SendMessage
 from sebastian.usecases.features.delivery_ready.handler import Handler, Request
 from sebastian.usecases.shared.gemini_exceptions import (
+    GeminiRetryConfiguration,
     NonRetryableGeminiError,
     TransientGeminiError,
 )
@@ -51,11 +52,7 @@ class _FakeGeminiClient:
         return response_schema.model_validate(outcome)
 
 
-def test_delivery_ready_transient_retry_then_success(monkeypatch: Any):
-    monkeypatch.setattr(
-        "sebastian.usecases.features.delivery_ready.handler._IMMEDIATE_RETRY_DELAY_SECONDS",
-        0.0,
-    )
+def test_delivery_ready_transient_retry_then_success():
     gmail = _FakeGmailClient([_mail(datetime.now(timezone.utc))])
     gemini = _FakeGeminiClient(
         [
@@ -69,9 +66,11 @@ def test_delivery_ready_transient_retry_then_success(monkeypatch: Any):
         ]
     )
 
-    result = Handler(gmail_client=gmail, gemini_client=gemini).handle(
-        Request(hours_back=timedelta(hours=48))
-    )
+    result = Handler(
+        gmail_client=gmail,
+        gemini_client=gemini,
+        retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
+    ).handle(Request(hours_back=timedelta(hours=48)))
 
     assert gmail.last_query is not None
     assert "is:unread" in gmail.last_query
@@ -80,11 +79,7 @@ def test_delivery_ready_transient_retry_then_success(monkeypatch: Any):
     assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
 
 
-def test_delivery_ready_transient_retry_stays_unread(monkeypatch: Any):
-    monkeypatch.setattr(
-        "sebastian.usecases.features.delivery_ready.handler._IMMEDIATE_RETRY_DELAY_SECONDS",
-        0.0,
-    )
+def test_delivery_ready_transient_retry_stays_unread():
     gmail = _FakeGmailClient([_mail(datetime.now(timezone.utc))])
     gemini = _FakeGeminiClient(
         [
@@ -93,9 +88,11 @@ def test_delivery_ready_transient_retry_stays_unread(monkeypatch: Any):
         ]
     )
 
-    result = Handler(gmail_client=gmail, gemini_client=gemini).handle(
-        Request(hours_back=timedelta(hours=48))
-    )
+    result = Handler(
+        gmail_client=gmail,
+        gemini_client=gemini,
+        retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
+    ).handle(Request(hours_back=timedelta(hours=48)))
 
     assert gemini.calls == 2
     assert result == []
@@ -105,9 +102,11 @@ def test_delivery_ready_non_retryable_marks_read_and_escalates():
     gmail = _FakeGmailClient([_mail(datetime.now(timezone.utc))])
     gemini = _FakeGeminiClient([NonRetryableGeminiError("schema mismatch")])
 
-    result = Handler(gmail_client=gmail, gemini_client=gemini).handle(
-        Request(hours_back=timedelta(hours=48))
-    )
+    result = Handler(
+        gmail_client=gmail,
+        gemini_client=gemini,
+        retry_configuration=GeminiRetryConfiguration(),
+    ).handle(Request(hours_back=timedelta(hours=48)))
 
     assert len([e for e in result if isinstance(e, SendMessage)]) == 1
     assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
@@ -118,9 +117,11 @@ def test_delivery_ready_old_mail_marks_read_and_escalates_without_gemini_call():
     gmail = _FakeGmailClient([old_mail])
     gemini = _FakeGeminiClient([])
 
-    result = Handler(gmail_client=gmail, gemini_client=gemini).handle(
-        Request(hours_back=timedelta(hours=48))
-    )
+    result = Handler(
+        gmail_client=gmail,
+        gemini_client=gemini,
+        retry_configuration=GeminiRetryConfiguration(),
+    ).handle(Request(hours_back=timedelta(hours=48)))
 
     assert gemini.calls == 0
     assert len([e for e in result if isinstance(e, SendMessage)]) == 1

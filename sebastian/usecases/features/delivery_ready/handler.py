@@ -14,6 +14,7 @@ from sebastian.domain.side_effects import (
 )
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.shared.gemini_exceptions import (
+    GeminiRetryConfiguration,
     TransientGeminiError,
 )
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -21,10 +22,12 @@ from sebastian.usecases.usecase_handler import UseCaseHandler
 from .parsing import PickupData, parse_dhl_pickup_email_html
 from .protocols import GeminiClient, GmailClient
 
-__all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
-
-_RETRY_HORIZON = timedelta(days=7)
-_IMMEDIATE_RETRY_DELAY_SECONDS = 2.0
+__all__ = [
+    "Request",
+    "Handler",
+    "GmailClient",
+    "GeminiClient",
+]
 
 
 @dataclass
@@ -33,9 +36,15 @@ class Request:
 
 
 class Handler(UseCaseHandler[Request]):
-    def __init__(self, gmail_client: GmailClient, gemini_client: GeminiClient):
+    def __init__(
+        self,
+        gmail_client: GmailClient,
+        gemini_client: GeminiClient,
+        retry_configuration: GeminiRetryConfiguration,
+    ):
         self.gmail_client = gmail_client
         self.gemini_client = gemini_client
+        self.retry_configuration = retry_configuration
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         now = datetime.now(timezone.utc)
@@ -57,7 +66,7 @@ class Handler(UseCaseHandler[Request]):
                 )
                 continue
 
-            if age > _RETRY_HORIZON:
+            if age > self.retry_configuration.retry_horizon:
                 effects.extend(
                     _terminal_failure_effects(
                         mail,
@@ -68,7 +77,9 @@ class Handler(UseCaseHandler[Request]):
 
             try:
                 pickup_data = _parse_with_transient_retry(
-                    mail.content, self.gemini_client
+                    mail.content,
+                    self.gemini_client,
+                    self.retry_configuration.immediate_retry_delay_seconds,
                 )
                 effects.append(_map_to_create_task(pickup_data))
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
@@ -98,11 +109,15 @@ def _fetch_pickup_mails(
     return gmail_client.fetch_mails(query)
 
 
-def _parse_with_transient_retry(html: str, gemini_client: GeminiClient) -> PickupData:
+def _parse_with_transient_retry(
+    html: str,
+    gemini_client: GeminiClient,
+    immediate_retry_delay_seconds: float,
+) -> PickupData:
     try:
         return parse_dhl_pickup_email_html(html, gemini_client)
     except TransientGeminiError:
-        time.sleep(_IMMEDIATE_RETRY_DELAY_SECONDS)
+        time.sleep(immediate_retry_delay_seconds)
         return parse_dhl_pickup_email_html(html, gemini_client)
 
 
