@@ -13,8 +13,8 @@ from ..TriggerTimes import TriggerTimes
 @app.timer_trigger(
     schedule=TriggerTimes.DeliveryReady,
     arg_name="mytimer",
-    run_on_startup=True,
-    use_monitor=True,
+    run_on_startup=False,
+    use_monitor=False,
 )
 def check_delivery_ready(
     mytimer: TimerRequest,
