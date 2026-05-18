@@ -32,7 +32,7 @@ __all__ = [
 
 @dataclass
 class Request:
-    hours_back: timedelta = timedelta(hours=1)
+    pass
 
 
 class Handler(UseCaseHandler[Request]):
@@ -48,9 +48,7 @@ class Handler(UseCaseHandler[Request]):
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         now = datetime.now(timezone.utc)
-        time_threshold = now - request.hours_back
-
-        mails = _fetch_pickup_mails(self.gmail_client, time_threshold)
+        mails = _fetch_pickup_mails(self.gmail_client)
         logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
         effects: list[BaseActorEvent] = []
@@ -95,15 +93,12 @@ class Handler(UseCaseHandler[Request]):
         return effects
 
 
-def _fetch_pickup_mails(
-    gmail_client: GmailClient, time_threshold: datetime
-) -> Sequence[FullMailResponse]:
+def _fetch_pickup_mails(gmail_client: GmailClient) -> Sequence[FullMailResponse]:
     query = (
         GmailQueryBuilder()
         .from_email("pickup-point.amazon.de")
         .subject("Paket zur Abholung bereit", exact=True)
         .is_unread()
-        .after_date(time_threshold)
         .build()
     )
     return gmail_client.fetch_mails(query)

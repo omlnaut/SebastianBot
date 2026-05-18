@@ -27,7 +27,7 @@ __all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
 
 @dataclass
 class Request:
-    time_back: timedelta = timedelta(hours=1)
+    pass
 
 
 class Handler(UseCaseHandler[Request]):
@@ -43,9 +43,7 @@ class Handler(UseCaseHandler[Request]):
 
     def handle(self, request: Request) -> Sequence[BaseActorEvent]:
         now = datetime.now(timezone.utc)
-        time_threshold = now - request.time_back
-
-        mails = self._fetch_return_emails(time_threshold)
+        mails = self._fetch_return_emails()
 
         effects: list[BaseActorEvent] = []
 
@@ -88,16 +86,14 @@ class Handler(UseCaseHandler[Request]):
 
         return effects
 
-    def _fetch_return_emails(
-        self, time_threshold: datetime
-    ) -> Sequence[FullMailResponse]:
-        mails = fetch_return_emails(self._gmail_client, after_date=time_threshold)
+    def _fetch_return_emails(self) -> Sequence[FullMailResponse]:
+        mails = fetch_return_emails(self._gmail_client)
 
         return mails
 
 
 def fetch_return_emails(
-    gmail_client: GmailClient, after_date: datetime, before_date: datetime | None = None
+    gmail_client: GmailClient, before_date: datetime | None = None
 ) -> Sequence[FullMailResponse]:
     """
     Fetch return emails from Amazon using the Gmail API, filtering by sender, subject, and date.
@@ -108,7 +104,6 @@ def fetch_return_emails(
         .from_email("rueckgabe@amazon.de")
         .subject("Ihre Rücksendung von", exact=False)
         .is_unread()
-        .after_date(after_date)
     )
     if before_date:
         query_parts.before_date(before_date)

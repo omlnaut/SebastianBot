@@ -71,7 +71,7 @@ def test_return_tracker_transient_retry_then_success():
         gmail_client=gmail,
         gemini_client=gemini,
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
-    ).handle(Request(time_back=timedelta(hours=48)))
+    ).handle(Request())
 
     assert gmail.last_query is not None
     assert "is:unread" in gmail.last_query
@@ -89,7 +89,7 @@ def test_return_tracker_non_retryable_marks_read_and_escalates():
         gmail_client=gmail,
         gemini_client=gemini,
         retry_configuration=GeminiRetryConfiguration(),
-    ).handle(Request(time_back=timedelta(hours=48)))
+    ).handle(Request())
 
     assert len([e for e in result if isinstance(e, SendMessage)]) == 1
     assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
@@ -107,7 +107,7 @@ def test_return_tracker_old_mail_marks_read_and_escalates_without_gemini_call():
         gmail_client=gmail,
         gemini_client=gemini,
         retry_configuration=GeminiRetryConfiguration(),
-    ).handle(Request(time_back=timedelta(hours=48)))
+    ).handle(Request())
 
     assert gemini.calls == 0
     assert len([e for e in result if isinstance(e, SendMessage)]) == 1

@@ -1,5 +1,4 @@
 import logging
-from datetime import timedelta
 
 from azure.functions import TimerRequest
 
@@ -14,14 +13,12 @@ from ..TriggerTimes import TriggerTimes
 @app.timer_trigger(
     schedule=TriggerTimes.DeliveryReady,
     arg_name="mytimer",
-    run_on_startup=False,
-    use_monitor=False,
+    run_on_startup=True,
+    use_monitor=True,
 )
 def check_delivery_ready(
     mytimer: TimerRequest,
 ) -> None:
     logging.info("DeliveryReady timer function processed a request.")
 
-    perform_usecase_from_request(
-        delivery_ready.Request(hours_back=timedelta(hours=48)), resolve_delivery_ready
-    )
+    perform_usecase_from_request(delivery_ready.Request(), resolve_delivery_ready)
