@@ -5,9 +5,16 @@
 		"context": ".."
 	},
 	"features": {
+		"ghcr.io/devcontainers/features/common-utils:1": {
+			"configureZshAsDefaultShell": true
+		},
 		"ghcr.io/devcontainers/features/azure-cli:1": {},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
 	},
+	"mounts": [
+		"source=${localEnv:USERPROFILE}/.pi,target=/root/.pi,type=bind"
+	],
+	"remoteUser": "root",
 	"runArgs": [
 		"--env-file",
 		"${localWorkspaceFolder}/.env"
@@ -39,5 +46,6 @@
 			}
 		}
 	},
-	"postCreateCommand": "pre-commit install"
+	"postCreateCommand": "pre-commit install",
+	"postStartCommand": "pi --version"
 }
