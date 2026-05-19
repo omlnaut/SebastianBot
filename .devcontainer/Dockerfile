@@ -1,4 +1,4 @@
-FROM python:3.12-bullseye
+FROM python:3.12-bookworm
 
 # Install Node.js (required for Pi)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
