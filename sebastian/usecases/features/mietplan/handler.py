@@ -4,8 +4,8 @@ from datetime import timedelta
 from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
-from sebastian.domain.mietplan import File, Folder
-from sebastian.domain.side_effects import BaseActorEvent, SendMessage
+from sebastian.domain.mietplan import MietplanFile, MietplanFolder
+from sebastian.domain.side_effect import SideEffect, SendMessage
 from sebastian.usecases.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -28,13 +28,13 @@ class Handler(UseCaseHandler[Request]):
         self.google_drive_client = google_drive_client
         self.gdrive_folder_id = gdrive_folder_id
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         """
         Checks for new files in the mietplan source, and if they are newer than max_file_age,
         uploads them to Google Drive.
 
         Returns:
-            Sequence[BaseActorEvent]: Returns a list of base actor events (e.g. SendMessage).
+            Sequence[SideEffect]: Returns a list of base actor events (e.g. SendMessage).
         """
         logging.info("Starting to process new mietplan files.")
 
@@ -53,13 +53,13 @@ class Handler(UseCaseHandler[Request]):
         message = _create_message(newly_uploaded_files)
         return [SendMessage(message=message)]
 
-    def _process_new_file(self, file: File, folder: Folder) -> str:
+    def _process_new_file(self, file: MietplanFile, folder: MietplanFolder) -> str:
         logging.info(f"  Found new file: {file.name}")
         file_content = self._download_file_from_mietplan(file)
         upload_path = self._upload_to_gdrive(file, folder, file_content)
         return upload_path
 
-    def _get_all_new_files(self, max_file_age: timedelta) -> list[tuple[File, Folder]]:
+    def _get_all_new_files(self, max_file_age: timedelta) -> list[tuple[MietplanFile, MietplanFolder]]:
         return [
             (file, folder)
             for folder in self.mietplan_client.walk_from_top_folder()
@@ -67,11 +67,11 @@ class Handler(UseCaseHandler[Request]):
             if is_within_timedelta(file.creation_date, max_file_age)
         ]
 
-    def _download_file_from_mietplan(self, file: File) -> bytes:
+    def _download_file_from_mietplan(self, file: MietplanFile) -> bytes:
         logging.info("    Downloading...")
         return self.mietplan_client.download_file(file.url)
 
-    def _upload_to_gdrive(self, file: File, folder: Folder, content: bytes) -> str:
+    def _upload_to_gdrive(self, file: MietplanFile, folder: MietplanFolder, content: bytes) -> str:
         upload_path = _build_upload_path(file, folder)
         upload_request = UploadFileRequest(
             filename=upload_path,
@@ -93,5 +93,5 @@ def _create_message(uploaded_files: list[str]) -> str:
     return message
 
 
-def _build_upload_path(file: File, folder: Folder) -> str:
+def _build_upload_path(file: MietplanFile, folder: MietplanFolder) -> str:
     return f"{'/'.join(folder.path)}/{file.name}".strip("/")

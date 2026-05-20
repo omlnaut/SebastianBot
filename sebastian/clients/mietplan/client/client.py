@@ -2,7 +2,7 @@ from typing import Generator
 
 import requests
 
-from sebastian.domain.mietplan import Folder
+from sebastian.domain.mietplan import MietplanFolder
 
 from ..credentials import MietplanCredentials
 from . import _download_file, _login, _walk_from_top_folder
@@ -15,7 +15,7 @@ class MietplanClient:
         self._session = requests.Session()
         _login.login(self._session, credentials.username, credentials.password)
 
-    def walk_from_top_folder(self) -> Generator[Folder, None, None]:
+    def walk_from_top_folder(self) -> Generator[MietplanFolder, None, None]:
         yield from _walk_from_top_folder.walk_from_top_folder(
             self._session, self._MAIN_FOLDER_ID
         )
