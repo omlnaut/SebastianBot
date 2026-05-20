@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Protocol
+from typing import Protocol, Self
 
 from sebastian.domain.task import TaskTags
 
@@ -12,10 +12,17 @@ _DUE_DATE_PREFIX = "Bis:"
 
 
 class PickupDataLike(Protocol):
-    item: str
-    pickup_location: str
-    due_date: date | None
-    tracking_number: str | None
+    @property
+    def item(self) -> str: ...
+
+    @property
+    def pickup_location(self) -> str: ...
+
+    @property
+    def due_date(self) -> date | None: ...
+
+    @property
+    def tracking_number(self) -> str | None: ...
 
 
 @dataclass(frozen=True)
@@ -27,7 +34,7 @@ class DeliveryReadyTaskNote:
     has_delivery_ready_tag: bool
 
     @classmethod
-    def from_pickup_data(cls, pickup_data: PickupDataLike) -> "DeliveryReadyTaskNote":
+    def from_pickup_data(cls, pickup_data: PickupDataLike) -> Self:
         tracking_number = pickup_data.tracking_number
         return cls(
             item=pickup_data.item,
@@ -38,7 +45,7 @@ class DeliveryReadyTaskNote:
         )
 
     @classmethod
-    def from_text(cls, text: str | None) -> "DeliveryReadyTaskNote":
+    def from_text(cls, text: str | None) -> Self:
         if text is None:
             return cls(
                 item=None,
@@ -56,20 +63,26 @@ class DeliveryReadyTaskNote:
 
         for line in lines:
             if line.startswith(_PICKUP_LOCATION_PREFIX):
-                pickup_location = line.removeprefix(_PICKUP_LOCATION_PREFIX).strip() or None
+                pickup_location = (
+                    line.removeprefix(_PICKUP_LOCATION_PREFIX).strip() or None
+                )
                 continue
 
             if line.startswith(_DUE_DATE_PREFIX):
                 raw_due_date = line.removeprefix(_DUE_DATE_PREFIX).strip()
                 try:
-                    due_date = date.fromisoformat("-".join(reversed(raw_due_date.split("."))))
+                    due_date = date.fromisoformat(
+                        "-".join(reversed(raw_due_date.split(".")))
+                    )
                 except ValueError:
                     due_date = None
                 continue
 
             if line.startswith(_TRACKING_PREFIX):
                 raw_tracking_number = line.removeprefix(_TRACKING_PREFIX).strip()
-                tracking_number = raw_tracking_number.upper() if raw_tracking_number else None
+                tracking_number = (
+                    raw_tracking_number.upper() if raw_tracking_number else None
+                )
                 continue
 
             if line == TaskTags.DeliveryReady.value:
