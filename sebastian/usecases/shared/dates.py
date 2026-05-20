@@ -1,8 +1,6 @@
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from sebastian.domain.shared import TimeRange
-
 
 def get_end_of_day(day: datetime | None = None) -> datetime:
     """
