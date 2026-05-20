@@ -1,4 +1,7 @@
 {
   "sessionDir": ".pi/sessions",
-  "shellPath": "/bin/bash"
+  "shellPath": "/bin/bash",
+  "packages": [
+    "extensions/python-lsp/src/index.ts"
+  ]
 }
