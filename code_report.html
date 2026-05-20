@@ -1,0 +1,259 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture Deepening Review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  </script>
+  <style>
+    .mass-box { border: 2px solid #334155; border-radius: 12px; padding: 10px; background: #f8fafc; }
+    .mass-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #1e293b; }
+    .mass-note { font-size: 12px; color: #475569; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+  <main class="max-w-7xl mx-auto p-8 space-y-8">
+    <header class="bg-white rounded-2xl shadow p-6">
+      <h1 class="text-3xl font-bold">Architecture Review: Deepening Opportunities</h1>
+      <p class="mt-2 text-slate-700">Focus: turn shallow Module slices into deep Module slices for testability and AI-navigability.</p>
+      <p class="mt-2 text-sm text-slate-600">Reviewed domain language from <code>UBIQUITOUS_LANGUAGE.md</code> and ticket history in <code>tickets/align_ubiquitous_language.md</code>.</p>
+    </header>
+
+    <section class="grid gap-6">
+      <article class="bg-white rounded-2xl shadow p-6 space-y-4 border-l-8 border-emerald-500">
+        <div class="flex items-start justify-between gap-4">
+          <h2 class="text-2xl font-semibold">Candidate 1 — Deepen the Delivery Notification / Return Notification mail-processing Module</h2>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">Strong</span>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Files</h3>
+          <ul class="list-disc ml-6 text-sm">
+            <li>sebastian/usecases/features/delivery_ready/handler.py</li>
+            <li>sebastian/usecases/features/return_tracker/handler.py</li>
+            <li>sebastian/usecases/features/delivery_ready/parsing.py</li>
+            <li>sebastian/usecases/features/return_tracker/parsing.py</li>
+            <li>tests/unit_tests/usecases/test_delivery_ready_retry.py</li>
+            <li>tests/unit_tests/usecases/test_return_tracker_retry.py</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Problem</h3>
+          <p class="text-sm">Both UseCase handlers implement nearly identical retry horizon checks, transient retry, terminal failure Side Effect emission, and mail age logic. The Interface for each Module is broad (caller must know retry config, mail age policy, parsing failure policy) while the Implementation remains duplicated. This is shallow Depth and low Locality: a bug fix in Delivery Notification flow must be copied into Return Data flow.</p>
+          <p class="text-sm mt-1"><strong>Deletion test:</strong> deleting one handler’s policy helpers does not remove complexity; it reappears in the sibling handler almost line-for-line.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Solution</h3>
+          <p class="text-sm">Create one deep Module for “mail-to-domain extraction with retry horizon policy.” Keep Delivery Notification parsing and Return Data parsing as separate Adapter choices plugged at a Seam in that Module. The Implementation owns timing, retry, terminal escalation, and mark-as-read policy once.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Benefits</h3>
+          <p class="text-sm">Higher Leverage: each caller only supplies domain-specific extraction rules and mapping to Task Creation. Higher Locality: retry and failure behaviour lives in one place. Tests improve because the Interface is the test surface: one shared policy test matrix covers both Delivery Notification and Return Data paths with fewer duplicated fake clients.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="mass-box">
+            <div class="mass-title">Before</div>
+            <div class="mermaid text-xs">
+flowchart TD
+  A["Delivery Notification Handler"]
+  A1["mail_age helper"]
+  A2["transient retry helper"]
+  A3["terminal failure helper"]
+  B["Return Notification Handler"]
+  B1["mail_age helper"]
+  B2["transient retry helper"]
+  B3["terminal failure helper"]
+  A --> A1
+  A --> A2
+  A --> A3
+  B --> B1
+  B --> B2
+  B --> B3
+  classDef dup fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d;
+  class A1,A2,A3,B1,B2,B3 dup;
+            </div>
+            <p class="mass-note mt-2">Two shallow Modules expose similar Interface details and duplicate Implementation policy.</p>
+          </div>
+          <div class="mass-box">
+            <div class="mass-title">After</div>
+            <div class="mermaid text-xs">
+flowchart TD
+  Core["Deep Mail Processing Module<br/>(owns retry horizon + terminal policy)"]
+  D["Delivery Notification Adapter"]
+  R["Return Notification Adapter"]
+  D --> Core
+  R --> Core
+  Core --> E1["Task Creation Side Effect"]
+  Core --> E2["Mail Modification Side Effect"]
+  Core --> E3["Message Dispatch Side Effect"]
+  classDef deep fill:#dcfce7,stroke:#166534,color:#14532d;
+  class Core deep;
+            </div>
+            <p class="mass-note mt-2">One Seam with two Adapter choices makes it a real Seam and increases Depth.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="bg-white rounded-2xl shadow p-6 space-y-4 border-l-8 border-amber-500">
+        <div class="flex items-start justify-between gap-4">
+          <h2 class="text-2xl font-semibold">Candidate 2 — Deepen the trigger/orchestration Module around UseCase execution and Side Effect dispatch</h2>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">Worth exploring</span>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Files</h3>
+          <ul class="list-disc ml-6 text-sm">
+            <li>cloud/functions/features/*.py</li>
+            <li>cloud/functions/side_effects/*/function.py</li>
+            <li>cloud/functions/side_effects/shared.py</li>
+            <li>cloud/dependencies/usecases.py</li>
+            <li>function_app.py</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Problem</h3>
+          <p class="text-sm">UseCase wiring is spread across many tiny Modules: trigger function files, resolver functions, SIDE_EFFECT_MAP, and per-event request builders. The Interface knowledge is fragmented (where to add a new UseCase, where to map Side Effect, where to add trigger). Each file is shallow and mostly pass-through Implementation.</p>
+          <p class="text-sm mt-1"><strong>Deletion test:</strong> deleting a single wrapper Module rarely removes complexity; callers must recreate almost identical glue in another file.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Solution</h3>
+          <p class="text-sm">Concentrate orchestration in one deeper Module that owns registration of triggers, request translation, handler resolution, and Side Effect fan-out. Keep concrete trigger sources (Timer, EventGrid) as Adapter Modules attached to a single Seam.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Benefits</h3>
+          <p class="text-sm">Leverage improves for maintainers and AI navigation: adding a new UseCase follows one path instead of hunting several shallow files. Locality improves because failure handling and dispatch behaviour are centralized. Tests can target one Interface contract for orchestration rather than file-by-file smoke checks.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="mass-box">
+            <div class="mass-title">Before</div>
+            <div class="mermaid text-xs">
+flowchart LR
+  T1["Timer trigger file"]
+  T2["EventGrid trigger file"]
+  R["resolve functions"]
+  S["shared runner"]
+  M["SIDE_EFFECT_MAP"]
+  U["UseCase Handler"]
+  T1 --> S
+  T2 --> S
+  T2 --> R
+  T1 --> R
+  S --> U
+  U --> M
+            </div>
+            <p class="mass-note mt-2">Multiple shallow Modules split one concept: orchestration.</p>
+          </div>
+          <div class="mass-box">
+            <div class="mass-title">After</div>
+            <svg viewBox="0 0 520 220" class="w-full h-56">
+              <rect x="20" y="25" width="130" height="45" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+              <text x="35" y="53" font-size="12" fill="#0f172a">Timer Adapter</text>
+              <rect x="20" y="95" width="130" height="45" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+              <text x="35" y="123" font-size="12" fill="#0f172a">EventGrid Adapter</text>
+
+              <rect x="180" y="55" width="220" height="95" rx="12" fill="#dcfce7" stroke="#166534" stroke-width="2"/>
+              <text x="195" y="80" font-size="13" font-weight="700" fill="#14532d">Deep Orchestration Module</text>
+              <text x="195" y="102" font-size="11" fill="#14532d">- request translation</text>
+              <text x="195" y="118" font-size="11" fill="#14532d">- handler resolution</text>
+              <text x="195" y="134" font-size="11" fill="#14532d">- Side Effect dispatch</text>
+
+              <rect x="425" y="70" width="80" height="35" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+              <text x="435" y="92" font-size="11" fill="#0f172a">UseCase</text>
+              <rect x="425" y="115" width="80" height="35" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+              <text x="432" y="137" font-size="11" fill="#0f172a">Side Effect</text>
+
+              <line x1="150" y1="47" x2="180" y2="85" stroke="#334155" marker-end="url(#a)"/>
+              <line x1="150" y1="117" x2="180" y2="115" stroke="#334155" marker-end="url(#a)"/>
+              <line x1="400" y1="95" x2="425" y2="87" stroke="#334155" marker-end="url(#a)"/>
+              <line x1="400" y1="125" x2="425" y2="132" stroke="#334155" marker-end="url(#a)"/>
+              <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6 z" fill="#334155"/></marker></defs>
+            </svg>
+            <p class="mass-note mt-2">One deep Module gives a single Seam for trigger Adapter attachment.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="bg-white rounded-2xl shadow p-6 space-y-4 border-l-8 border-sky-500">
+        <div class="flex items-start justify-between gap-4">
+          <h2 class="text-2xl font-semibold">Candidate 3 — Deepen the Task note contract Module for Tracking Number handling</h2>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold bg-sky-100 text-sky-800">Strong</span>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Files</h3>
+          <ul class="list-disc ml-6 text-sm">
+            <li>sebastian/usecases/features/delivery_ready/handler.py</li>
+            <li>sebastian/usecases/features/check_parcel_received/handler.py</li>
+            <li>sebastian/domain/task.py</li>
+            <li>tests/unit_tests/usecases/ (no direct tests for this cross-Module contract)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Problem</h3>
+          <p class="text-sm">Tracking Number contract is implicit string formatting: Delivery Notification Task Creation writes free-text notes, then CheckParcelReceived parses with regex. Interface invariants (line prefix, uppercase format, Task Tag placement) are not explicit. This Seam leaks implementation details across UseCase Modules and produces fragile tests.</p>
+          <p class="text-sm mt-1"><strong>Deletion test:</strong> remove the regex parser and every caller would need to re-encode/decode the same note grammar manually.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Solution</h3>
+          <p class="text-sm">Introduce one deep Module that owns the Delivery-ready Task note grammar: encode from Pickup Data and decode to Tracking Number + Task Tag facts. Delivery Notification and CheckParcelReceived become Adapter Modules using this Seam rather than hand-rolled strings.</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold">Benefits</h3>
+          <p class="text-sm">Leverage: callers get validated note construction and parsing without knowing line format rules. Locality: grammar changes happen once. Tests improve via round-trip property tests at the Interface test surface, plus focused scenario tests for malformed notes.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="mass-box">
+            <div class="mass-title">Before</div>
+            <div class="mermaid text-xs">
+sequenceDiagram
+  participant DR as Delivery Notification Handler
+  participant N as Task notes text
+  participant CPR as CheckParcelReceived Handler
+  DR->>N: manual string concat "Tracking ..." plus Task Tag
+  CPR->>N: regex search for tracking pattern
+  Note over DR,CPR: Shared Interface is implicit and brittle
+            </div>
+          </div>
+          <div class="mass-box">
+            <div class="mass-title">After</div>
+            <div class="mermaid text-xs">
+flowchart LR
+  P["Pickup Data"] --> C["Deep Task Note Contract Module"]
+  C --> N["Task notes"]
+  N --> C
+  C --> T["Tracking Number facts"]
+  C --> G["Task Tag facts"]
+  C --> H["CheckParcelReceived"]
+  classDef deep fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a;
+  class C deep;
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-6 border-t-4 border-indigo-500">
+      <h2 class="text-2xl font-semibold">Top recommendation</h2>
+      <p class="mt-2 text-sm">Start with <strong>Candidate 1</strong>. It has the best leverage/locality ratio right now: duplicated Delivery Notification and Return Notification policy logic already diverges easily, and this deepening creates immediate shared tests without changing domain behaviour.</p>
+      <p class="mt-2 text-sm">Candidate 3 is the next best follow-up because it hardens the Tracking Number seam that links Task Creation and Task Completion flows.</p>
+    </section>
+  </main>
+</body>
+</html>
