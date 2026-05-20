@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
+from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
 from sebastian.domain.gmail import FullMailResponse
-from sebastian.domain.task import TaskTags, TaskLists
+from sebastian.domain.task import TaskLists
 from sebastian.domain.side_effect import (
     SideEffect,
     CreateTask,
@@ -142,15 +143,5 @@ def _terminal_failure_effects(
 
 def _map_to_create_task(pickup: PickupData) -> CreateTask:
     title = f"Paket abholen: {pickup.item}"
-
-    notes = ""
-    if pickup.item:
-        notes += f"{pickup.item}"
-    notes += f"\nAbholort: {pickup.pickup_location}"
-    if pickup.due_date:
-        notes += f"\nBis: {pickup.due_date.strftime('%d.%m.%Y')}"
-    if pickup.tracking_number:
-        notes += f"\nTracking: {pickup.tracking_number}"
-    notes += f"\n{TaskTags.DeliveryReady.value}"
-
+    notes = DeliveryReadyTaskNote.from_pickup_data(pickup).to_text()
     return CreateTask(title=title, notes=notes, tasklist=TaskLists.Default)

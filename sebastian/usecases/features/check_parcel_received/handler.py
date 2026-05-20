@@ -1,17 +1,15 @@
 import logging
-import re
 from dataclasses import dataclass
 from typing import Sequence
 
+from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
 from sebastian.domain.side_effect import SideEffect, CompleteTask, SendMessage
-from sebastian.domain.task import Task, TaskTags, TaskLists
+from sebastian.domain.task import Task, TaskLists
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import DhlClient, TaskClient
 
 __all__ = ["Request", "Handler", "TaskClient", "DhlClient"]
-
-_TRACKING_PATTERN = re.compile(r"Tracking:\s*([A-Z0-9]+)", flags=re.IGNORECASE)
 
 
 @dataclass
@@ -30,41 +28,42 @@ class Handler(UseCaseHandler[Request]):
 
     def handle(self, request: Request) -> Sequence[SideEffect]:
         tasks = self._fetch_open_tasks(request.tasklists)
-        delivery_ready_tasks = [task for task in tasks if _is_delivery_ready_task(task)]
-        logging.info(
-            f"CheckParcelReceived: {len(tasks)} open tasks, "
-            f"{len(delivery_ready_tasks)} tagged with {TaskTags.DeliveryReady.value}"
-        )
-
         effects: list[SideEffect] = []
+        delivery_ready_task_count = 0
 
-        for task in delivery_ready_tasks:
-            tracking_number = _extract_tracking_number(task.notes)
-            if tracking_number is None:
+        for task in tasks:
+            note = DeliveryReadyTaskNote.from_text(task.notes)
+            if not note.has_delivery_ready_tag:
+                continue
+
+            delivery_ready_task_count += 1
+            if note.tracking_number is None:
                 logging.info(
                     f"CheckParcelReceived: task_id={task.id} has no tracking number, skipping"
                 )
                 continue
 
             try:
-                if self._dhl_client.is_retrieved(tracking_number):
-                    effects.append(
-                        CompleteTask(tasklist=task.tasklist, task_id=task.id)
-                    )
+                if self._dhl_client.is_retrieved(note.tracking_number):
+                    effects.append(CompleteTask(tasklist=task.tasklist, task_id=task.id))
                     logging.info(
                         f"CheckParcelReceived: task_id={task.id} marked complete "
-                        f"for tracking_number={tracking_number}"
+                        f"for tracking_number={note.tracking_number}"
                     )
             except Exception as exc:
                 effects.append(
                     SendMessage(
                         message=(
                             "CheckParcelReceived: failed DHL check for "
-                            f"task_id={task.id}, tracking_number={tracking_number}: {str(exc)}"
+                            f"task_id={task.id}, tracking_number={note.tracking_number}: {str(exc)}"
                         )
                     )
                 )
 
+        logging.info(
+            f"CheckParcelReceived: {len(tasks)} open tasks, "
+            f"{delivery_ready_task_count} tagged with delivery-ready contract"
+        )
         return effects
 
     def _fetch_open_tasks(self, tasklists: tuple[TaskLists, ...]) -> list[Task]:
@@ -73,17 +72,3 @@ class Handler(UseCaseHandler[Request]):
             tasks.extend(self._task_client.get_tasks(tasklist=tasklist))
         return tasks
 
-
-def _is_delivery_ready_task(task: Task) -> bool:
-    return task.notes is not None and TaskTags.DeliveryReady.value in task.notes
-
-
-def _extract_tracking_number(notes: str | None) -> str | None:
-    if notes is None:
-        return None
-
-    match = _TRACKING_PATTERN.search(notes)
-    if match is None:
-        return None
-
-    return match.group(1).upper()
