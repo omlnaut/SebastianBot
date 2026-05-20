@@ -6,8 +6,8 @@ import pytest
 from cloud.dependencies.clients import resolve_google_task_client
 from sebastian.clients.dhl.client import DhlClient
 from sebastian.clients.google.task.client import GoogleTaskClient
-from sebastian.domain.date_filter import DateFilter
-from sebastian.domain.task import TaskLabels, TaskLists
+from sebastian.domain.shared import DateFilter
+from sebastian.domain.task import TaskTags, TaskLists
 
 _TRACKING_PATTERN = re.compile(r"Tracking:\s*([A-Z0-9]+)")
 
@@ -42,7 +42,7 @@ def _last_complete_month_range(
     return start, end
 
 
-def _extract_tracking_id(notes: str | None) -> str | None:
+def _extract_tracking_number(notes: str | None) -> str | None:
     if notes is None:
         return None
     match = _TRACKING_PATTERN.search(notes)
@@ -65,7 +65,7 @@ def test_has_packstation_status_from_last_complete_month_delivery_ready_tasks(
     completed_delivery_ready_tasks = [
         task
         for task in tasks
-        if task.notes is not None and TaskLabels.DeliveryReady.value in task.notes
+        if task.notes is not None and TaskTags.DeliveryReady.value in task.notes
     ]
 
     assert completed_delivery_ready_tasks, (
@@ -74,10 +74,10 @@ def test_has_packstation_status_from_last_complete_month_delivery_ready_tasks(
     )
 
     target_task = completed_delivery_ready_tasks[0]
-    tracking_id = _extract_tracking_id(target_task.notes)
+    tracking_number = _extract_tracking_number(target_task.notes)
 
-    assert tracking_id is not None, (
+    assert tracking_number is not None, (
         "No tracking number found in completed DELIVERY_READY tasks from the "
         "last complete month. Expected notes to include 'Tracking: <id>'."
     )
-    assert dhl_client.is_retrieved(tracking_id) is True
+    assert dhl_client.is_retrieved(tracking_number) is True

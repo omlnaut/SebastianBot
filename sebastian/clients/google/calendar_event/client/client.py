@@ -3,7 +3,7 @@ from datetime import date
 from google.oauth2.credentials import Credentials
 
 from sebastian.domain.calendar import Calendar, CalendarEvent, Calendars
-from sebastian.domain.date_filter import DateFilter
+from sebastian.domain.shared import DateFilter
 
 from .service_wrapper import CalendarServiceWrapper
 

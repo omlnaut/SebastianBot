@@ -1,12 +1,7 @@
-from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-
-@dataclass(frozen=True)
-class TimeRange:
-    from_date: datetime
-    to_date: datetime
+from sebastian.domain.shared import TimeRange
 
 
 def get_end_of_day(day: datetime | None = None) -> datetime:

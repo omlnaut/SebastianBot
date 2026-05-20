@@ -1,7 +1,7 @@
 import requests
 
 from sebastian.clients.bibo.client import _parse_account_page
-from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
+from sebastian.domain.bibo import Lending
 
 from ..credentials import BiboAccountCredentials
 from . import _login
@@ -25,6 +25,6 @@ class BiboClient:
         response.raise_for_status()
         return response.text
 
-    def fetch_open_lendings(self) -> list[BookLendingInfo]:
+    def fetch_open_lendings(self) -> list[Lending]:
         html = self._fetch_account_page()
         return _parse_account_page.parse_account_page(html)

@@ -1,23 +1,14 @@
 from typing import Protocol
 
-from pydantic import BaseModel, Field
-
+from sebastian.domain.bibo import Lending
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.domain.date_filter import DateFilter
-from sebastian.usecases.shared.dates import TimeRange
+from sebastian.domain.shared import DateFilter
 
 __all__ = ["BiboClient", "CalendarClient"]
 
 
-class BookLendingInfo(BaseModel):
-    title: str = Field(min_length=1)
-    id: str = Field(min_length=9, max_length=9)
-    location: str = Field(min_length=1)
-    lending_timerange: TimeRange
-
-
 class BiboClient(Protocol):
-    def fetch_open_lendings(self) -> list[BookLendingInfo]: ...
+    def fetch_open_lendings(self) -> list[Lending]: ...
 
 
 class CalendarClient(Protocol):

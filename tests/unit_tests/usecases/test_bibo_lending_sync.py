@@ -2,16 +2,16 @@ from datetime import datetime, timezone
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.domain.side_effects import (
-    BaseActorEvent,
+from sebastian.domain.side_effect import (
+    SideEffect,
     CreateCalendarEvent,
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
-from sebastian.domain.date_filter import DateFilter
-from sebastian.usecases.shared.dates import TimeRange
+from sebastian.domain.shared import DateFilter
+from sebastian.domain.shared import TimeRange
 from sebastian.usecases.features.bibo_lending_sync.handler import Handler, Request
-from sebastian.usecases.features.bibo_lending_sync.protocols import BookLendingInfo
+from sebastian.domain.bibo import Lending
 from sebastian.usecases.features.bibo_lending_sync import BiboAccounts
 
 _CALENDAR = Calendars.SharedPrimary
@@ -23,8 +23,8 @@ def _make_lending(
     location: str = "Shelf A",
     from_date: datetime = datetime(2026, 3, 1, tzinfo=timezone.utc),
     to_date: datetime = datetime(2026, 4, 1, tzinfo=timezone.utc),
-) -> BookLendingInfo:
-    return BookLendingInfo(
+) -> Lending:
+    return Lending(
         title=title,
         id=book_id,
         location=location,
@@ -51,10 +51,10 @@ def _make_event(
 
 
 class _FakeBiboClient:
-    def __init__(self, lendings: list[BookLendingInfo]):
+    def __init__(self, lendings: list[Lending]):
         self._lendings = lendings
 
-    def fetch_open_lendings(self) -> list[BookLendingInfo]:
+    def fetch_open_lendings(self) -> list[Lending]:
         return self._lendings
 
 
@@ -72,12 +72,12 @@ class _FakeCalendarClient:
 
 
 def _run(
-    lendings: list[BookLendingInfo], events: list[CalendarEvent]
-) -> Sequence[BaseActorEvent]:
+    lendings: list[Lending], events: list[CalendarEvent]
+) -> Sequence[SideEffect]:
     handler = Handler(
         bibo_client=_FakeBiboClient(lendings),
         calendar_client=_FakeCalendarClient(events),
-        account=BiboAccounts.Oli,
+        bibo_account=BiboAccounts.Oli,
     )
     return handler.handle(Request())
 

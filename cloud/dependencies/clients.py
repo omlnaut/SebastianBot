@@ -72,9 +72,9 @@ def resolve_gemini_client() -> GeminiClient:
 
 
 @lru_cache()
-def resolve_bibo_client(account: BiboAccounts) -> BiboClient:
+def resolve_bibo_client(bibo_account: BiboAccounts) -> BiboClient:
     credentials = get_secret(SecretKeys.BiboCredentials)
-    account_credentials = credentials.accounts[account.value]
+    account_credentials = credentials.accounts[bibo_account.value]
     return BiboClient(account_credentials)
 
 

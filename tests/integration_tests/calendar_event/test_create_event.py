@@ -3,7 +3,7 @@ from datetime import date
 
 from cloud.dependencies.clients import resolve_calendar_event_client
 from sebastian.domain.calendar import Calendars
-from sebastian.domain.date_filter import DateFilter
+from sebastian.domain.shared import DateFilter
 
 
 def test_create_event_with_description():
