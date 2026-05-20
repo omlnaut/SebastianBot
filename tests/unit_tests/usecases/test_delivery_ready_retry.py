@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
 from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.side_effect import CreateTask, ModifyMailLabel, SendMessage
 from sebastian.usecases.features.delivery_ready.handler import Handler, Request
@@ -75,8 +76,13 @@ def test_delivery_ready_transient_retry_then_success():
     assert gmail.last_query is not None
     assert "is:unread" in gmail.last_query
     assert gemini.calls == 2
-    assert len([e for e in result if isinstance(e, CreateTask)]) == 1
+    create_task_effects = [e for e in result if isinstance(e, CreateTask)]
+    assert len(create_task_effects) == 1
     assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
+
+    parsed_note = DeliveryReadyTaskNote.from_text(create_task_effects[0].notes)
+    assert parsed_note.tracking_number == "T123"
+    assert parsed_note.has_delivery_ready_tag is True
 
 
 def test_delivery_ready_transient_retry_stays_unread():
