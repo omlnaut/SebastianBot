@@ -1,29 +1,29 @@
 from typing import get_type_hints
 
-from cloud.functions.side_effects.shared import EVENT_MAP
+from cloud.functions.side_effects.shared import SIDE_EFFECT_MAP
 from cloud.helper.event_grid import EventGridModel
-from sebastian.domain.side_effects import BaseActorEvent
+from sebastian.domain.side_effect import SideEffect
 
 
 def test_all_base_actor_events_in_event_map():
-    """Verify that every domain event subclassing BaseActorEvent is registered in the EVENT_MAP."""
+    """Verify that every domain event subclassing SideEffect is registered in the SIDE_EFFECT_MAP."""
     missing_events = [
         subclass
-        for subclass in BaseActorEvent.__subclasses__()
-        if subclass not in EVENT_MAP
+        for subclass in SideEffect.__subclasses__()
+        if subclass not in SIDE_EFFECT_MAP
     ]
 
-    assert not missing_events, f"Missing events in EVENT_MAP: {missing_events}"
+    assert not missing_events, f"Missing events in SIDE_EFFECT_MAP: {missing_events}"
 
 
 def test_event_map_values_match_generic_types():
-    """Verify that the EventGridModel values in EVENT_MAP properly derive from EventGridModel[Key].
+    """Verify that the EventGridModel values in SIDE_EFFECT_MAP properly derive from EventGridModel[Key].
 
     Since extraction of the exact generic template argument type dynamically off `Pydantic` `BaseModel`
     is incredibly unstable natively, we resolve it predictably by cross-referencing against
     the `app_event` argument typed in the `.from_application()` abstract implementation.
     """
-    for app_event_cls, event_grid_cls in EVENT_MAP.items():
+    for app_event_cls, event_grid_cls in SIDE_EFFECT_MAP.items():
         assert issubclass(
             event_grid_cls, EventGridModel
         ), f"{event_grid_cls} is not an EventGridModel"
@@ -35,6 +35,6 @@ def test_event_map_values_match_generic_types():
 
         implemented_type = hints["app_event"]
         assert implemented_type is app_event_cls, (
-            f"Type mismatch in EVENT_MAP! Key is {app_event_cls.__name__}, "
+            f"Type mismatch in SIDE_EFFECT_MAP! Key is {app_event_cls.__name__}, "
             f"but value {event_grid_cls.__name__} implements .from_application() with {implemented_type.__name__}"
         )

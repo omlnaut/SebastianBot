@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Protocol, Sequence
 
 from sebastian.domain.gmail import GmailLabel
-from sebastian.domain.side_effects import BaseActorEvent
+from sebastian.domain.side_effect import SideEffect
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -27,7 +27,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, gmail_client: GmailClient):
         self._gmail_client = gmail_client
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         _log_operation(request.email_id, request.add_labels, request.remove_labels)
 
         self._gmail_client.modify_labels(

@@ -5,7 +5,7 @@ from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
 from sebastian.domain.gmail import PdfAttachment
-from sebastian.domain.side_effects import BaseActorEvent, ModifyMailLabel, SendMessage
+from sebastian.domain.side_effect import SideEffect, ModifyMailLabel, SendMessage
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -30,7 +30,7 @@ class Handler(UseCaseHandler[Request]):
         self._drive_client = drive_client
         self._winsim_folder_id = winsim_folder_id
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         time_threshold = datetime.now(timezone.utc) - request.time_back
         query = (
             GmailQueryBuilder()
@@ -43,7 +43,7 @@ class Handler(UseCaseHandler[Request]):
         logging.info(f"Fetched {len(mails)} WinSim mails")
 
         uploaded_file_ids: list[str] = []
-        events: list[BaseActorEvent] = []
+        events: list[SideEffect] = []
 
         for mail in mails:
             pdfs = self._gmail_client.download_pdf_attachments(mail)

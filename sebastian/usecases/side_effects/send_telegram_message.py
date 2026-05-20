@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Protocol, Sequence
 
-from sebastian.domain.side_effects import BaseActorEvent
+from sebastian.domain.side_effect import SideEffect
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -21,7 +21,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, telegram_client: TelegramClient):
         self._client = telegram_client
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         logging.info(f"Start to send telegram message: {request.message}")
         self._client.send_message(request.message)
         logging.info(f"Finished sending telegram message: {request.message}")

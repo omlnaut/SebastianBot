@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Sequence
 
-from sebastian.domain.side_effects import BaseActorEvent
+from sebastian.domain.side_effect import SideEffect
 
 
 class UseCaseHandler[TRequest](ABC):
     @abstractmethod
-    def handle(self, request: TRequest) -> Sequence[BaseActorEvent]: ...
+    def handle(self, request: TRequest) -> Sequence[SideEffect]: ...
 
     def name(self) -> str:
         cls = type(self)
