@@ -1,13 +1,13 @@
 from typing import Generator, Protocol
 
 from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
-from sebastian.domain.mietplan import Folder
+from sebastian.domain.mietplan import MietplanFolder
 
 
 class IMietplanClient(Protocol):
     """Protocol for Mietplan client operations."""
 
-    def walk_from_top_folder(self) -> Generator[Folder, None, None]:
+    def walk_from_top_folder(self) -> Generator[MietplanFolder, None, None]:
         """Walk through all folders starting from the top folder."""
         ...
 

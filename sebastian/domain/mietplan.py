@@ -3,13 +3,13 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class File(BaseModel):
+class MietplanFile(BaseModel):
     creation_date: datetime
     name: str
     url: str
 
 
-class Folder(BaseModel):
+class MietplanFolder(BaseModel):
     id: str
     path: list[str]
-    files: list[File]
+    files: list[MietplanFile]

@@ -6,8 +6,8 @@ from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import (
-    BaseActorEvent,
+from sebastian.domain.side_effect import (
+    SideEffect,
     CreateTask,
     ModifyMailLabel,
     SendMessage,
@@ -41,11 +41,11 @@ class Handler(UseCaseHandler[Request]):
         self._gemini_client = gemini_client
         self._retry_configuration = retry_configuration
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         now = datetime.now(timezone.utc)
         mails = self._fetch_return_emails()
 
-        effects: list[BaseActorEvent] = []
+        effects: list[SideEffect] = []
 
         for mail in mails:
             age = _mail_age(mail, now)
@@ -77,7 +77,7 @@ class Handler(UseCaseHandler[Request]):
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
             except TransientGeminiError as e:
                 logging.warning(
-                    f"Transient Gemini error for return mail {mail.id}. Keeping unread for retry. Error: {str(e)}"
+                    f"Transient Gemini error for return notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
                 )
             except Exception as e:
                 effects.extend(
@@ -142,11 +142,11 @@ def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
 
 def _terminal_failure_effects(
     mail: FullMailResponse, reason: str
-) -> list[BaseActorEvent]:
+) -> list[SideEffect]:
     return [
         SendMessage(
             message=(
-                "ReturnTracker mail processing failed terminally. "
+                "Return Notification processing failed terminally. "
                 f"mail_id={mail.id}; reason={reason}"
             )
         ),

@@ -10,7 +10,7 @@ class TaskLists(Enum):
     Bibo = auto()
 
 
-class TaskLabels(str, Enum):
+class TaskTags(str, Enum):
     DeliveryReady = "DELIVERY_READY"
     BiboSync = "BIBO_SYNC"
 

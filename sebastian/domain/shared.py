@@ -4,6 +4,12 @@ from zoneinfo import ZoneInfo
 
 
 @dataclass(frozen=True)
+class TimeRange:
+    from_date: datetime
+    to_date: datetime
+
+
+@dataclass(frozen=True)
 class DateFilter:
     start: datetime | None = None
     end: datetime | None = None
@@ -36,7 +42,6 @@ class DateFilter:
     def from_dates(
         cls, start: date | None = None, end: date | None = None
     ) -> "DateFilter":
-        """Create DateFilter from date objects (Europe/Berlin at start of day for start, end of day for end)."""
         tz = ZoneInfo("Europe/Berlin")
         start_dt = None
         if start is not None:
@@ -50,5 +55,4 @@ class DateFilter:
     def from_datetimes(
         cls, start: datetime | None = None, end: datetime | None = None
     ) -> "DateFilter":
-        """Create DateFilter from datetime objects (must be timezone-aware)."""
         return cls(start=start, end=end)

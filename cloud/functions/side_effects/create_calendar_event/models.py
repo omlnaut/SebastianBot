@@ -3,7 +3,7 @@ from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
 from sebastian.domain.calendar import Calendars
-from sebastian.domain.side_effects import CreateCalendarEvent
+from sebastian.domain.side_effect import CreateCalendarEvent
 
 
 class CreateCalendarEventEventGrid(EventGridModel[CreateCalendarEvent]):

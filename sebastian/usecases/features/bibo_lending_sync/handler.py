@@ -3,17 +3,17 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from sebastian.domain.calendar import CalendarEvent, Calendars
-from sebastian.domain.task import TaskLabels
-from sebastian.domain.side_effects import (
-    BaseActorEvent,
+from sebastian.domain.task import TaskTags
+from sebastian.domain.side_effect import (
+    SideEffect,
     CreateCalendarEvent,
     DeleteCalendarEvent,
     ModifyCalendarEvent,
 )
-from sebastian.domain.bibo import BiboAccounts
+from sebastian.domain.bibo import BiboAccounts, Lending
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
-from .protocols import BiboClient, BookLendingInfo, CalendarClient
+from .protocols import BiboClient, CalendarClient
 
 __all__ = ["Request", "Handler", "BiboAccounts", "BiboClient", "CalendarClient"]
 
@@ -30,13 +30,13 @@ class Handler(UseCaseHandler[Request]):
         self,
         bibo_client: BiboClient,
         calendar_client: CalendarClient,
-        account: BiboAccounts,
+        bibo_account: BiboAccounts,
     ):
         self._bibo_client = bibo_client
         self._calendar_client = calendar_client
-        self._sync_tag = f"{TaskLabels.BiboSync.value}_{account.value.upper()}"
+        self._sync_tag = f"{TaskTags.BiboSync.value}_{bibo_account.value.upper()}"
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         lendings = self._bibo_client.fetch_open_lendings()
         events = self._calendar_client.get_events(self._calendar, q=self._sync_tag)
 
@@ -101,12 +101,12 @@ def _extract_book_id(description: str | None) -> str | None:
     return None
 
 
-def _date_differs(event: CalendarEvent, lending: BookLendingInfo) -> bool:
+def _date_differs(event: CalendarEvent, lending: Lending) -> bool:
     return event.start.date() != lending.lending_timerange.to_date.date()
 
 
 def _make_create_event(
-    lending: BookLendingInfo, calendar: Calendars, sync_tag: str
+    lending: Lending, calendar: Calendars, sync_tag: str
 ) -> CreateCalendarEvent:
     description = (
         f"book_id: {lending.id}\n"

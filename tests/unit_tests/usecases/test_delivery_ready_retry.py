@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sebastian.domain.gmail import FullMailResponse
-from sebastian.domain.side_effects import CreateTask, ModifyMailLabel, SendMessage
+from sebastian.domain.side_effect import CreateTask, ModifyMailLabel, SendMessage
 from sebastian.usecases.features.delivery_ready.handler import Handler, Request
 from sebastian.usecases.shared.gemini_exceptions import (
     GeminiRetryConfiguration,

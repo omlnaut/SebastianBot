@@ -5,9 +5,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 from sebastian.domain.gmail import FullMailResponse
-from sebastian.domain.task import TaskLabels, TaskLists
-from sebastian.domain.side_effects import (
-    BaseActorEvent,
+from sebastian.domain.task import TaskTags, TaskLists
+from sebastian.domain.side_effect import (
+    SideEffect,
     CreateTask,
     ModifyMailLabel,
     SendMessage,
@@ -46,12 +46,12 @@ class Handler(UseCaseHandler[Request]):
         self.gemini_client = gemini_client
         self.retry_configuration = retry_configuration
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         now = datetime.now(timezone.utc)
         mails = _fetch_pickup_mails(self.gmail_client)
         logging.info(f"Fetched {len(mails)} emails matching DHL pickup criteria")
 
-        effects: list[BaseActorEvent] = []
+        effects: list[SideEffect] = []
 
         for mail in mails:
             age = _mail_age(mail, now)
@@ -83,7 +83,7 @@ class Handler(UseCaseHandler[Request]):
                 effects.append(ModifyMailLabel.MarkAsRead(mail.id))
             except TransientGeminiError as e:
                 logging.warning(
-                    f"Transient Gemini error for delivery mail {mail.id}. Keeping unread for retry. Error: {str(e)}"
+                    f"Transient Gemini error for delivery notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
                 )
             except Exception as e:
                 effects.extend(
@@ -128,11 +128,11 @@ def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
 
 def _terminal_failure_effects(
     mail: FullMailResponse, reason: str
-) -> list[BaseActorEvent]:
+) -> list[SideEffect]:
     return [
         SendMessage(
             message=(
-                "DeliveryReady mail processing failed terminally. "
+                "Delivery Notification processing failed terminally. "
                 f"mail_id={mail.id}; reason={reason}"
             )
         ),
@@ -151,6 +151,6 @@ def _map_to_create_task(pickup: PickupData) -> CreateTask:
         notes += f"\nBis: {pickup.due_date.strftime('%d.%m.%Y')}"
     if pickup.tracking_number:
         notes += f"\nTracking: {pickup.tracking_number}"
-    notes += f"\n{TaskLabels.DeliveryReady.value}"
+    notes += f"\n{TaskTags.DeliveryReady.value}"
 
     return CreateTask(title=title, notes=notes, tasklist=TaskLists.Default)

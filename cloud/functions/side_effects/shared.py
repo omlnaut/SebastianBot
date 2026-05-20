@@ -26,8 +26,8 @@ from cloud.functions.side_effects.send_message.models import (
 )
 from cloud.helper import parse_payload
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
-from sebastian.domain.side_effects import (
-    BaseActorEvent,
+from sebastian.domain.side_effect import (
+    SideEffect,
     CompleteTask,
     CreateCalendarEvent,
     CreateTask,
@@ -38,7 +38,7 @@ from sebastian.domain.side_effects import (
 )
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
-EVENT_MAP: dict[type[BaseActorEvent], type[EventGridModel[Any]]] = {
+SIDE_EFFECT_MAP: dict[type[SideEffect], type[EventGridModel[Any]]] = {
     CompleteTask: CompleteTaskEventGrid,
     CreateCalendarEvent: CreateCalendarEventEventGrid,
     CreateTask: CreateTaskEventGrid,
@@ -82,7 +82,7 @@ def perform_usecase_from_eventgrid(
 
         actor_result = handler.handle(request)
 
-        events_to_send = [EVENT_MAP[type(e)].from_application(e) for e in actor_result]
+        events_to_send = [SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result]
         if events_to_send:
             send_eventgrid_events(events_to_send)
 
@@ -104,7 +104,7 @@ def perform_usecase_from_request(
     try:
         handler = resolve_handler()
         actor_result = handler.handle(request)
-        events_to_send = [EVENT_MAP[type(e)].from_application(e) for e in actor_result]
+        events_to_send = [SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result]
         if events_to_send:
             send_eventgrid_events(events_to_send)
     except Exception as e:

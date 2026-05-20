@@ -2,7 +2,7 @@ from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import CompleteTask
+from sebastian.domain.side_effect import CompleteTask
 
 
 class CompleteTaskEventGrid(EventGridModel[CompleteTask]):

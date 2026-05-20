@@ -5,19 +5,20 @@ from typing import Generator
 
 import requests
 
-from sebastian.domain.mietplan import File, Folder
+from sebastian.domain.mietplan import MietplanFile, MietplanFolder
 
-from ._models import MietplanFile, MietplanFolder
+from ._models import MietplanFile as MietplanRawFile
+from ._models import MietplanFolder as MietplanRawFolder
 
 
 def _get_folders(
     session: requests.Session, parent_folder_id: str
-) -> list[MietplanFolder]:
+) -> list[MietplanRawFolder]:
     url = f"https://mietplan-dresden.de/moxanos/json?&svc=org.auctores.bvi.mietplan2&msg=getFolders&fdFolder={parent_folder_id}"
     response = session.get(url)
     response.raise_for_status()
     return [
-        MietplanFolder(
+        MietplanRawFolder(
             name=folder_json["filename"],
             folder_id=folder_json["fileid"],
             has_subfolders=folder_json["filechildren"],
@@ -26,18 +27,18 @@ def _get_folders(
     ]
 
 
-def _get_files(session: requests.Session, folder_id: str) -> list[MietplanFile]:
+def _get_files(session: requests.Session, folder_id: str) -> list[MietplanRawFile]:
     url = f"https://mietplan-dresden.de/moxanos/json?&svc=org.auctores.bvi.mietplan2&msg=getFiles&fdFolder={folder_id}"
     response = session.get(url)
     response.raise_for_status()
 
-    def json_to_mietplan_file(file_json: dict[str, str]) -> MietplanFile:
+    def json_to_mietplan_file(file_json: dict[str, str]) -> MietplanRawFile:
         date_format = "%d.%m.%Y"
         creation_date = datetime.strptime(file_json["filecrea"], date_format)
         download_path = html.unescape(file_json["filepath"])
         raw_filename = download_path.split("/")[-1]
         filename = html.unescape(raw_filename)
-        return MietplanFile(
+        return MietplanRawFile(
             creation_date=creation_date,
             download_path=download_path,
             filename=filename,
@@ -49,13 +50,13 @@ def _get_files(session: requests.Session, folder_id: str) -> list[MietplanFile]:
 
 def walk_from_top_folder(
     session: requests.Session, top_folder_id: str
-) -> Generator[Folder, None, None]:
-    def _walk(folder_id: str, path: list[str]) -> Generator[Folder, None, None]:
+) -> Generator[MietplanFolder, None, None]:
+    def _walk(folder_id: str, path: list[str]) -> Generator[MietplanFolder, None, None]:
         logging.debug(f"Walking folder: {folder_id}, path: {'/'.join(path)}")
 
         # First, yield the current folder with its files
         files = [
-            File(
+            MietplanFile(
                 creation_date=f.creation_date,
                 name=f.filename,
                 url=f.download_path,
@@ -63,7 +64,7 @@ def walk_from_top_folder(
             for f in _get_files(session, folder_id)
         ]
         logging.debug(f"Found {len(files)} files in folder: {folder_id}")
-        yield Folder(id=folder_id, path=path, files=files)
+        yield MietplanFolder(id=folder_id, path=path, files=files)
 
         # Then, recurse into subfolders
         subfolders = _get_folders(session, folder_id)

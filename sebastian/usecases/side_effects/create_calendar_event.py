@@ -3,7 +3,7 @@ from datetime import date
 from typing import Protocol, Sequence
 
 from sebastian.domain.calendar import Calendars
-from sebastian.domain.side_effects import BaseActorEvent, SendMessage
+from sebastian.domain.side_effect import SideEffect, SendMessage
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 
@@ -29,7 +29,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, calendar_event_client: CalendarEventClient):
         self._client = calendar_event_client
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         self._client.create_event(
             calendar=request.calendar,
             title=request.title,

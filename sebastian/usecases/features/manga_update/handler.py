@@ -4,7 +4,7 @@ from typing import Sequence
 
 from sebastian.domain.mangas import MangaChapter, MangaPublisher, MangaUpdateManga
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import BaseActorEvent, CreateTask, SendMessage
+from sebastian.domain.side_effect import SideEffect, CreateTask, SendMessage
 from sebastian.usecases.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -37,7 +37,7 @@ class Handler(UseCaseHandler[Request]):
     def __init__(self, client: MangaUpdateClient):
         self.client = client
 
-    def handle(self, request: Request) -> Sequence[BaseActorEvent]:
+    def handle(self, request: Request) -> Sequence[SideEffect]:
         tasks: list[CreateTask] = []
         errors: list[SendMessage] = []
 

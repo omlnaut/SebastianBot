@@ -3,7 +3,7 @@ from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
 from sebastian.domain.task import TaskLists
-from sebastian.domain.side_effects import CreateTask
+from sebastian.domain.side_effect import CreateTask
 
 
 class CreateTaskEventGrid(EventGridModel[CreateTask]):

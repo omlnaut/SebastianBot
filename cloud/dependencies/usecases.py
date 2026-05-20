@@ -78,14 +78,14 @@ def resolve_check_parcel_received(
 
 
 def resolve_bibo_lending_sync(
-    account: bibo_lending_sync.BiboAccounts,
+    bibo_account: bibo_lending_sync.BiboAccounts,
     bibo_client: bibo_lending_sync.BiboClient | None = None,
     calendar_client: bibo_lending_sync.CalendarClient | None = None,
 ) -> UseCaseHandler[bibo_lending_sync.Request]:
     return bibo_lending_sync.Handler(
-        bibo_client=bibo_client or resolve_bibo_client(account),
+        bibo_client=bibo_client or resolve_bibo_client(bibo_account),
         calendar_client=calendar_client or resolve_calendar_event_client(),
-        account=account,
+        bibo_account=bibo_account,
     )
 
 
