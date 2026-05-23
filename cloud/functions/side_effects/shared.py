@@ -82,7 +82,9 @@ def perform_usecase_from_eventgrid(
 
         actor_result = handler.handle(request)
 
-        events_to_send = [SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result]
+        events_to_send = [
+            SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result
+        ]
         if events_to_send:
             send_eventgrid_events(events_to_send)
 
@@ -104,12 +106,15 @@ def perform_usecase_from_request(
     try:
         handler = resolve_handler()
         actor_result = handler.handle(request)
-        events_to_send = [SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result]
+        events_to_send = [
+            SIDE_EFFECT_MAP[type(e)].from_application(e) for e in actor_result
+        ]
         if events_to_send:
             send_eventgrid_events(events_to_send)
     except Exception as e:
         error_msg = f"Error performing usecase: {str(e)}"
         logging.error(error_msg)
+        logging.exception("Usecase execution failed with traceback")
         send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
 
 
