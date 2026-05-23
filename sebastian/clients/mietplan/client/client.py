@@ -1,6 +1,6 @@
 from typing import Generator
 
-from sebastian.clients import create_retry_session
+from sebastian.clients.shared.retry_session import create_retry_session
 from sebastian.domain.mietplan import MietplanFolder
 
 from ..credentials import MietplanCredentials

@@ -1,5 +1,5 @@
-from sebastian.clients import create_retry_session
 from sebastian.clients.bibo.client import _parse_account_page
+from sebastian.clients.shared.retry_session import create_retry_session
 from sebastian.domain.bibo import Lending
 
 from ..credentials import BiboAccountCredentials
