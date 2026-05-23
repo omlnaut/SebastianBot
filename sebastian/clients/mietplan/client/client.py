@@ -11,17 +11,7 @@ class MietplanClient:
     _MAIN_FOLDER_ID = "ac4do35ktgfi79j8ids35om8udm"
 
     def __init__(self, credentials: MietplanCredentials):
-        # Keep a browser-like agent for authenticated calls.
-        self._session = create_retry_session(
-            total_retries=5,
-            default_headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/132.0.0.0 Safari/537.36"
-                )
-            },
-        )
+        self._session = create_retry_session()
 
         _login.login(self._session, credentials.username, credentials.password)
 

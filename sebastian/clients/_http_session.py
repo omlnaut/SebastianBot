@@ -4,6 +4,14 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+_default_headers = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/132.0.0.0 Safari/537.36"
+    )
+}
+
 
 def create_retry_session(
     *,
@@ -33,7 +41,6 @@ def create_retry_session(
     session.mount("https://", adapter)
     session.mount("http://", adapter)
 
-    if default_headers:
-        session.headers.update(default_headers)
+    session.headers.update(default_headers or _default_headers)
 
     return session
