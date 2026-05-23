@@ -1,9 +1,6 @@
 from typing import Generator
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
+from sebastian.clients import create_retry_session
 from sebastian.domain.mietplan import MietplanFolder
 
 from ..credentials import MietplanCredentials
@@ -14,30 +11,16 @@ class MietplanClient:
     _MAIN_FOLDER_ID = "ac4do35ktgfi79j8ids35om8udm"
 
     def __init__(self, credentials: MietplanCredentials):
-        self._session = requests.Session()
-        retry = Retry(
-            total=5,
-            connect=5,
-            read=5,
-            status=5,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=frozenset({"GET", "POST"}),
-            raise_on_status=False,
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
-
-        # Keep a browser-like agent for subsequent authenticated calls as well.
-        self._session.headers.update(
-            {
+        # Keep a browser-like agent for authenticated calls.
+        self._session = create_retry_session(
+            total_retries=5,
+            default_headers={
                 "User-Agent": (
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) "
                     "Chrome/132.0.0.0 Safari/537.36"
                 )
-            }
+            },
         )
 
         _login.login(self._session, credentials.username, credentials.password)
