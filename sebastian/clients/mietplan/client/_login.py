@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 LOGIN_CSRF_URL = "https://mietplan-dresden.de/login/"
+REQUEST_TIMEOUT_SECONDS = (10, 60)
 
 
 def _extract_csrf_token(html_content: str) -> str:
@@ -18,7 +19,7 @@ def _extract_csrf_token(html_content: str) -> str:
 
 
 def _fetch_csrf_token(session: requests.Session) -> str:
-    response = session.get(LOGIN_CSRF_URL)
+    response = session.get(LOGIN_CSRF_URL, timeout=REQUEST_TIMEOUT_SECONDS)
     response.raise_for_status()
     return _extract_csrf_token(response.content.decode(encoding="latin-1"))
 
@@ -54,5 +55,7 @@ def login(session: requests.Session, username: str, password: str) -> None:
         "dbPasswort": password,
     }
 
-    response = session.post(login_url, headers=headers, data=data)
+    response = session.post(
+        login_url, headers=headers, data=data, timeout=REQUEST_TIMEOUT_SECONDS
+    )
     response.raise_for_status()

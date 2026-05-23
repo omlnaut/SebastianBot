@@ -10,12 +10,14 @@ from sebastian.domain.mietplan import MietplanFile, MietplanFolder
 from ._models import MietplanFile as MietplanRawFile
 from ._models import MietplanFolder as MietplanRawFolder
 
+REQUEST_TIMEOUT_SECONDS = (10, 90)
+
 
 def _get_folders(
     session: requests.Session, parent_folder_id: str
 ) -> list[MietplanRawFolder]:
     url = f"https://mietplan-dresden.de/moxanos/json?&svc=org.auctores.bvi.mietplan2&msg=getFolders&fdFolder={parent_folder_id}"
-    response = session.get(url)
+    response = session.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
     response.raise_for_status()
     return [
         MietplanRawFolder(
@@ -29,7 +31,7 @@ def _get_folders(
 
 def _get_files(session: requests.Session, folder_id: str) -> list[MietplanRawFile]:
     url = f"https://mietplan-dresden.de/moxanos/json?&svc=org.auctores.bvi.mietplan2&msg=getFiles&fdFolder={folder_id}"
-    response = session.get(url)
+    response = session.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
     response.raise_for_status()
 
     def json_to_mietplan_file(file_json: dict[str, str]) -> MietplanRawFile:
@@ -55,19 +57,31 @@ def walk_from_top_folder(
         logging.debug(f"Walking folder: {folder_id}, path: {'/'.join(path)}")
 
         # First, yield the current folder with its files
-        files = [
-            MietplanFile(
-                creation_date=f.creation_date,
-                name=f.filename,
-                url=f.download_path,
+        try:
+            files = [
+                MietplanFile(
+                    creation_date=f.creation_date,
+                    name=f.filename,
+                    url=f.download_path,
+                )
+                for f in _get_files(session, folder_id)
+            ]
+        except requests.RequestException:
+            logging.exception(
+                f"Failed to fetch files for folder_id={folder_id}, path={'/'.join(path)}"
             )
-            for f in _get_files(session, folder_id)
-        ]
+            raise
         logging.debug(f"Found {len(files)} files in folder: {folder_id}")
         yield MietplanFolder(id=folder_id, path=path, files=files)
 
         # Then, recurse into subfolders
-        subfolders = _get_folders(session, folder_id)
+        try:
+            subfolders = _get_folders(session, folder_id)
+        except requests.RequestException:
+            logging.exception(
+                f"Failed to fetch subfolders for folder_id={folder_id}, path={'/'.join(path)}"
+            )
+            raise
         logging.debug(f"Found {len(subfolders)} subfolders in folder: {folder_id}")
         for subfolder in subfolders:
             logging.debug(

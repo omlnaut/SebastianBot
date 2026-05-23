@@ -22,7 +22,8 @@ def test_get_tasklists(google_task_client: GoogleTaskClient):
 def test_google_task_client_integration(google_task_client: GoogleTaskClient):
     title = f"Integration Test Task {datetime.now().isoformat()}"
     notes = "This is a test task created by the integration test."
-    due_date = datetime.now(timezone.utc) + timedelta(days=1)
+    base_datetime = datetime(2026, 1, 28, tzinfo=timezone.utc)
+    due_date = base_datetime + timedelta(days=1)
 
     def create_task():
         created_task = google_task_client.create_task_with_notes(

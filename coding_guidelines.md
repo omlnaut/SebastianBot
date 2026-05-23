@@ -1,0 +1,2 @@
+- __init__ files should only contain (re)imports
+- we use type checking mode strict

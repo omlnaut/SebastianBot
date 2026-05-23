@@ -1,6 +1,5 @@
-import requests
-
 from sebastian.clients.bibo.client import _parse_account_page
+from sebastian.clients.shared.retry_session import create_retry_session
 from sebastian.domain.bibo import Lending
 
 from ..credentials import BiboAccountCredentials
@@ -11,7 +10,7 @@ _BASE_URL = "https://katalog.bibo-dresden.de/webOPACClient"
 
 class BiboClient:
     def __init__(self, credentials: BiboAccountCredentials):
-        self._session = requests.Session()
+        self._session = create_retry_session(total_retries=5)
         self._login(credentials)
 
     def _login(self, credentials: BiboAccountCredentials) -> None:

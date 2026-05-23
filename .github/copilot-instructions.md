@@ -1,0 +1,3 @@
+- you are running in a devcontainer
+  - never create a virtual environment
+  - installing packages globally is fine

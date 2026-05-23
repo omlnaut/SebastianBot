@@ -1,7 +1,6 @@
 from typing import Generator
 
-import requests
-
+from sebastian.clients.shared.retry_session import create_retry_session
 from sebastian.domain.mietplan import MietplanFolder
 
 from ..credentials import MietplanCredentials
@@ -12,7 +11,8 @@ class MietplanClient:
     _MAIN_FOLDER_ID = "ac4do35ktgfi79j8ids35om8udm"
 
     def __init__(self, credentials: MietplanCredentials):
-        self._session = requests.Session()
+        self._session = create_retry_session()
+
         _login.login(self._session, credentials.username, credentials.password)
 
     def walk_from_top_folder(self) -> Generator[MietplanFolder, None, None]:
