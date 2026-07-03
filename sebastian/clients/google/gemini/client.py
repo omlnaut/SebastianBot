@@ -49,12 +49,13 @@ class GeminiClient:
             Parsed response as an instance of the response_schema type
         """
         try:
-            response = self._client.models.generate_content(  # type: ignore
+            response = self._client.interactions.create(
                 model="gemini-2.5-flash-lite",
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": response_schema,
+                input=prompt,
+                response_format={
+                    "type": "text",
+                    "mime_type": "application/json",
+                    "schema": response_schema,
                 },
             )
         except Exception as e:
