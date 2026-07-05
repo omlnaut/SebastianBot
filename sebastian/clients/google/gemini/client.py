@@ -49,22 +49,17 @@ class GeminiClient:
             Parsed response as an instance of the response_schema type
         """
         try:
-            response = self._client.models.generate_content(  # type: ignore
-                model="gemini-2.5-flash-lite",
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": response_schema,
+            response = self._client.interactions.create(
+                model="gemini-3.5-flash",
+                input=prompt,
+                response_format={
+                    "type": "text",
+                    "mime_type": "application/json",
+                    "schema": response_schema.model_json_schema(),
                 },
             )
+            return response_schema.model_validate_json(response.output_text)  # type: ignore
         except Exception as e:
             if self._is_transient_error(e):
                 raise TransientGeminiError(str(e)) from e
             raise NonRetryableGeminiError(str(e)) from e
-
-        if isinstance(response.parsed, response_schema):
-            return response.parsed
-
-        raise NonRetryableGeminiError(
-            f"Failed to parse response from Gemini model: {response.text}"
-        )

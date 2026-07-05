@@ -68,7 +68,7 @@ def test_google_task_client_integration(google_task_client: GoogleTaskClient):
 def test_get_tasks_for_date_returns_only_completed_when_including_completed(
     google_task_client: GoogleTaskClient,
 ):
-    target_due_date = date(2026, 4, 28)
+    target_due_date = date(2026, 6, 20)
     due_filter = DateFilter.on(target_due_date)
 
     open_tasks_for_target_date = google_task_client.get_tasks(
