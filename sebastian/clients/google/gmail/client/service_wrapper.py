@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 from pydantic import BaseModel, ConfigDict, Field
 
 from sebastian.clients.google.gmail.client.retry_decorator import retry_on_network_error
-from sebastian.domain.gmail import FullMailResponse, PdfMessagePart
+from sebastian.domain.gmail import FullMailResponse, GmailLabelResponse, PdfMessagePart
 
 
 class MessageId(BaseModel):
@@ -72,6 +72,13 @@ class GmailServiceWrapper:
         self._service.users().messages().modify(
             userId="me", id=email_id, body=body
         ).execute()
+
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_labels(self) -> list[GmailLabelResponse]:
+        """Fetch all available Gmail labels for the authenticated user."""
+        response = self._service.users().labels().list(userId="me").execute()
+        labels = response.get("labels", [])
+        return [GmailLabelResponse.model_validate(label) for label in labels]
 
 
 def to_full_mail_response(response: dict) -> FullMailResponse:

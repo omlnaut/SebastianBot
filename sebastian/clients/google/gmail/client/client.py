@@ -1,6 +1,11 @@
 from google.oauth2.credentials import Credentials
 
-from sebastian.domain.gmail import FullMailResponse, GmailLabel, PdfAttachment
+from sebastian.domain.gmail import (
+    FullMailResponse,
+    GmailLabel,
+    GmailLabelResponse,
+    PdfAttachment,
+)
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
 from .modify_labels import modify_labels
@@ -34,3 +39,7 @@ class GmailClient:
             add_labels=add_labels,
             remove_labels=remove_labels,
         )
+
+    def get_labels(self) -> list[GmailLabelResponse]:
+        """Fetch all labels available in the authenticated Gmail account."""
+        return self._service.fetch_labels()
