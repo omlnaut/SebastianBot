@@ -11,6 +11,18 @@ class GmailLabel(Enum):
     Unread = "UNREAD"
 
 
+class GmailLabelResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: str
+    name: str
+    type: str | None = None
+    message_list_visibility: str | None = Field(
+        alias="messageListVisibility", default=None
+    )
+    label_list_visibility: str | None = Field(alias="labelListVisibility", default=None)
+
+
 @dataclass
 class PdfAttachment:
     """Represents a PDF attachment with filename and data"""

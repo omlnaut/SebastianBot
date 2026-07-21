@@ -48,3 +48,14 @@ def test_modify_labels(gmail_client: GmailClient):
     finally:
         # Cleanup: ensure label is removed even if test fails
         gmail_client.modify_labels(email_id, remove_labels=[test_label])
+
+
+def test_get_labels_contains_all_enum_labels(gmail_client: GmailClient):
+    labels = gmail_client.get_labels()
+    returned_label_ids = {label.id for label in labels}
+    expected_label_ids = {label.value for label in GmailLabel}
+
+    missing_label_ids = expected_label_ids - returned_label_ids
+    assert (
+        not missing_label_ids
+    ), f"Missing expected Gmail labels: {sorted(missing_label_ids)}"

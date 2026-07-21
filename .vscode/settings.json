@@ -22,4 +22,7 @@
             "source.organizeImports": "explicit"
         }
     },
+    "chat.tools.terminal.autoApprove": {
+        "git checkout": true
+    },
 }
