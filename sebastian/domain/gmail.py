@@ -9,6 +9,7 @@ class GmailLabel(Enum):
 
     ToRead = "Label_2648990123443534971"
     Unread = "UNREAD"
+    Processed = "Label_1123571739877587128"
 
 
 class GmailLabelResponse(BaseModel):
