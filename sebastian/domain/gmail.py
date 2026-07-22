@@ -58,3 +58,6 @@ class FullMailResponse(BaseModel):
     internalDate: str
     content: str
     pdf_parts: list[PdfMessagePart]
+
+    def has_label(self, label: GmailLabel) -> bool:
+        return label.value in self.labelIds
