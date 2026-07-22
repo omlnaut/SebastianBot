@@ -9,6 +9,7 @@ class GmailLabel(Enum):
 
     ToRead = "Label_2648990123443534971"
     Unread = "UNREAD"
+    Processed = "Label_1123571739877587128"
 
 
 class GmailLabelResponse(BaseModel):
@@ -57,3 +58,6 @@ class FullMailResponse(BaseModel):
     internalDate: str
     content: str
     pdf_parts: list[PdfMessagePart]
+
+    def has_label(self, label: GmailLabel) -> bool:
+        return label.value in self.labelIds
