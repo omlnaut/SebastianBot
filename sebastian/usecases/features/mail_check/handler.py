@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Sequence
 
 from sebastian.domain.gmail import GmailLabel, FullMailResponse
-from sebastian.domain.side_effect import SideEffect
+from sebastian.domain.side_effect import ModifyMailLabel, SideEffect
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -32,9 +32,7 @@ class Handler(UseCaseHandler[Request]):
         logging.info(f"MailCheck: fetched {len(mails)} mails after cutoff")
 
         unprocessed_mails = [
-            mail
-            for mail in mails
-            if GmailLabel.Processed.value not in mail.labelIds
+            mail for mail in mails if GmailLabel.Processed.value not in mail.labelIds
         ]
         logging.info(
             f"MailCheck: skipped {len(mails) - len(unprocessed_mails)} mails already marked as Processed"
@@ -42,14 +40,26 @@ class Handler(UseCaseHandler[Request]):
 
         effects: list[SideEffect] = []
         for mail in unprocessed_mails:
+            has_match = False
             for sub_usecase in self._sub_usecases:
                 if not sub_usecase.check_if_mail_matches(mail):
                     continue
 
+                has_match = True
                 effects.extend(sub_usecase.handle_mail(mail))
+
+            if not has_match:
+                effects.append(
+                    ModifyMailLabel(
+                        email_id=mail.id,
+                        add_labels=[GmailLabel.Processed],
+                    )
+                )
 
         return effects
 
-    def _fetch_mails_after_cutoff(self, cutoff_date: datetime) -> list[FullMailResponse]:
+    def _fetch_mails_after_cutoff(
+        self, cutoff_date: datetime
+    ) -> list[FullMailResponse]:
         query = GmailQueryBuilder().after_date(cutoff_date).build()
         return self._gmail_client.fetch_mails(query)

@@ -19,6 +19,9 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 10. Rollout: direct cutover (no shadow/dual-run period).
 11. Trigger cadence: run central mail-check every 10 minutes.
 12. Cutoff value: set at deployment time to first go-live timestamp.
+13. Sub-usecase list ownership: define in dependency resolver/composition root, not in central handler.
+14. Unmatched mails: central handler marks as Processed.
+15. Matched but no side-effects: do not central-mark as Processed; preserve sub-usecase retry semantics.
 
 ## Migration Steps
 
@@ -37,11 +40,14 @@ Move email consumption from per-usecase unread/time-window polling to a central 
    - Fetch all mails after cutoff date.
    - Filter out mails already containing Processed label id.
    - For each remaining mail, execute all matching sub-usecases.
-   - Concatenate and return side effects (no enforced label policy in central handler).
+   - Concatenate and return side effects.
+   - If no sub-usecase matches a mail, central handler adds Processed label side effect for that mail.
+   - If at least one sub-usecase matches, central handler does not enforce Processed; sub-usecases own label policy.
 4. Unit tests:
    - Skips already-processed mails.
    - Executes all matching sub-usecases for same mail.
-   - Produces no effects when no sub-usecase matches.
+   - Marks unmatched mails as Processed.
+   - Does not centrally mark Processed when at least one sub-usecase matched but returned no side effects.
    - Deterministic side-effect ordering.
 
 ### 3) Refactor delivery_ready into a mail sub-usecase
@@ -61,7 +67,7 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 6. Tests: migrate existing return_tracker retry tests to new mail-level sub-usecase tests.
 
 ### 5) Wire dependencies and timer trigger
-1. Add resolver for central mail-check handler in `cloud/dependencies/usecases.py`.
+1. Add resolver for central mail-check handler in `cloud/dependencies/usecases.py`, and define ordered phase-1 sub-usecases list there: delivery_ready, return_tracker.
 2. Add timer function (for example `cloud/functions/features/mail_check_function.py`).
 3. Set `TriggerTimes.MailCheck` to every 10 minutes (`*/10 * * * *`).
 4. Register function import in `function_app.py`.
