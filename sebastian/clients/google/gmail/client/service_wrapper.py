@@ -112,11 +112,20 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
         ]
         return [PdfMessagePart.model_validate(part) for part in pdf_parts]
 
+    def _extract_subject(payload: dict) -> str:
+        """Extract the Subject header from the message payload."""
+        headers = payload.get("headers", [])
+        for header in headers:
+            if header.get("name", "").lower() == "subject":
+                return header.get("value", "")
+        return ""
+
     return FullMailResponse(
         id=response["id"],
         threadId=response["threadId"],
         labelIds=response["labelIds"],
         is_read="UNREAD" not in response["labelIds"],
+        subject=_extract_subject(response["payload"]),
         snippet=response["snippet"],
         historyId=response["historyId"],
         internalDate=response["internalDate"],

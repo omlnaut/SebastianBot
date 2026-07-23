@@ -17,6 +17,7 @@ def _mail(mail_id: str, label_ids: list[str] | None = None) -> FullMailResponse:
         threadId=f"thread-{mail_id}",
         labelIds=labels,
         is_read=False,
+        subject="Test subject",
         snippet="snippet",
         sizeEstimate=123,
         historyId=f"hist-{mail_id}",

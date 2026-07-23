@@ -52,6 +52,7 @@ class FullMailResponse(BaseModel):
     threadId: str
     labelIds: list[str]
     is_read: bool
+    subject: str
     snippet: str
     sizeEstimate: int
     historyId: str

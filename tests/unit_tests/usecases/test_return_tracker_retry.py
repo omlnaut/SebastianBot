@@ -20,6 +20,7 @@ def _mail(internal_date: datetime, content: str) -> FullMailResponse:
         threadId="thread-1",
         labelIds=["UNREAD"],
         is_read=False,
+        subject="Return request accepted",
         snippet="snippet",
         sizeEstimate=123,
         historyId="hist-1",
