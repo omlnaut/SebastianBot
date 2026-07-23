@@ -21,6 +21,7 @@ def _mail(internal_date: datetime) -> FullMailResponse:
         threadId="thread-1",
         labelIds=["UNREAD"],
         is_read=False,
+        subject="Delivery update",
         snippet="snippet",
         sizeEstimate=123,
         historyId="hist-1",

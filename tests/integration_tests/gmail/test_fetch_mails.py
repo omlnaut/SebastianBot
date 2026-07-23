@@ -13,6 +13,7 @@ def test_fetch_mails(gmail_client: GmailClient):
 
     assert isinstance(emails, list)
     assert len(emails) > 0
+    assert all(isinstance(mail.subject, str) for mail in emails)
 
 
 def test_fetch_mails_has_read_state(gmail_client: GmailClient):
