@@ -31,7 +31,7 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 2. Keep existing labels unchanged.
 3. Test: extend Gmail label integration tests to verify add/remove for Processed.
 
-### 2) Introduce central mail-check usecase
+### (x) 2) Introduce central mail-check usecase
 1. Create new feature usecase package (for example `sebastian/usecases/features/mail_check/`).
 2. Define a sub-usecase contract:
    - `check_if_mail_matches(mail) -> bool`
@@ -57,6 +57,7 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 4. Transient failures should not include Processed label.
 5. Terminal behavior remains local to this sub-usecase.
 6. Tests: migrate existing delivery_ready retry tests to new mail-level sub-usecase tests.
+7. Tests: use /workspaces/SebastianBot/sebastian/usecases/features/delivery_ready/delivery_ready.ipynb to save a FullMailResponse to disk to test check_if_mail_matches
 
 ### 4) Refactor return_tracker into a mail sub-usecase
 1. Keep parsing and retry behavior, but process provided mail object.
