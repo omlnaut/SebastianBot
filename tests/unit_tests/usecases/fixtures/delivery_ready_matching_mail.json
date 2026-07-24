@@ -1,0 +1,18 @@
+{
+	"id": "fixture-mail-1",
+	"threadId": "fixture-thread-1",
+	"labelIds": [
+		"UNREAD",
+		"CATEGORY_UPDATES",
+		"INBOX"
+	],
+	"is_read": false,
+	"subject": "Paket zur Abholung bereit",
+	"from_email": "pickup-point@amazon.de",
+	"snippet": "From: pickup-point@amazon.de",
+	"sizeEstimate": 149321,
+	"historyId": "fixture-history-1",
+	"internalDate": "1763904000000",
+	"content": "<html><body><p>From: pickup-point@amazon.de</p><p>Ihr Paket zur Abholung bereit.</p></body></html>",
+	"pdf_parts": []
+}

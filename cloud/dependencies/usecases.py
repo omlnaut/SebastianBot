@@ -56,12 +56,10 @@ def resolve_mangaupdate_service(
 
 
 def resolve_delivery_ready(
-    gmail_client: delivery_ready.GmailClient | None = None,
     gemini_client: delivery_ready.GeminiClient | None = None,
     retry_configuration: GeminiRetryConfiguration | None = None,
-) -> UseCaseHandler[delivery_ready.Request]:
+) -> delivery_ready.Handler:
     return delivery_ready.Handler(
-        gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
         retry_configuration=retry_configuration or GeminiRetryConfiguration(),
     )
