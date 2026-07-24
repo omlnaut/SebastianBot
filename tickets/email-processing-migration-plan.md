@@ -59,6 +59,11 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 6. Tests: migrate existing delivery_ready retry tests to new mail-level sub-usecase tests.
 7. Tests: use /workspaces/SebastianBot/sebastian/usecases/features/delivery_ready/delivery_ready.ipynb to save a FullMailResponse to disk to test check_if_mail_matches
 
+### 3.5) set up github integration
+- read pr comments
+- fix and reply
+- create mr when done with ticket
+
 ### 4) Refactor return_tracker into a mail sub-usecase
 1. Keep parsing and retry behavior, but process provided mail object.
 2. Implement `check_if_mail_matches` with current sender/subject/content criteria.

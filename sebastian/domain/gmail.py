@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -53,6 +54,7 @@ class FullMailResponse(BaseModel):
     labelIds: list[str]
     is_read: bool
     subject: str
+    from_email: str = ""
     snippet: str
     sizeEstimate: int
     historyId: str
@@ -62,3 +64,12 @@ class FullMailResponse(BaseModel):
 
     def has_label(self, label: GmailLabel) -> bool:
         return label.value in self.labelIds
+
+    def age(self, now: datetime | None = None) -> timedelta | None:
+        if now is None:
+            now = datetime.now(timezone.utc)
+
+        timestamp = int(self.internalDate) / 1000
+
+        received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        return now - received_at

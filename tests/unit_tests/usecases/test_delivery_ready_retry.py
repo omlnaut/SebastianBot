@@ -24,6 +24,7 @@ def _mail(internal_date: datetime) -> FullMailResponse:
         labelIds=["UNREAD"],
         is_read=False,
         subject="Paket zur Abholung bereit",
+        from_email="pickup-point@amazon.de",
         snippet="From: pickup-point@amazon.de",
         sizeEstimate=123,
         historyId="hist-1",
@@ -48,7 +49,6 @@ class _FakeGeminiClient:
 
 def _handler(gemini: _FakeGeminiClient) -> Handler:
     return Handler(
-        gmail_client=None,
         gemini_client=gemini,
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
     )
@@ -75,12 +75,7 @@ def test_delivery_ready_check_if_mail_matches_requires_subject_and_sender_marker
     wrong_subject_mail = mail.model_copy(update={"subject": "Completely different"})
     assert handler.check_if_mail_matches(wrong_subject_mail) is False
 
-    wrong_sender_mail = mail.model_copy(
-        update={
-            "snippet": "From: updates@example.com",
-            "content": "<html><body>no sender marker</body></html>",
-        }
-    )
+    wrong_sender_mail = mail.model_copy(update={"from_email": "updates@example.com"})
     assert handler.check_if_mail_matches(wrong_sender_mail) is False
 
 

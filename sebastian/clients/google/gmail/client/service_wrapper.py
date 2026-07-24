@@ -1,6 +1,7 @@
 # pyright: basic
 
 import base64
+import re
 from typing import Self
 
 from google.oauth2.credentials import Credentials
@@ -120,12 +121,28 @@ def to_full_mail_response(response: dict) -> FullMailResponse:
                 return header.get("value", "")
         return ""
 
+    def _extract_from_email(payload: dict) -> str:
+        """Extract normalized sender email from the From header value."""
+        headers = payload.get("headers", [])
+        for header in headers:
+            if header.get("name", "").lower() != "from":
+                continue
+
+            header_value = header.get("value", "")
+            match = re.search(r"<([^>]+)>", header_value)
+            if match:
+                return match.group(1).strip()
+            return header_value.strip()
+
+        return ""
+
     return FullMailResponse(
         id=response["id"],
         threadId=response["threadId"],
         labelIds=response["labelIds"],
         is_read="UNREAD" not in response["labelIds"],
         subject=_extract_subject(response["payload"]),
+        from_email=_extract_from_email(response["payload"]),
         snippet=response["snippet"],
         historyId=response["historyId"],
         internalDate=response["internalDate"],

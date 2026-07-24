@@ -8,6 +8,7 @@
 	],
 	"is_read": false,
 	"subject": "Paket zur Abholung bereit",
+	"from_email": "pickup-point@amazon.de",
 	"snippet": "From: pickup-point@amazon.de",
 	"sizeEstimate": 149321,
 	"historyId": "fixture-history-1",
