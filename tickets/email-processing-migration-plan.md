@@ -50,7 +50,7 @@ Move email consumption from per-usecase unread/time-window polling to a central 
    - Does not centrally mark Processed when at least one sub-usecase matched but returned no side effects.
    - Deterministic side-effect ordering.
 
-### 3) Refactor delivery_ready into a mail sub-usecase
+### (x) 3) Refactor delivery_ready into a mail sub-usecase
 1. Keep parsing and transient retry behavior, but process provided mail object instead of querying Gmail internally.
 2. Implement `check_if_mail_matches` based on current sender/subject semantics.
 3. Success path should include Processed label side effect.
@@ -59,21 +59,9 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 6. Tests: migrate existing delivery_ready retry tests to new mail-level sub-usecase tests.
 7. Tests: use /workspaces/SebastianBot/sebastian/usecases/features/delivery_ready/delivery_ready.ipynb to save a FullMailResponse to disk to test check_if_mail_matches
 
-### 3.5) set up github integration
-- read pr comments
-- fix and reply
-- create mr when done with ticket
-
-### 4) Refactor return_tracker into a mail sub-usecase
-1. Keep parsing and retry behavior, but process provided mail object.
-2. Implement `check_if_mail_matches` with current sender/subject/content criteria.
-3. Success path should include Processed label side effect.
-4. Transient failures should not include Processed label.
-5. Terminal behavior remains local to this sub-usecase.
-6. Tests: migrate existing return_tracker retry tests to new mail-level sub-usecase tests.
 
 ### 5) Wire dependencies and timer trigger
-1. Add resolver for central mail-check handler in `cloud/dependencies/usecases.py`, and define ordered phase-1 sub-usecases list there: delivery_ready, return_tracker.
+1. Add resolver for central mail-check handler in `cloud/dependencies/usecases.py`, and define ordered phase-1 sub-usecases list there: delivery_ready, (included in next phase: return_tracker).
 2. Add timer function (for example `cloud/functions/features/mail_check_function.py`).
 3. Set `TriggerTimes.MailCheck` to every 10 minutes (`*/10 * * * *`).
 4. Register function import in `function_app.py`.
@@ -108,3 +96,18 @@ Move email consumption from per-usecase unread/time-window polling to a central 
 ## Out of Scope (for this migration)
 1. winsim migration (phase 2).
 2. Sophisticated retry coordination when multiple sub-usecases match and only a subset fail.
+
+
+## postponed to next phase
+### 3.5) set up github integration
+- read pr comments
+- fix and reply
+- create mr when done with ticket
+
+### 4) Refactor return_tracker into a mail sub-usecase
+1. Keep parsing and retry behavior, but process provided mail object.
+2. Implement `check_if_mail_matches` with current sender/subject/content criteria.
+3. Success path should include Processed label side effect.
+4. Transient failures should not include Processed label.
+5. Terminal behavior remains local to this sub-usecase.
+6. Tests: migrate existing return_tracker retry tests to new mail-level sub-usecase tests.
