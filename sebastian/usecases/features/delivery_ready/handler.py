@@ -49,7 +49,9 @@ class Handler(UseCaseHandler[Request]):
 
     def handle(self, request: Request) -> Sequence[SideEffect]:
         if self._gmail_client is None:
-            raise ValueError("gmail_client is required when using Request-based handling")
+            raise ValueError(
+                "gmail_client is required when using Request-based handling"
+            )
 
         now = datetime.now(timezone.utc)
         mails = _fetch_pickup_mails(self._gmail_client)
@@ -156,14 +158,12 @@ def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
     return now - received_at
 
 
-def _terminal_failure_effects(
-    mail: FullMailResponse, reason: str
-) -> list[SideEffect]:
+def _terminal_failure_effects(mail: FullMailResponse, reason: str) -> list[SideEffect]:
     return [
         SendMessage(
             message=(
                 "Delivery Notification processing failed terminally. "
-                f"mail_id={mail.id}; reason={reason}"
+                f"subject={mail.subject}; reason={reason}"
             )
         ),
         ModifyMailLabel.MarkAsRead(mail.id),
