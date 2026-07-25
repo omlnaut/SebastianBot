@@ -2,6 +2,7 @@ from sebastian.usecases.features import (
     bibo_lending_sync,
     check_parcel_received,
     delivery_ready,
+    mail_check,
     manga_update,
     mietplan,
     return_tracker,
@@ -164,4 +165,16 @@ def resolve_send_telegram_message(
 ) -> UseCaseHandler[send_telegram_message.Request]:
     return send_telegram_message.Handler(
         telegram_client=telegram_client or resolve_telegram_client(),
+    )
+
+
+def resolve_mail_check(
+    gmail_client: mail_check.GmailClient | None = None,
+    sub_usecases: list[mail_check.MailSubUseCase] | None = None,
+) -> mail_check.Handler:
+    return mail_check.Handler(
+        gmail_client=gmail_client or resolve_gmail_client(),
+        sub_usecases=sub_usecases
+        if sub_usecases is not None
+        else [resolve_delivery_ready()],
     )
