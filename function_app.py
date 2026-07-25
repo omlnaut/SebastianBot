@@ -12,6 +12,7 @@ from cloud.functions.features.check_parcel_received_function import (
 )
 
 # from cloud.functions.features.delivery_ready_function import check_delivery_ready
+from cloud.functions.features.mail_check_function import check_mail
 from cloud.functions.features.MangaUpdateFunction import check_manga_update
 
 from cloud.functions.features.mietplan_function import check_mietplan
