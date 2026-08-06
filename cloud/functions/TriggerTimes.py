@@ -5,6 +5,6 @@ class TriggerTimes:
     ReturnTracker: str = "35 * * * *"  # Every hour at 35 minutes
     WinSim: str = "0 21 * * *"  # Every day at 21:00
     Mietplan: str = "1 21 * * *"  # Every day at 21:01
-    MailCheck: str = "*/5 * * * *"  # Every 5 minutes
+    MailCheck: str = "*/10 * * * *"  # Every 10 minutes
     BiboLendingSync: str = "0 3 * * *"  # Every day at 03:00
     BiboLendingSyncWife: str = "5 3 * * *"  # Every day at 03:05

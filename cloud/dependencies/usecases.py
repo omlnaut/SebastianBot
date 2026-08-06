@@ -1,7 +1,10 @@
+from typing import Sequence
+
 from sebastian.usecases.features import (
     bibo_lending_sync,
     check_parcel_received,
     delivery_ready,
+    mail_check,
     manga_update,
     mietplan,
     return_tracker,
@@ -108,6 +111,19 @@ def resolve_return_tracker(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
         retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+    )
+
+
+def resolve_mail_check(
+    gmail_client: mail_check.GmailClient | None = None,
+    sub_usecases: Sequence[mail_check.MailSubUseCase] | None = None,
+) -> UseCaseHandler[mail_check.Request]:
+    # Phase 1 ordering is owned here in the composition root.
+    # Next phase can append resolve_return_tracker() to this tuple.
+    resolved_sub_usecases = tuple(sub_usecases or (resolve_delivery_ready(),))
+    return mail_check.Handler(
+        gmail_client=gmail_client or resolve_gmail_client(),
+        sub_usecases=resolved_sub_usecases,
     )
 
 
