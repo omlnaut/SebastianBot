@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Sequence
+from typing import Callable, Sequence
 
 from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
 from sebastian.domain.gmail import FullMailResponse
@@ -22,8 +22,29 @@ from .protocols import GeminiClient
 
 __all__ = [
     "Handler",
+    "MailSubUseCase",
     "GeminiClient",
 ]
+
+
+class MailSubUseCase:
+    def __init__(
+        self,
+        retry_configuration: GeminiRetryConfiguration,
+        gemini_client_resolver: Callable[[], GeminiClient],
+    ):
+        self._retry_configuration = retry_configuration
+        self._gemini_client_resolver = gemini_client_resolver
+
+    def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
+        return _subject_matches(mail.subject) and _sender_matches(mail)
+
+    def handle_mail(self, mail: FullMailResponse) -> Sequence[SideEffect]:
+        handler = Handler(
+            gemini_client=self._gemini_client_resolver(),
+            retry_configuration=self._retry_configuration,
+        )
+        return handler.handle_mail(mail)
 
 
 class Handler:
