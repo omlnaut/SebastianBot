@@ -8,7 +8,7 @@ from typing import Any
 from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
 from sebastian.domain.gmail import FullMailResponse, GmailLabel
 from sebastian.domain.side_effect import CreateTask, ModifyMailLabel, SendMessage
-from sebastian.usecases.features.delivery_ready.handler import Handler
+from sebastian.usecases.features.delivery_ready.handler import Handler, MailSubUseCase
 from sebastian.usecases.shared.gemini_exceptions import (
     GeminiRetryConfiguration,
     NonRetryableGeminiError,
@@ -147,3 +147,54 @@ def test_delivery_ready_old_mail_marks_read_and_escalates_without_gemini_call():
     assert gemini.calls == 0
     assert len([e for e in result if isinstance(e, SendMessage)]) == 1
     assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
+
+
+def test_delivery_ready_mail_sub_usecase_does_not_resolve_process_dependencies_during_validation():
+    calls = {"resolver": 0}
+
+    def _gemini_resolver() -> _FakeGeminiClient:
+        calls["resolver"] += 1
+        return _FakeGeminiClient([])
+
+    sub_usecase = MailSubUseCase(
+        retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
+        gemini_client_resolver=_gemini_resolver,
+    )
+
+    non_matching_mail = _mail(datetime.now(timezone.utc)).model_copy(
+        update={"subject": "Not delivery ready"}
+    )
+
+    assert sub_usecase.check_if_mail_matches(non_matching_mail) is False
+    assert calls["resolver"] == 0
+
+
+def test_delivery_ready_mail_sub_usecase_resolves_process_dependencies_only_on_handle():
+    calls = {"resolver": 0}
+
+    def _gemini_resolver() -> _FakeGeminiClient:
+        calls["resolver"] += 1
+        return _FakeGeminiClient(
+            [
+                {
+                    "tracking_number": "T123",
+                    "pickup_location": "Packstation 123",
+                    "due_date": "2026-05-20",
+                    "item": "Book",
+                }
+            ]
+        )
+
+    sub_usecase = MailSubUseCase(
+        retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
+        gemini_client_resolver=_gemini_resolver,
+    )
+
+    matching_mail = _mail(datetime.now(timezone.utc))
+    assert sub_usecase.check_if_mail_matches(matching_mail) is True
+    assert calls["resolver"] == 0
+
+    result = sub_usecase.handle_mail(matching_mail)
+
+    assert calls["resolver"] == 1
+    assert len([e for e in result if isinstance(e, CreateTask)]) == 1

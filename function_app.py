@@ -3,16 +3,17 @@ import azure.functions as func
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-# from cloud.functions.features.bibo_lending_sync_function import (
-#     check_bibo_lending_sync,
-#     check_bibo_lending_sync_wife,
-# )
+from cloud.functions.features.bibo_lending_sync_function import (
+    check_bibo_lending_sync,
+    check_bibo_lending_sync_wife,
+)
 from cloud.functions.features.check_parcel_received_function import (
     check_parcel_received,
 )
 
 # from cloud.functions.features.delivery_ready_function import check_delivery_ready
 from cloud.functions.features.MangaUpdateFunction import check_manga_update
+from cloud.functions.features.mail_check_function import check_mail_check
 
 from cloud.functions.features.mietplan_function import check_mietplan
 from cloud.functions.features.return_tracker_function import check_return_tracker

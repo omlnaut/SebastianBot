@@ -1,7 +1,10 @@
+from typing import Callable, Sequence
+
 from sebastian.usecases.features import (
     bibo_lending_sync,
     check_parcel_received,
     delivery_ready,
+    mail_check,
     manga_update,
     mietplan,
     return_tracker,
@@ -65,6 +68,16 @@ def resolve_delivery_ready(
     )
 
 
+def resolve_delivery_ready_mail_sub_usecase(
+    retry_configuration: GeminiRetryConfiguration | None = None,
+    gemini_client_resolver: Callable[[], delivery_ready.GeminiClient] | None = None,
+) -> mail_check.MailSubUseCase:
+    return delivery_ready.MailSubUseCase(
+        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+        gemini_client_resolver=gemini_client_resolver or resolve_gemini_client,
+    )
+
+
 def resolve_check_parcel_received(
     task_client: check_parcel_received.TaskClient | None = None,
     dhl_client: check_parcel_received.DhlClient | None = None,
@@ -108,6 +121,21 @@ def resolve_return_tracker(
         gmail_client=gmail_client or resolve_gmail_client(),
         gemini_client=gemini_client or resolve_gemini_client(),
         retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+    )
+
+
+def resolve_mail_check(
+    gmail_client: mail_check.GmailClient | None = None,
+    sub_usecases: Sequence[mail_check.MailSubUseCase] | None = None,
+) -> UseCaseHandler[mail_check.Request]:
+    # Phase 1 ordering is owned here in the composition root.
+    # Next phase can append return_tracker mail sub-usecase resolver(s) to this tuple.
+    resolved_sub_usecases = tuple(
+        sub_usecases or (resolve_delivery_ready_mail_sub_usecase(),)
+    )
+    return mail_check.Handler(
+        gmail_client=gmail_client or resolve_gmail_client(),
+        sub_usecases=resolved_sub_usecases,
     )
 
 
