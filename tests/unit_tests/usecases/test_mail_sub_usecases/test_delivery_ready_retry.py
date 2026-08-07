@@ -55,9 +55,7 @@ def _handler(gemini: _FakeGeminiClient) -> Handler:
 
 
 def test_delivery_ready_check_if_mail_matches_from_saved_mail_fixture():
-    fixture_path = (
-        Path(__file__).parent / "fixtures" / "delivery_ready_matching_mail.json"
-    )
+    fixture_path = Path(__file__).parent / "delivery_ready_matching_mail.json"
     mail_payload = json.loads(fixture_path.read_text())
     mail = FullMailResponse.model_validate(mail_payload)
 

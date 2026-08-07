@@ -104,7 +104,7 @@ class Handler:
 
 
 def _subject_matches(subject: str) -> bool:
-    return subject.strip().casefold() == "Paket zur Abholung bereit".casefold()
+    return subject.strip().casefold().startswith("Paket zur Abholung bereit".casefold())
 
 
 def _sender_matches(mail: FullMailResponse) -> bool:
