@@ -91,8 +91,24 @@ The devcontainer includes:
 - Python 3.12
 - Azure Functions Core Tools
 - Azure CLI
+- GitHub CLI (`gh`)
 - Poetry for dependency management
 - All Python dependencies pre-installed
+
+### GitHub CLI Authentication (safe setup)
+
+If you want to manage repository settings (for example, branch protection and auto-merge rules) from inside the devcontainer, use `gh` with a token stored only in your local `.env` file.
+
+1. Copy `.env.sample` to `.env`.
+2. Create a fine-grained personal access token in GitHub.
+3. Add it to `.env` as `GH_TOKEN=...`.
+4. Rebuild or restart the devcontainer so the variable is injected.
+5. Verify with `gh auth status`.
+
+Security notes:
+- `.env` is gitignored in this repository, so your token is not committed.
+- Do not store tokens in tracked files like `README.md`, `pyproject.toml`, or workflow files.
+- Prefer a fine-grained token scoped to this repository only, with minimum required permissions.
 
 ### Testing
 
