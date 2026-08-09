@@ -140,3 +140,4 @@ __azurite_db*__.json
 *.pdf
 .pi/sessions/
 .pi/extensions/python-lsp/node_modules/
+.devcontainer/.vscode-server/

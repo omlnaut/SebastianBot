@@ -12,6 +12,9 @@
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {}
 	},
 	"remoteUser": "root",
+	"mounts": [
+		"source=${localWorkspaceFolder}/.devcontainer/.vscode-server/extensions,target=/root/.vscode-server/extensions,type=bind,consistency=cached"
+	],
 	"runArgs": [
 		"--env-file",
 		"${localWorkspaceFolder}/.env"
