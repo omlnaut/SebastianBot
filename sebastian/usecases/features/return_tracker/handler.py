@@ -2,27 +2,27 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Sequence
+from typing import Callable, Sequence
 
 from sebastian.domain.gmail import FullMailResponse
-from sebastian.domain.task import TaskLists
 from sebastian.domain.side_effect import (
-    SideEffect,
     CreateTask,
     ModifyMailLabel,
     SendMessage,
+    SideEffect,
 )
-from sebastian.usecases.shared.query_builder import GmailQueryBuilder
+from sebastian.domain.task import TaskLists
 from sebastian.usecases.shared.gemini_exceptions import (
     GeminiRetryConfiguration,
     TransientGeminiError,
 )
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import ReturnData, parse_return_email_html
 from .protocols import GeminiClient, GmailClient
 
-__all__ = ["Request", "Handler", "GmailClient", "GeminiClient"]
+__all__ = ["Request", "Handler", "MailSubUseCase", "GmailClient", "GeminiClient"]
 
 
 @dataclass
@@ -30,16 +30,39 @@ class Request:
     pass
 
 
+class MailSubUseCase:
+    def __init__(
+        self,
+        retry_configuration: GeminiRetryConfiguration,
+        gemini_client_resolver: Callable[[], GeminiClient],
+    ):
+        self._retry_configuration = retry_configuration
+        self._gemini_client_resolver = gemini_client_resolver
+
+    def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
+        return _subject_matches(mail.subject) and _sender_matches(mail)
+
+    def handle_mail(self, mail: FullMailResponse) -> Sequence[SideEffect]:
+        handler = Handler(
+            gemini_client=self._gemini_client_resolver(),
+            retry_configuration=self._retry_configuration,
+        )
+        return handler.handle_mail(mail)
+
+
 class Handler(UseCaseHandler[Request]):
     def __init__(
         self,
-        gmail_client: GmailClient,
-        gemini_client: GeminiClient,
-        retry_configuration: GeminiRetryConfiguration,
+        gmail_client: GmailClient | None = None,
+        gemini_client: GeminiClient | None = None,
+        retry_configuration: GeminiRetryConfiguration | None = None,
     ):
         self._gmail_client = gmail_client
         self._gemini_client = gemini_client
-        self._retry_configuration = retry_configuration
+        self._retry_configuration = retry_configuration or GeminiRetryConfiguration()
+
+    def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
+        return _subject_matches(mail.subject) and _sender_matches(mail)
 
     def handle(self, request: Request) -> Sequence[SideEffect]:
         now = datetime.now(timezone.utc)
@@ -48,47 +71,65 @@ class Handler(UseCaseHandler[Request]):
         effects: list[SideEffect] = []
 
         for mail in mails:
-            age = _mail_age(mail, now)
-            if age is None:
-                effects.extend(
-                    _terminal_failure_effects(
-                        mail,
-                        reason=f"Invalid internalDate: {mail.internalDate}",
-                    )
-                )
-                continue
-
-            if age > self._retry_configuration.retry_horizon:
-                effects.extend(
-                    _terminal_failure_effects(
-                        mail,
-                        reason=f"Retry horizon exceeded ({age})",
-                    )
-                )
-                continue
-
-            try:
-                return_data = _parse_with_transient_retry(
-                    mail.content,
-                    self._gemini_client,
-                    self._retry_configuration.immediate_retry_delay_seconds,
-                )
-                effects.append(_map_to_create_task(return_data))
-                effects.append(ModifyMailLabel.MarkAsRead(mail.id))
-            except TransientGeminiError as e:
-                logging.warning(
-                    f"Transient Gemini error for return notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
-                )
-            except Exception as e:
-                effects.extend(
-                    _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
-                )
+            effects.extend(self._handle_mail(mail, now))
 
         return effects
 
-    def _fetch_return_emails(self) -> Sequence[FullMailResponse]:
-        mails = fetch_return_emails(self._gmail_client)
+    def handle_mail(
+        self,
+        mail: FullMailResponse,
+        now: datetime | None = None,
+    ) -> Sequence[SideEffect]:
+        if now is None:
+            now = datetime.now(timezone.utc)
 
+        return self._handle_mail(mail, now)
+
+    def _handle_mail(
+        self,
+        mail: FullMailResponse,
+        now: datetime,
+    ) -> Sequence[SideEffect]:
+        if self._gemini_client is None:
+            raise ValueError("gemini_client is required")
+
+        age = _mail_age(mail, now)
+        if age is None:
+            return _terminal_failure_effects(
+                mail,
+                reason=f"Invalid internalDate: {mail.internalDate}",
+            )
+
+        if age > self._retry_configuration.retry_horizon:
+            return _terminal_failure_effects(
+                mail,
+                reason=f"Retry horizon exceeded ({age})",
+            )
+
+        try:
+            return_data = _parse_with_transient_retry(
+                mail.content,
+                self._gemini_client,
+                self._retry_configuration.immediate_retry_delay_seconds,
+            )
+            return [
+                _map_to_create_task(return_data),
+                ModifyMailLabel.MarkAsRead(mail.id),
+                ModifyMailLabel.MarkAsProcessed(mail.id),
+            ]
+        except TransientGeminiError as e:
+            logging.warning(
+                f"Transient Gemini error for return notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
+            )
+            return []
+        except Exception as e:
+            return _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
+
+    def _fetch_return_emails(self) -> Sequence[FullMailResponse]:
+        if self._gmail_client is None:
+            raise ValueError("gmail_client is required")
+
+        mails = fetch_return_emails(self._gmail_client)
         return mails
 
 
@@ -140,9 +181,7 @@ def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
     return now - received_at
 
 
-def _terminal_failure_effects(
-    mail: FullMailResponse, reason: str
-) -> list[SideEffect]:
+def _terminal_failure_effects(mail: FullMailResponse, reason: str) -> list[SideEffect]:
     return [
         SendMessage(
             message=(
@@ -152,6 +191,19 @@ def _terminal_failure_effects(
         ),
         ModifyMailLabel.MarkAsRead(mail.id),
     ]
+
+
+def _subject_matches(subject: str) -> bool:
+    normalized_subject = subject.strip().casefold()
+    return (
+        normalized_subject.startswith("abgabebestätigung".casefold())
+        or "rücksendung" in normalized_subject
+        or "rückgabe" in normalized_subject
+    )
+
+
+def _sender_matches(mail: FullMailResponse) -> bool:
+    return mail.from_email.strip().casefold() == "rueckgabe@amazon.de"
 
 
 def _map_to_create_task(return_data: ReturnData) -> CreateTask:

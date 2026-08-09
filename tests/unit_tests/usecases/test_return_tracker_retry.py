@@ -78,7 +78,7 @@ def test_return_tracker_transient_retry_then_success():
     assert "is:unread" in gmail.last_query
     assert gemini.calls == 2
     assert len([e for e in result if isinstance(e, CreateTask)]) == 1
-    assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 1
+    assert len([e for e in result if isinstance(e, ModifyMailLabel)]) == 2
 
 
 def test_return_tracker_non_retryable_marks_read_and_escalates():
