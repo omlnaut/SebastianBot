@@ -6,6 +6,7 @@ from typing import Sequence
 from sebastian.domain.gmail import FullMailResponse, GmailLabel
 from sebastian.domain.side_effect import ModifyMailLabel, SendMessage, SideEffect
 from sebastian.usecases.features.mail_check.handler import Handler, Request
+from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
 def _mail(mail_id: str, label_ids: list[str] | None = None) -> FullMailResponse:
@@ -59,26 +60,17 @@ class _FakeSubUseCase:
         return self._effects_by_mail.get(mail.id, [])
 
 
-def test_mail_check_skips_processed_mails():
-    processed_mail = _mail("mail-processed", [GmailLabel.Processed.value])
-    unprocessed_mail = _mail("mail-unprocessed")
-    gmail_client = _FakeGmailClient([processed_mail, unprocessed_mail])
-
-    sub_usecase = _FakeSubUseCase(
-        name="sub-a",
-        should_match={"mail-unprocessed": True, "mail-processed": True},
-        effects_by_mail={"mail-unprocessed": [SendMessage(message="handled")]},
+def test_query_builder_supports_label_filters():
+    query = (
+        GmailQueryBuilder()
+        .has_label(GmailLabel.Processed)
+        .does_not_have_label(GmailLabel.ToRead)
+        .build()
     )
 
-    result = Handler(gmail_client=gmail_client, sub_usecases=[sub_usecase]).handle(
-        Request(cutoff_date=datetime(2026, 1, 1, tzinfo=timezone.utc))
+    assert query == (
+        f"label:{GmailLabel.Processed.name} -label:{GmailLabel.ToRead.name}"
     )
-
-    assert gmail_client.last_query is not None
-    assert "after:" in gmail_client.last_query
-    assert sub_usecase.checked_mail_ids == ["mail-unprocessed"]
-    assert sub_usecase.handled_mail_ids == ["mail-unprocessed"]
-    assert [e.message for e in result if isinstance(e, SendMessage)] == ["handled"]
 
 
 def test_mail_check_marks_unmatched_mail_as_processed():

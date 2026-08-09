@@ -1,6 +1,13 @@
 from datetime import datetime
 
+from sebastian.domain.gmail import GmailLabel
 from sebastian.usecases.shared.dates import to_timestamp
+
+
+def _label_name_for_query(label: GmailLabel | str) -> str:
+    if isinstance(label, GmailLabel):
+        return label.name
+    return label
 
 
 class GmailQueryBuilder:
@@ -38,6 +45,16 @@ class GmailQueryBuilder:
     def is_unread(self) -> "GmailQueryBuilder":
         """Limit query to unread emails"""
         self._query_parts.append("is:unread")
+        return self
+
+    def has_label(self, label: GmailLabel | str) -> "GmailQueryBuilder":
+        """Add a label presence filter"""
+        self._query_parts.append(f"label:{_label_name_for_query(label)}")
+        return self
+
+    def does_not_have_label(self, label: GmailLabel | str) -> "GmailQueryBuilder":
+        """Add a label absence filter"""
+        self._query_parts.append(f"-label:{_label_name_for_query(label)}")
         return self
 
     def after_date(self, date: datetime | int) -> "GmailQueryBuilder":

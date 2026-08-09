@@ -28,8 +28,7 @@ class Handler(UseCaseHandler[Request]):
         self._sub_usecases = tuple(sub_usecases)
 
     def handle(self, request: Request) -> Sequence[SideEffect]:
-        mails = self._fetch_mails_after_cutoff(request.cutoff_date)
-        unprocessed_mails = self._extract_unprocessed_mails(mails)
+        unprocessed_mails = self._fetch_mails_after_cutoff(request.cutoff_date)
 
         effects = self._process_mails(unprocessed_mails)
 
@@ -52,22 +51,15 @@ class Handler(UseCaseHandler[Request]):
                 effects.append(ModifyMailLabel.MarkAsProcessed(mail.id))
         return effects
 
-    def _extract_unprocessed_mails(
-        self, mails: list[FullMailResponse]
-    ) -> list[FullMailResponse]:
-        unprocessed_mails = [
-            mail for mail in mails if not mail.has_label(GmailLabel.Processed)
-        ]
-
-        logging.info(
-            f"MailCheck: skipped {len(mails) - len(unprocessed_mails)} mails already marked as Processed"
-        )
-        return unprocessed_mails
-
     def _fetch_mails_after_cutoff(
         self, cutoff_date: datetime
     ) -> list[FullMailResponse]:
-        query = GmailQueryBuilder().after_date(cutoff_date).build()
+        query = (
+            GmailQueryBuilder()
+            .after_date(cutoff_date)
+            .does_not_have_label(GmailLabel.Processed)
+            .build()
+        )
         mails = self._gmail_client.fetch_mails(query)
         logging.info(
             f"MailCheck: fetched {len(mails)} mails after cutoff date {cutoff_date.isoformat()}"
