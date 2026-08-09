@@ -93,7 +93,7 @@ class Handler(UseCaseHandler[Request]):
         if self._gemini_client is None:
             raise ValueError("gemini_client is required")
 
-        age = _mail_age(mail, now)
+        age = mail.age(now)
         if age is None:
             return _terminal_failure_effects(
                 mail,
@@ -171,16 +171,6 @@ def _parse_with_transient_retry(
         return parse_return_email_html(html, gemini_client)
 
 
-def _mail_age(mail: FullMailResponse, now: datetime) -> timedelta | None:
-    try:
-        timestamp = int(mail.internalDate) / 1000
-    except ValueError:
-        return None
-
-    received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-    return now - received_at
-
-
 def _terminal_failure_effects(mail: FullMailResponse, reason: str) -> list[SideEffect]:
     return [
         SendMessage(
@@ -195,11 +185,7 @@ def _terminal_failure_effects(mail: FullMailResponse, reason: str) -> list[SideE
 
 def _subject_matches(subject: str) -> bool:
     normalized_subject = subject.strip().casefold()
-    return (
-        normalized_subject.startswith("abgabebestätigung".casefold())
-        or "rücksendung" in normalized_subject
-        or "rückgabe" in normalized_subject
-    )
+    return normalized_subject.startswith("ihre rücksendung von ")
 
 
 def _sender_matches(mail: FullMailResponse) -> bool:
