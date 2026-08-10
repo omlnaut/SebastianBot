@@ -11,16 +11,14 @@ azure-functions = "^1.24"
 python-telegram-bot = "^22.5"
 azure-identity = "^1.25"
 azure-keyvault-secrets = "^4.10"
-pydantic = {extras = ["email"], version = "^2.12.5"}
+pydantic = { extras = ["email"], version = "^2.12.5" }
 google-auth-oauthlib = "^1.2"
 google-api-python-client = "^2.187"
 beautifulsoup4 = "^4.14"
 requests = "^2.32.5"
 google-genai = "^2.10.0"
-astroid = "^4.0.2"
 tenacity = "^9.1.2"
 azure-eventgrid = "^4.22.0"
-pydantic-core = "^2.47.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^7.1"
