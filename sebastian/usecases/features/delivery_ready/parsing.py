@@ -3,7 +3,7 @@ from datetime import date
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field
 
-from .protocols import GeminiClient
+from .protocols import LLMClient
 
 
 class PickupData(BaseModel):
@@ -17,7 +17,7 @@ class PickupData(BaseModel):
     )
 
 
-def parse_dhl_pickup_email_html(html: str, gemini_client: GeminiClient) -> PickupData:
+def parse_dhl_pickup_email_html(html: str, gemini_client: LLMClient) -> PickupData:
     soup = BeautifulSoup(html, "html.parser")
     text_content = soup.get_text()
 

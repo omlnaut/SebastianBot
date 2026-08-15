@@ -18,12 +18,12 @@ from sebastian.usecases.shared.gemini_exceptions import (
 )
 
 from .parsing import PickupData, parse_dhl_pickup_email_html
-from .protocols import GeminiClient
+from .protocols import LLMClient
 
 __all__ = [
     "Handler",
     "MailSubUseCase",
-    "GeminiClient",
+    "LLMClient",
 ]
 
 
@@ -31,17 +31,17 @@ class MailSubUseCase:
     def __init__(
         self,
         retry_configuration: GeminiRetryConfiguration,
-        gemini_client_resolver: Callable[[], GeminiClient],
+        llm_client_resolver: Callable[[], LLMClient],
     ):
         self._retry_configuration = retry_configuration
-        self._gemini_client_resolver = gemini_client_resolver
+        self._gemini_client_resolver = llm_client_resolver
 
     def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
         return _subject_matches(mail.subject) and _sender_matches(mail)
 
     def handle_mail(self, mail: FullMailResponse) -> Sequence[SideEffect]:
         handler = Handler(
-            gemini_client=self._gemini_client_resolver(),
+            llm_client=self._gemini_client_resolver(),
             retry_configuration=self._retry_configuration,
         )
         return handler.handle_mail(mail)
@@ -50,10 +50,10 @@ class MailSubUseCase:
 class Handler:
     def __init__(
         self,
-        gemini_client: GeminiClient,
+        llm_client: LLMClient,
         retry_configuration: GeminiRetryConfiguration,
     ):
-        self._gemini_client = gemini_client
+        self._gemini_client = llm_client
         self._retry_configuration = retry_configuration
 
     def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
@@ -113,7 +113,7 @@ def _sender_matches(mail: FullMailResponse) -> bool:
 
 def _parse_with_transient_retry(
     html: str,
-    gemini_client: GeminiClient,
+    gemini_client: LLMClient,
     immediate_retry_delay_seconds: float,
 ) -> PickupData:
     try:

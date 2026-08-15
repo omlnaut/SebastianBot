@@ -1,9 +1,10 @@
 from functools import lru_cache
+from typing_extensions import deprecated
 
 from google.oauth2.credentials import Credentials
-
 from cloud.helper import SecretKeys, get_secret
 from sebastian.clients.bibo.client import BiboClient
+from sebastian.clients.deepseek.client import DeepSeekClient
 from sebastian.clients.dhl.client import DhlClient
 from sebastian.domain.bibo import BiboAccounts
 from sebastian.clients.google.calendar_event.client import CalendarEventClient
@@ -65,10 +66,16 @@ def resolve_mietplan_client() -> MietplanClient:
     return MietplanClient(credentials)
 
 
-@lru_cache()
+@deprecated("Use resolve_google_drive_client instead")
 def resolve_gemini_client() -> GeminiClient:
     credentials = get_secret(SecretKeys.GeminiApiKey)
     return GeminiClient(credentials)
+
+
+@lru_cache()
+def resolve_deepseek_client() -> DeepSeekClient:
+    credentials = get_secret(SecretKeys.DeepSeekCredentials)
+    return DeepSeekClient(credentials)
 
 
 @lru_cache()

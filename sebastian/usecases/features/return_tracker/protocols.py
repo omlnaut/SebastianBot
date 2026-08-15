@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 from sebastian.domain.gmail import FullMailResponse
 
-__all__ = ["GmailClient", "GeminiClient"]
+__all__ = ["GmailClient", "LLMClient"]
 
 T = TypeVar("T", bound=BaseModel)
 
 
-class GeminiClient(Protocol):
+class LLMClient(Protocol):
     def get_response(self, prompt: str, response_schema: type[T]) -> T: ...
 
 

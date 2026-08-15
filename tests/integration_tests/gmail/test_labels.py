@@ -65,8 +65,8 @@ def test_modify_labels(gmail_client: GmailClient):
             .build()
         )
 
-        included_mail_ids = set()
-        excluded_mail_ids = set()
+        included_mail_ids: set[str] = set()
+        excluded_mail_ids: set[str] = set()
         for _ in range(5):
             included_mail_ids = {
                 mail.id for mail in gmail_client.fetch_mails(include_query)

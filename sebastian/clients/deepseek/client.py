@@ -28,7 +28,7 @@ class DeepSeekClient:
                 },
                 {"role": "user", "content": prompt},
             ],
-            "thinking": {"type": "enabled"},
+            "thinking": {"type": "disabled"},
             "reasoning_effort": "high",
             "response_format": {"type": "json_object"},
             "stream": False,

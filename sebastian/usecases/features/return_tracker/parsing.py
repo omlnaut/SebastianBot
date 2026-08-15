@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field
 
-from .protocols import GeminiClient
+from .protocols import LLMClient
 
 
 class ReturnData(BaseModel):
@@ -17,7 +17,7 @@ class ReturnData(BaseModel):
     )
 
 
-def parse_return_email_html(html: str, gemini_client: GeminiClient) -> ReturnData:
+def parse_return_email_html(html: str, gemini_client: LLMClient) -> ReturnData:
     soup = BeautifulSoup(html, "html.parser")
     text = soup.get_text()
 
