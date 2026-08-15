@@ -45,6 +45,18 @@ files = [
 ]
 
 [[package]]
+name = "astroid"
+version = "4.3.0"
+description = "An abstract syntax tree for Python with inference support."
+optional = false
+python-versions = ">=3.10.0"
+groups = ["test"]
+files = [
+    {file = "astroid-4.3.0-py3-none-any.whl", hash = "sha256:47f329c1f4709c479f84f824c4f3a132816603a749cd4aa6ee9030e69951491a"},
+    {file = "astroid-4.3.0.tar.gz", hash = "sha256:2b5b5048d6edc40e748e2728790e444b81c3d358e19cc89db6e973236192362f"},
+]
+
+[[package]]
 name = "asttokens"
 version = "3.0.1"
 description = "Annotate AST trees with source code positions"
@@ -3262,4 +3274,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "1c55e0070420345ef6ed19f5a8a4f2eeed42b38cc1fb7db6e24653f08696e047"
+content-hash = "3e2902bb3cf087db869bdb906e1ebfc0ee7bbce175c21e8affe87a4974ed01d3"
