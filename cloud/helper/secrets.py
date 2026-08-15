@@ -9,6 +9,9 @@ from sebastian.clients.bibo.credentials import BiboCredentials as _BiboCredentia
 from sebastian.clients.google.credentials import GoogleSecret as _GoogleSecret
 from sebastian.clients.google.gemini.credentials import GeminiApiKey as _GeminiApiKey
 from sebastian.clients.MangaUpdate import MangaUpdateSecret as _MangaUpdateSecret
+from sebastian.clients.deepseek.credentials import (
+    DeepSeekApiKey as _DeepSeekCredentials,
+)
 from sebastian.clients.mietplan.credentials import (
     MietplanCredentials as _MietplanCredentials,
 )
@@ -67,6 +70,9 @@ class SecretKeys:
     )
     BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey(
         "BiboCredentials", _BiboCredentials
+    )
+    DeepSeekCredentials: TypedSecretKey[_DeepSeekCredentials] = TypedSecretKey(
+        "DeepSeekApiKey", _DeepSeekCredentials
     )
 
 
