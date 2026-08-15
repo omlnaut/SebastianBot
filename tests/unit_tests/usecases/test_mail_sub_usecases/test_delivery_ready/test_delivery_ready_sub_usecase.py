@@ -30,6 +30,6 @@ def test_mail_matches() -> None:
     mail = _load_mail()
     usecase = MailSubUseCase(
         retry_configuration=GeminiRetryConfiguration(),
-        gemini_client_resolver=lambda: GeminiClientMock(),
+        llm_client_resolver=lambda: GeminiClientMock(),
     )
     assert usecase.check_if_mail_matches(mail)

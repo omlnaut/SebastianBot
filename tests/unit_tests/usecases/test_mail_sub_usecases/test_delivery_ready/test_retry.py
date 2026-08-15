@@ -49,7 +49,7 @@ class _FakeGeminiClient:
 
 def _handler(gemini: _FakeGeminiClient) -> Handler:
     return Handler(
-        gemini_client=gemini,
+        llm_client=gemini,
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
     )
 
@@ -156,7 +156,7 @@ def test_delivery_ready_mail_sub_usecase_does_not_resolve_process_dependencies_d
 
     sub_usecase = MailSubUseCase(
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
-        gemini_client_resolver=_gemini_resolver,
+        llm_client_resolver=_gemini_resolver,
     )
 
     non_matching_mail = _mail(datetime.now(timezone.utc)).model_copy(
@@ -185,7 +185,7 @@ def test_delivery_ready_mail_sub_usecase_resolves_process_dependencies_only_on_h
 
     sub_usecase = MailSubUseCase(
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
-        gemini_client_resolver=_gemini_resolver,
+        llm_client_resolver=_gemini_resolver,
     )
 
     matching_mail = _mail(datetime.now(timezone.utc))

@@ -16,7 +16,6 @@ google-auth-oauthlib = "^1.2"
 google-api-python-client = "^2.187"
 beautifulsoup4 = "^4.14"
 requests = "^2.32.5"
-google-genai = "^2.10.0"
 tenacity = "^9.1.2"
 azure-eventgrid = "^4.22.0"
 
@@ -31,6 +30,7 @@ pytest-cov = "^7.0"
 pytest-archon = "^0.0.7"
 azure-mgmt-eventgrid = "^10.4.0"
 azure-mgmt-web = "^10.1.0"
+astroid = "^4.3.0"
 
 [build-system]
 requires = ["poetry-core"]

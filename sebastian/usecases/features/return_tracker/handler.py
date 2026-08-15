@@ -1,7 +1,7 @@
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Callable, Sequence
 
 from sebastian.domain.gmail import FullMailResponse
@@ -20,9 +20,9 @@ from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .parsing import ReturnData, parse_return_email_html
-from .protocols import GeminiClient, GmailClient
+from .protocols import LLMClient, GmailClient
 
-__all__ = ["Request", "Handler", "MailSubUseCase", "GmailClient", "GeminiClient"]
+__all__ = ["Request", "Handler", "MailSubUseCase", "GmailClient", "LLMClient"]
 
 
 @dataclass
@@ -34,17 +34,17 @@ class MailSubUseCase:
     def __init__(
         self,
         retry_configuration: GeminiRetryConfiguration,
-        gemini_client_resolver: Callable[[], GeminiClient],
+        llm_client_resolver: Callable[[], LLMClient],
     ):
         self._retry_configuration = retry_configuration
-        self._gemini_client_resolver = gemini_client_resolver
+        self._gemini_client_resolver = llm_client_resolver
 
     def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
         return _subject_matches(mail.subject) and _sender_matches(mail)
 
     def handle_mail(self, mail: FullMailResponse) -> Sequence[SideEffect]:
         handler = Handler(
-            gemini_client=self._gemini_client_resolver(),
+            llm_client=self._gemini_client_resolver(),
             retry_configuration=self._retry_configuration,
         )
         return handler.handle_mail(mail)
@@ -54,11 +54,11 @@ class Handler(UseCaseHandler[Request]):
     def __init__(
         self,
         gmail_client: GmailClient | None = None,
-        gemini_client: GeminiClient | None = None,
+        llm_client: LLMClient | None = None,
         retry_configuration: GeminiRetryConfiguration | None = None,
     ):
         self._gmail_client = gmail_client
-        self._gemini_client = gemini_client
+        self._gemini_client = llm_client
         self._retry_configuration = retry_configuration or GeminiRetryConfiguration()
 
     def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
@@ -161,7 +161,7 @@ def fetch_return_emails(
 
 def _parse_with_transient_retry(
     html: str,
-    gemini_client: GeminiClient,
+    gemini_client: LLMClient,
     immediate_retry_delay_seconds: float,
 ) -> ReturnData:
     try:

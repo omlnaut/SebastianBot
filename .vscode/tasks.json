@@ -7,6 +7,12 @@
       "command": "func host start",
       "problemMatcher": "$func-python-watch",
       "isBackground": true
+    },
+    {
+      "type": "shell",
+      "label": "update requirements.txt",
+      "command": "scripts/update_requirements.sh",
+      "problemMatcher": []
     }
   ]
 }

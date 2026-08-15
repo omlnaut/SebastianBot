@@ -3,22 +3,22 @@ from pathlib import Path
 
 import pytest
 
-from cloud.dependencies.clients import resolve_gemini_client
+from cloud.dependencies.clients import resolve_deepseek_client
 from sebastian.usecases.features.delivery_ready.parsing import (
     parse_dhl_pickup_email_html,
 )
-from sebastian.usecases.features.delivery_ready.protocols import GeminiClient
+from sebastian.usecases.features.delivery_ready.protocols import LLMClient
 
 
 @pytest.fixture
-def gemini_client() -> GeminiClient:
-    return resolve_gemini_client()
+def llm_client() -> LLMClient:
+    return resolve_deepseek_client()
 
 
-def test_parsing(gemini_client: GeminiClient):
+def test_parsing(llm_client: LLMClient):
     html = (Path(__file__).parent / "delivery_ready_example.html").read_text()
 
-    parsed = parse_dhl_pickup_email_html(html, gemini_client)
+    parsed = parse_dhl_pickup_email_html(html, llm_client)
 
     assert parsed.tracking_number == "JJD000390016898240196"
     assert parsed.pickup_location == "Packstation 158"

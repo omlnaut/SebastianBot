@@ -70,7 +70,7 @@ def test_return_tracker_transient_retry_then_success():
 
     result = Handler(
         gmail_client=gmail,
-        gemini_client=gemini,
+        llm_client=gemini,
         retry_configuration=GeminiRetryConfiguration(immediate_retry_delay_seconds=0.0),
     ).handle(Request())
 
@@ -88,7 +88,7 @@ def test_return_tracker_non_retryable_marks_read_and_escalates():
 
     result = Handler(
         gmail_client=gmail,
-        gemini_client=gemini,
+        llm_client=gemini,
         retry_configuration=GeminiRetryConfiguration(),
     ).handle(Request())
 
@@ -106,7 +106,7 @@ def test_return_tracker_old_mail_marks_read_and_escalates_without_gemini_call():
 
     result = Handler(
         gmail_client=gmail,
-        gemini_client=gemini,
+        llm_client=gemini,
         retry_configuration=GeminiRetryConfiguration(),
     ).handle(Request())
 
