@@ -9,7 +9,7 @@ repos:
         pass_filenames: false
       - id: poetry-export
         name: Export requirements.txt from Poetry
-        entry: poetry export -f requirements.txt --output requirements.txt --without-hashes
+        entry: scripts/update_requirements.sh
         language: system
         files: ^(pyproject\.toml|poetry\.lock)$
         pass_filenames: false
