@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing_extensions import deprecated
 
 from google.oauth2.credentials import Credentials
 from cloud.helper import SecretKeys, get_secret
@@ -9,7 +8,6 @@ from sebastian.clients.dhl.client import DhlClient
 from sebastian.domain.bibo import BiboAccounts
 from sebastian.clients.google.calendar_event.client import CalendarEventClient
 from sebastian.clients.google.drive.client import GoogleDriveClient
-from sebastian.clients.google.gemini.client import GeminiClient
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.task.client import GoogleTaskClient
 from sebastian.clients.MangaUpdate import MangaUpdateClient
@@ -64,12 +62,6 @@ def resolve_google_drive_client() -> GoogleDriveClient:
 def resolve_mietplan_client() -> MietplanClient:
     credentials = get_secret(SecretKeys.MietplanCredentials)
     return MietplanClient(credentials)
-
-
-@deprecated("Use resolve_google_drive_client instead")
-def resolve_gemini_client() -> GeminiClient:
-    credentials = get_secret(SecretKeys.GeminiApiKey)
-    return GeminiClient(credentials)
 
 
 @lru_cache()
