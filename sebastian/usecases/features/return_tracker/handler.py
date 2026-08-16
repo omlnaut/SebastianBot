@@ -12,10 +12,8 @@ from sebastian.domain.side_effect import (
     SideEffect,
 )
 from sebastian.domain.task import TaskLists
-from sebastian.usecases.shared.gemini_exceptions import (
-    GeminiRetryConfiguration,
-    TransientGeminiError,
-)
+
+from sebastian.usecases.features.mail_check import MailRetryConfiguration
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -33,7 +31,7 @@ class Request:
 class MailSubUseCase:
     def __init__(
         self,
-        retry_configuration: GeminiRetryConfiguration,
+        retry_configuration: MailRetryConfiguration,
         llm_client_resolver: Callable[[], LLMClient],
     ):
         self._retry_configuration = retry_configuration
@@ -55,11 +53,11 @@ class Handler(UseCaseHandler[Request]):
         self,
         gmail_client: GmailClient | None = None,
         llm_client: LLMClient | None = None,
-        retry_configuration: GeminiRetryConfiguration | None = None,
+        retry_configuration: MailRetryConfiguration | None = None,
     ):
         self._gmail_client = gmail_client
         self._gemini_client = llm_client
-        self._retry_configuration = retry_configuration or GeminiRetryConfiguration()
+        self._retry_configuration = retry_configuration or MailRetryConfiguration()
 
     def check_if_mail_matches(self, mail: FullMailResponse) -> bool:
         return _subject_matches(mail.subject) and _sender_matches(mail)
@@ -117,11 +115,7 @@ class Handler(UseCaseHandler[Request]):
                 ModifyMailLabel.MarkAsRead(mail.id),
                 ModifyMailLabel.MarkAsProcessed(mail.id),
             ]
-        except TransientGeminiError as e:
-            logging.warning(
-                f"Transient Gemini error for return notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
-            )
-            return []
+
         except Exception as e:
             return _terminal_failure_effects(mail, reason=f"Parsing failed: {str(e)}")
 
@@ -166,7 +160,7 @@ def _parse_with_transient_retry(
 ) -> ReturnData:
     try:
         return parse_return_email_html(html, gemini_client)
-    except TransientGeminiError:
+    except:
         time.sleep(immediate_retry_delay_seconds)
         return parse_return_email_html(html, gemini_client)
 

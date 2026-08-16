@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from sebastian.clients.bibo.credentials import BiboCredentials as _BiboCredentials
 from sebastian.clients.google.credentials import GoogleSecret as _GoogleSecret
-from sebastian.clients.google.gemini.credentials import GeminiApiKey as _GeminiApiKey
 from sebastian.clients.MangaUpdate import MangaUpdateSecret as _MangaUpdateSecret
 from sebastian.clients.deepseek.credentials import (
     DeepSeekApiKey as _DeepSeekCredentials,
@@ -64,9 +63,6 @@ class SecretKeys:
     )
     MietplanCredentials: TypedSecretKey[_MietplanCredentials] = TypedSecretKey(
         "MietplanCredentials", _MietplanCredentials
-    )
-    GeminiApiKey: TypedSecretKey[_GeminiApiKey] = TypedSecretKey(
-        "GeminiApiKey", _GeminiApiKey
     )
     BiboCredentials: TypedSecretKey[_BiboCredentials] = TypedSecretKey(
         "BiboCredentials", _BiboCredentials

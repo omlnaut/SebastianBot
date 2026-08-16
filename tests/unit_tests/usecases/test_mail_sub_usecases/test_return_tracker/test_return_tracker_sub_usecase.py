@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sebastian.domain.gmail import FullMailResponse
 from pathlib import Path
 
-from sebastian.usecases.shared.gemini_exceptions import GeminiRetryConfiguration
+from sebastian.usecases.features.mail_check import MailRetryConfiguration
 
 
 def _load_mail() -> FullMailResponse:
@@ -27,7 +27,7 @@ def test_mail_matches() -> None:
 
     mail = _load_mail()
     usecase = MailSubUseCase(
-        retry_configuration=GeminiRetryConfiguration(),
+        retry_configuration=MailRetryConfiguration(),
         llm_client_resolver=lambda: GeminiClientMock(),
     )
     assert usecase.check_if_mail_matches(mail)

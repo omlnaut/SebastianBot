@@ -9,7 +9,7 @@ from cloud.functions.side_effects.send_message.models import (
 )
 
 
-@pytest.fixture
+@pytest.fixture  # pyright: ignore
 def test_start() -> datetime:
     """Fixture providing the test start time."""
     return datetime.now()

@@ -10,6 +10,7 @@ from sebastian.usecases.features import (
     return_tracker,
     winsim,
 )
+from sebastian.usecases.features.mail_check import MailRetryConfiguration
 from sebastian.usecases.side_effects import (
     complete_task,
     create_calendar_event,
@@ -18,9 +19,6 @@ from sebastian.usecases.side_effects import (
     modify_calendar_event,
     modify_mail_labels,
     send_telegram_message,
-)
-from sebastian.usecases.shared.gemini_exceptions import (
-    GeminiRetryConfiguration,
 )
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -60,30 +58,30 @@ def resolve_mangaupdate_service(
 
 def resolve_delivery_ready(
     llm_client: delivery_ready.LLMClient | None = None,
-    retry_configuration: GeminiRetryConfiguration | None = None,
+    retry_configuration: MailRetryConfiguration | None = None,
 ) -> delivery_ready.Handler:
     return delivery_ready.Handler(
         llm_client=llm_client or resolve_deepseek_client(),
-        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+        retry_configuration=retry_configuration or MailRetryConfiguration(),
     )
 
 
 def resolve_delivery_ready_mail_sub_usecase(
-    retry_configuration: GeminiRetryConfiguration | None = None,
+    retry_configuration: MailRetryConfiguration | None = None,
     llm_client_resolver: Callable[[], delivery_ready.LLMClient] | None = None,
 ) -> mail_check.MailSubUseCase:
     return delivery_ready.MailSubUseCase(
-        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+        retry_configuration=retry_configuration or MailRetryConfiguration(),
         llm_client_resolver=llm_client_resolver or resolve_deepseek_client,
     )
 
 
 def resolve_return_tracker_mail_sub_usecase(
-    retry_configuration: GeminiRetryConfiguration | None = None,
+    retry_configuration: MailRetryConfiguration | None = None,
     llm_client_resolver: Callable[[], return_tracker.LLMClient] | None = None,
 ) -> mail_check.MailSubUseCase:
     return return_tracker.MailSubUseCase(
-        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+        retry_configuration=retry_configuration or MailRetryConfiguration(),
         llm_client_resolver=llm_client_resolver or resolve_deepseek_client,
     )
 
@@ -125,12 +123,12 @@ def resolve_winsim(
 def resolve_return_tracker(
     gmail_client: return_tracker.GmailClient | None = None,
     llm_client: return_tracker.LLMClient | None = None,
-    retry_configuration: GeminiRetryConfiguration | None = None,
+    retry_configuration: MailRetryConfiguration | None = None,
 ) -> UseCaseHandler[return_tracker.Request]:
     return return_tracker.Handler(
         gmail_client=gmail_client or resolve_gmail_client(),
         llm_client=llm_client or resolve_deepseek_client(),
-        retry_configuration=retry_configuration or GeminiRetryConfiguration(),
+        retry_configuration=retry_configuration or MailRetryConfiguration(),
     )
 
 
