@@ -8,8 +8,8 @@ def modify_labels(
     add_labels: list[GmailLabel] | None = None,
     remove_labels: list[GmailLabel] | None = None,
 ):
-    add_label_ids = [tag.value for tag in (add_labels or [])]
-    remove_label_ids = [tag.value for tag in (remove_labels or [])]
+    add_label_ids = [tag.label_id for tag in (add_labels or [])]
+    remove_label_ids = [tag.label_id for tag in (remove_labels or [])]
     modify_request = {
         "addLabelIds": add_label_ids,
         "removeLabelIds": remove_label_ids,

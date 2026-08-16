@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Sequence
 
-from sebastian.domain.gmail import GmailLabel, FullMailResponse
+from sebastian.domain.gmail import FullMailResponse, GmailLabels
 from sebastian.domain.side_effect import ModifyMailLabel, SideEffect
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -57,7 +57,7 @@ class Handler(UseCaseHandler[Request]):
         query = (
             GmailQueryBuilder()
             .after_date(cutoff_date)
-            .does_not_have_label(GmailLabel.Processed)
+            .does_not_have_label(GmailLabels.Processed)
             .build()
         )
         mails = self._gmail_client.fetch_mails(query)

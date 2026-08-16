@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from sebastian.clients.google.gmail.client import GmailClient
-from sebastian.domain.gmail import GmailLabel
+from sebastian.domain.gmail import GmailLabels
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
@@ -28,7 +28,7 @@ def test_fetch_mails_has_read_state(gmail_client: GmailClient):
     assert target_mail is not None, "Expected at least one already-read email"
 
     try:
-        gmail_client.modify_labels(target_mail.id, add_labels=[GmailLabel.Unread])
+        gmail_client.modify_labels(target_mail.id, add_labels=[GmailLabels.Unread])
 
         updated_mails = gmail_client.fetch_mails(query)
         updated_mail = next(
@@ -39,7 +39,7 @@ def test_fetch_mails_has_read_state(gmail_client: GmailClient):
             updated_mail.is_read is False
         ), f"Expected email with subject {updated_mail.snippet[:20]} to be unread after adding UNREAD label"
     finally:
-        gmail_client.modify_labels(target_mail.id, remove_labels=[GmailLabel.Unread])
+        gmail_client.modify_labels(target_mail.id, remove_labels=[GmailLabels.Unread])
 
     restored_mails = gmail_client.fetch_mails(query)
     restored_mail = next(

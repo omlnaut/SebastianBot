@@ -1,16 +1,23 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class GmailLabel(Enum):
+@dataclass
+class GmailLabel:
+    name: str
+    label_id: str
+
+
+class GmailLabels:
     """Enum mapping readable label names to Gmail label IDs. Fill in actual label IDs as needed."""
 
-    ToRead = "Label_2648990123443534971"
-    Unread = "UNREAD"
-    Processed = "Label_1123571739877587128"
+    ToRead = GmailLabel(name="To Read", label_id="Label_2648990123443534971")
+    Unread = GmailLabel(name="Unread", label_id="UNREAD")
+    Processed = GmailLabel(
+        name="Sebastian/Processed", label_id="Label_1123571739877587128"
+    )
 
 
 class GmailLabelResponse(BaseModel):
@@ -63,7 +70,7 @@ class FullMailResponse(BaseModel):
     pdf_parts: list[PdfMessagePart]
 
     def has_label(self, label: GmailLabel) -> bool:
-        return label.value in self.labelIds
+        return label.label_id in self.labelIds
 
     def age(self, now: datetime | None = None) -> timedelta | None:
         if now is None:

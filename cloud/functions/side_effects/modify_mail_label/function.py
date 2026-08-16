@@ -8,7 +8,7 @@ from cloud.functions.side_effects.shared import (
     send_eventgrid_events,
 )
 from function_app import app
-from sebastian.domain.gmail import GmailLabel
+from sebastian.domain.gmail import GmailLabels
 from sebastian.usecases.side_effects import modify_mail_labels
 
 from .models import ModifyMailLabelEventGrid
@@ -22,7 +22,7 @@ def test_modify_mail_label(
 
     event_model = ModifyMailLabelEventGrid(
         email_id="19bec88a8ef4ddd4",  # taken from test_labels.py
-        add_labels=[GmailLabel.ToRead],
+        add_labels=[GmailLabels.ToRead],
     )
     send_eventgrid_events([event_model])
 

@@ -3,14 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Sequence
 
-from sebastian.domain.gmail import FullMailResponse, GmailLabel
+from sebastian.domain.gmail import FullMailResponse, GmailLabels
 from sebastian.domain.side_effect import ModifyMailLabel, SendMessage, SideEffect
 from sebastian.usecases.features.mail_check.handler import Handler, Request
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
 def _mail(mail_id: str, label_ids: list[str] | None = None) -> FullMailResponse:
-    labels = label_ids or [GmailLabel.Unread.value]
+    labels = label_ids or [GmailLabels.Unread.label_id, GmailLabels.ToRead.label_id]
     internal_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
 
     return FullMailResponse(
@@ -63,13 +63,13 @@ class _FakeSubUseCase:
 def test_query_builder_supports_label_filters():
     query = (
         GmailQueryBuilder()
-        .has_label(GmailLabel.Processed)
-        .does_not_have_label(GmailLabel.ToRead)
+        .has_label(GmailLabels.Processed)
+        .does_not_have_label(GmailLabels.ToRead)
         .build()
     )
 
     assert query == (
-        f"label:{GmailLabel.Processed.name} -label:{GmailLabel.ToRead.name}"
+        f"label:{GmailLabels.Processed.name} -label:{GmailLabels.ToRead.name}"
     )
 
 
@@ -91,7 +91,7 @@ def test_mail_check_marks_unmatched_mail_as_processed():
     processed_effects = [e for e in result if isinstance(e, ModifyMailLabel)]
     assert len(processed_effects) == 1
     assert processed_effects[0].email_id == "mail-1"
-    assert processed_effects[0].add_labels == [GmailLabel.Processed]
+    assert processed_effects[0].add_labels == [GmailLabels.Processed]
 
 
 def test_mail_check_executes_all_matching_sub_usecases_for_same_mail():

@@ -2,7 +2,7 @@ from datetime import datetime
 from time import sleep
 
 from sebastian.clients.google.gmail.client import GmailClient
-from sebastian.domain.gmail import FullMailResponse, GmailLabel
+from sebastian.domain.gmail import FullMailResponse, GmailLabel, GmailLabels
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
@@ -41,14 +41,13 @@ def test_modify_labels(gmail_client: GmailClient):
             label_id in mail.labelIds
         ), f"Label {test_label.name} not found after adding"
 
-    test_label = GmailLabel.ToRead
-    tag_label_id = test_label.value
+    test_label = GmailLabels.Processed
     target_mail = _fetch_mail(gmail_client)
     email_id = target_mail.id
 
     try:
         gmail_client.modify_labels(email_id, add_labels=[test_label])
-        assert_label_present(tag_label_id, email_id)
+        assert_label_present(test_label.label_id, email_id)
 
         include_query = (
             GmailQueryBuilder()
@@ -86,15 +85,19 @@ def test_modify_labels(gmail_client: GmailClient):
         ), "Expected the labeled mail to be excluded from the exclude query"
 
         gmail_client.modify_labels(email_id, remove_labels=[test_label])
-        assert_label_not_present(tag_label_id, email_id)
+        assert_label_not_present(test_label.label_id, email_id)
     finally:
         gmail_client.modify_labels(email_id, remove_labels=[test_label])
 
 
-def test_get_labels_contains_all_enum_labels(gmail_client: GmailClient):
+def test_get_labels_contains_all_domain_labels(gmail_client: GmailClient):
     labels = gmail_client.get_labels()
     returned_label_ids = {label.id for label in labels}
-    expected_label_ids = {label.value for label in GmailLabel}
+    expected_label_ids = {
+        label.label_id
+        for label in vars(GmailLabels).values()
+        if isinstance(label, GmailLabel)
+    }
 
     missing_label_ids = expected_label_ids - returned_label_ids
     assert (

@@ -3,7 +3,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, Field
 
 from sebastian.domain.calendar import Calendars
-from sebastian.domain.gmail import GmailLabel
+from sebastian.domain.gmail import GmailLabel, GmailLabels
 from sebastian.domain.task import TaskLists
 
 
@@ -36,15 +36,15 @@ class ModifyMailLabel(SideEffect):
 
     @classmethod
     def MarkAsRead(cls, email_id: str) -> "ModifyMailLabel":
-        return cls(email_id=email_id, remove_labels=[GmailLabel.Unread])
+        return cls(email_id=email_id, remove_labels=[GmailLabels.Unread])
 
     @classmethod
     def MarkAsUnread(cls, email_id: str) -> "ModifyMailLabel":
-        return cls(email_id=email_id, add_labels=[GmailLabel.Unread])
+        return cls(email_id=email_id, add_labels=[GmailLabels.Unread])
 
     @classmethod
     def MarkAsProcessed(cls, email_id: str) -> "ModifyMailLabel":
-        return cls(email_id=email_id, add_labels=[GmailLabel.Processed])
+        return cls(email_id=email_id, add_labels=[GmailLabels.Processed])
 
 
 class CompleteTask(SideEffect):
