@@ -2,7 +2,7 @@ from datetime import datetime
 from time import sleep
 
 from sebastian.clients.google.gmail.client import GmailClient
-from sebastian.domain.gmail import FullMailResponse, GmailLabels
+from sebastian.domain.gmail import FullMailResponse, GmailLabel, GmailLabels
 from sebastian.usecases.shared.query_builder import GmailQueryBuilder
 
 
@@ -90,13 +90,16 @@ def test_modify_labels(gmail_client: GmailClient):
         gmail_client.modify_labels(email_id, remove_labels=[test_label])
 
 
-# todo: re-enable test
-# def test_get_labels_contains_all_enum_labels(gmail_client: GmailClient):
-#     labels = gmail_client.get_labels()
-#     returned_label_ids = {label.id for label in labels}
-#     expected_label_ids = {label.label_id for label in GmailLabels}
+def test_get_labels_contains_all_domain_labels(gmail_client: GmailClient):
+    labels = gmail_client.get_labels()
+    returned_label_ids = {label.id for label in labels}
+    expected_label_ids = {
+        label.label_id
+        for label in vars(GmailLabels).values()
+        if isinstance(label, GmailLabel)
+    }
 
-#     missing_label_ids = expected_label_ids - returned_label_ids
-#     assert (
-#         not missing_label_ids
-#     ), f"Missing expected Gmail labels: {sorted(missing_label_ids)}"
+    missing_label_ids = expected_label_ids - returned_label_ids
+    assert (
+        not missing_label_ids
+    ), f"Missing expected Gmail labels: {sorted(missing_label_ids)}"
