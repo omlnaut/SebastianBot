@@ -1,3 +1,4 @@
+# pyright: basic
 """
 Integration test to verify Azure Function App environment variables are properly configured.
 

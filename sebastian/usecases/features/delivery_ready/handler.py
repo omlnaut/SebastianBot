@@ -1,4 +1,3 @@
-import logging
 import time
 from datetime import datetime, timezone
 from typing import Callable, Sequence
@@ -12,10 +11,10 @@ from sebastian.domain.side_effect import (
     SideEffect,
 )
 from sebastian.domain.task import TaskLists
-from sebastian.usecases.shared.gemini_exceptions import (
-    GeminiRetryConfiguration,
-    TransientGeminiError,
+from sebastian.usecases.features.mail_check import (
+    MailRetryConfiguration,
 )
+
 
 from .parsing import PickupData, parse_dhl_pickup_email_html
 from .protocols import LLMClient
@@ -30,7 +29,7 @@ __all__ = [
 class MailSubUseCase:
     def __init__(
         self,
-        retry_configuration: GeminiRetryConfiguration,
+        retry_configuration: MailRetryConfiguration,
         llm_client_resolver: Callable[[], LLMClient],
     ):
         self._retry_configuration = retry_configuration
@@ -51,7 +50,7 @@ class Handler:
     def __init__(
         self,
         llm_client: LLMClient,
-        retry_configuration: GeminiRetryConfiguration,
+        retry_configuration: MailRetryConfiguration,
     ):
         self._gemini_client = llm_client
         self._retry_configuration = retry_configuration
@@ -91,11 +90,6 @@ class Handler:
                 ModifyMailLabel.MarkAsRead(mail.id),
                 ModifyMailLabel.MarkAsProcessed(mail.id),
             ]
-        except TransientGeminiError as e:
-            logging.warning(
-                f"Transient Gemini error for delivery notification {mail.id}. Keeping unread for retry. Error: {str(e)}"
-            )
-            return []
         except Exception as e:
             return _terminal_failure_effects(
                 mail,
@@ -118,7 +112,7 @@ def _parse_with_transient_retry(
 ) -> PickupData:
     try:
         return parse_dhl_pickup_email_html(html, gemini_client)
-    except TransientGeminiError:
+    except:
         time.sleep(immediate_retry_delay_seconds)
         return parse_dhl_pickup_email_html(html, gemini_client)
 
