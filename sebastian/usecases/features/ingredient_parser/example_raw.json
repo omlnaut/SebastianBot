@@ -1,0 +1,47 @@
+[
+	{
+		"summary": "430 Gramm Mehl",
+		"uid": "e9a592b5-5d11-4e53-8218-bfe07c59310e",
+		"status": "needs_action"
+	},
+	{
+		"summary": "2 Prisen Salz",
+		"uid": "4ba61b28-94af-49f4-b401-c1d5223aef0f",
+		"status": "needs_action"
+	},
+	{
+		"summary": "170 Gramm Zucker",
+		"uid": "02029b13-37d6-4a50-9f47-2a61a58fc677",
+		"status": "needs_action"
+	},
+	{
+		"summary": "250 Gramm Butter",
+		"uid": "25c425bb-c3c7-42ad-9b87-3a56743791a6",
+		"status": "needs_action"
+	},
+	{
+		"summary": "1 Ei",
+		"uid": "0bb8448f-5b67-4dd1-b9fc-623015f1f5f4",
+		"status": "needs_action"
+	},
+	{
+		"summary": "700 Gramm Zwetschgen",
+		"uid": "0208640f-58cb-453f-b0f5-a4dd95f6b269",
+		"status": "needs_action"
+	},
+	{
+		"summary": "3 Esslöffel Semmelbrösel",
+		"uid": "dc95157f-a17e-4ae2-8cf3-3a55ee874052",
+		"status": "needs_action"
+	},
+	{
+		"summary": "1 Packung Vanillezucker",
+		"uid": "9c65570d-d3b6-4fd3-ab21-584783fd852b",
+		"status": "needs_action"
+	},
+	{
+		"summary": "1 Teelöffel Zimt",
+		"uid": "43390ec6-0eb4-4d8f-8382-bff46ff04581",
+		"status": "needs_action"
+	}
+]
