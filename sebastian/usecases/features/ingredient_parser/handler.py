@@ -3,6 +3,10 @@ from typing import Protocol, TypeVar
 
 from pydantic import BaseModel
 
+from sebastian.usecases.features.ingredient_parser.prompt import (
+    INGREDIENT_PARSER_PROMPT,
+)
+
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -29,14 +33,9 @@ class Handler:
         self._llm_client = llm_client
 
     def handle(self, request: Request) -> list[Ingredient]:
-        prompt = f"""You are an ingredient parser. Always respond in valid JSON format (esp. no newlines in the string): [item: str, description: str].
-			Item should be the name of the ingredient, description everything else (i.e. quantity, size, color). Always respond in the same language as the input. If one ingredient is mentioned multiple times, combine the descriptions (i.e. add the weights).
-			Examples:
-			Input: ["1 cup of sugar", "50g Salz", "2 Stück Butter", "3/4 Liter Brühe", "20g Salz"]
-			Output: [{{"item": "sugar", "description": "1 cup"}}, {{"item": "Salz", "description": "70g"}}, {{"item": "Butter", "description": "2 Stück"}}, {{"item": "Brühe", "description": "3/4 Liter"}}]
-			-----
-			User input: {request.raw_ingredients}
-			"""
+        prompt = INGREDIENT_PARSER_PROMPT.format(
+            raw_ingredients=request.raw_ingredients
+        )
 
         parsed_ingredients = self._llm_client.get_response(
             prompt=prompt, response_schema=Response
