@@ -9,6 +9,7 @@ from sebastian.usecases.features import (
     mietplan,
     return_tracker,
     winsim,
+    ingredient_parser,
 )
 from sebastian.usecases.features.mail_check import MailRetryConfiguration
 from sebastian.usecases.side_effects import (
@@ -203,4 +204,13 @@ def resolve_send_telegram_message(
 ) -> UseCaseHandler[send_telegram_message.Request]:
     return send_telegram_message.Handler(
         telegram_client=telegram_client or resolve_telegram_client(),
+    )
+
+
+# todo: if another one of those direct-call usecases is added, we should probably introduce a generic handler base like for UseCaesHandler
+def resolve_ingredient_parser(
+    llm_client: ingredient_parser.LLMClient | None = None,
+) -> ingredient_parser.Handler:
+    return ingredient_parser.Handler(
+        llm_client=llm_client or resolve_deepseek_client(),
     )
