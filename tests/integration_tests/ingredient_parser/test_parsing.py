@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import pytest
@@ -14,17 +13,9 @@ def ingredient_parser() -> Handler:
 
 
 def test_parse_example_ingredients(ingredient_parser: Handler):
-    example_path = (
-        Path(__file__).parents[2]
-        / "sebastian/usecases/features/ingredient_parser/example_raw.json"
-    )
-    example_values = json.loads(example_path.read_text())
+    example_values = (Path(__file__).parent / "example_raw.json").read_text()
 
-    parsed = ingredient_parser.handle(
-        Request(
-            raw_ingredients=json.dumps([item["summary"] for item in example_values])
-        )
-    )
+    parsed = ingredient_parser.handle(Request(raw_ingredients=example_values))
 
     assert {ingredient.item.casefold() for ingredient in parsed} == {
         "mehl",
