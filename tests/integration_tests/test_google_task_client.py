@@ -65,6 +65,39 @@ def test_google_task_client_integration(google_task_client: GoogleTaskClient):
     check_task_is_completed(task_id)
 
 
+def test_set_task_due_date_on_dateless_task_then_delete(
+    google_task_client: GoogleTaskClient,
+):
+    title = f"Integration Test Dateless Task {datetime.now().isoformat()}"
+    notes = "This is a test task created by the integration test."
+
+    def create_task_without_due_date() -> str:
+        created_task = google_task_client.create_task_with_notes(
+            tasklist=TaskLists.Default, title=title, notes=notes
+        )
+        assert created_task.due is None
+        return created_task.id
+
+    def fetch_task(task_id: str):
+        tasks = google_task_client.get_tasks(tasklist=TaskLists.Default)
+        found_task = first_or_none(tasks, lambda t: t.id == task_id)
+        assert found_task is not None, f"Task with ID '{task_id}' not found."
+        return found_task
+
+    task_id = create_task_without_due_date()
+    assert fetch_task(task_id).due is None
+
+    due_date = datetime(2026, 6, 21, tzinfo=timezone.utc)
+    google_task_client.set_task_due_date(
+        tasklist=TaskLists.Default, task_id=task_id, due_date=due_date
+    )
+    assert fetch_task(task_id).due == due_date
+
+    google_task_client.delete_task(tasklist=TaskLists.Default, task_id=task_id)
+    tasks_after_delete = google_task_client.get_tasks(tasklist=TaskLists.Default)
+    assert first_or_none(tasks_after_delete, lambda t: t.id == task_id) is None
+
+
 def test_get_tasks_for_date_returns_only_completed_when_including_completed(
     google_task_client: GoogleTaskClient,
 ):

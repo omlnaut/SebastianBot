@@ -19,7 +19,11 @@ class GoogleTaskClient:
         return self._service.get_tasklists()
 
     def create_task_with_notes(
-        self, tasklist: TaskLists, title: str, notes: str, due_date: datetime
+        self,
+        tasklist: TaskLists,
+        title: str,
+        notes: str,
+        due_date: datetime | None = None,
     ) -> Task:
         task_body = build_task_body(title, notes, due_date)
         parsed = post_create_task(self._service, tasklist, task_body)
@@ -58,3 +62,11 @@ class GoogleTaskClient:
 
     def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:
         self._service.set_task_to_complete(to_id(tasklist), task_id)
+
+    def set_task_due_date(
+        self, tasklist: TaskLists, task_id: str, due_date: datetime
+    ) -> None:
+        self._service.set_task_due_date(to_id(tasklist), task_id, due_date)
+
+    def delete_task(self, tasklist: TaskLists, task_id: str) -> None:
+        self._service.delete_task(to_id(tasklist), task_id)

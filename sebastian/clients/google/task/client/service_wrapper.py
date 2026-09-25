@@ -48,6 +48,23 @@ class TaskServiceWrapper:
         )
         return TaskResponse(**updated)
 
+    def set_task_due_date(
+        self, tasklist_id: str, task_id: str, due_date: datetime
+    ) -> TaskResponse:
+        updated = (
+            self._service.tasks()
+            .patch(
+                tasklist=tasklist_id,
+                task=task_id,
+                body={"due": due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")},
+            )
+            .execute()
+        )
+        return TaskResponse(**updated)
+
+    def delete_task(self, tasklist_id: str, task_id: str) -> None:
+        self._service.tasks().delete(tasklist=tasklist_id, task=task_id).execute()
+
     def get_tasklists(self) -> list[TaskList]:
         tasklists_response = self._service.tasklists().list().execute()
         items = tasklists_response.get("items", [])
