@@ -62,6 +62,33 @@ class TaskServiceWrapper:
         )
         return TaskResponse(**updated)
 
+    def patch_task(
+        self,
+        tasklist_id: str,
+        task_id: str,
+        title: str,
+        notes: str | None = None,
+        due_date: datetime | None = None,
+    ) -> TaskResponse:
+        updated = (
+            self._service.tasks()
+            .patch(
+                tasklist=tasklist_id,
+                task=task_id,
+                body={
+                    "title": title,
+                    "notes": notes,
+                    "due": (
+                        due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+                        if due_date
+                        else None
+                    ),
+                },
+            )
+            .execute()
+        )
+        return TaskResponse(**updated)
+
     def delete_task(self, tasklist_id: str, task_id: str) -> None:
         self._service.tasks().delete(tasklist=tasklist_id, task=task_id).execute()
 

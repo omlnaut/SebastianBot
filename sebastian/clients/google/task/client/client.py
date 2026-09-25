@@ -68,5 +68,17 @@ class GoogleTaskClient:
     ) -> None:
         self._service.set_task_due_date(to_id(tasklist), task_id, due_date)
 
+    def patch_task(
+        self,
+        tasklist: TaskLists,
+        task_id: str,
+        title: str,
+        notes: str | None = None,
+        due_date: datetime | None = None,
+    ) -> None:
+        self._service.patch_task(
+            to_id(tasklist), task_id, title=title, notes=notes, due_date=due_date
+        )
+
     def delete_task(self, tasklist: TaskLists, task_id: str) -> None:
         self._service.delete_task(to_id(tasklist), task_id)
