@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Self
 
 from pydantic import BaseModel, Field
 
@@ -47,9 +48,13 @@ class ModifyMailLabel(SideEffect):
         return cls(email_id=email_id, add_labels=[GmailLabels.Processed])
 
 
-class CompleteTask(SideEffect):
+class PatchTask(SideEffect):
     tasklist: TaskLists
     task_id: str = Field(min_length=1)
+
+    @classmethod
+    def CompleteTask(cls, tasklist: TaskLists, task_id: str) -> Self:
+        return cls(tasklist=tasklist, task_id=task_id)
 
 
 class DeleteCalendarEvent(SideEffect):

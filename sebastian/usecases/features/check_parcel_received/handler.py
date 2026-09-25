@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from sebastian.domain.delivery_ready_task_note import DeliveryReadyTaskNote
-from sebastian.domain.side_effect import SideEffect, CompleteTask, SendMessage
+from sebastian.domain.side_effect import SideEffect, PatchTask, SendMessage
 from sebastian.domain.task import Task, TaskLists
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
@@ -45,7 +45,9 @@ class Handler(UseCaseHandler[Request]):
 
             try:
                 if self._dhl_client.is_retrieved(note.tracking_number):
-                    effects.append(CompleteTask(tasklist=task.tasklist, task_id=task.id))
+                    effects.append(
+                        PatchTask.CompleteTask(tasklist=task.tasklist, task_id=task.id)
+                    )
                     logging.info(
                         f"CheckParcelReceived: task_id={task.id} marked complete "
                         f"for tracking_number={note.tracking_number}"
@@ -71,4 +73,3 @@ class Handler(UseCaseHandler[Request]):
         for tasklist in tasklists:
             tasks.extend(self._task_client.get_tasks(tasklist=tasklist))
         return tasks
-
