@@ -14,7 +14,7 @@ class Request:
 
 class TaskClient(Protocol):
     def patch_task(
-        self, tasklist: TaskLists, task_id: str, completed: bool | None = None
+        self, tasklist: TaskLists, task_id: str, *, completed: bool | None = None
     ) -> None: ...
 
 
