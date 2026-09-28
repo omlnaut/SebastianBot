@@ -28,7 +28,7 @@ from cloud.helper import parse_payload
 from cloud.helper.event_grid import EventGridInfo, EventGridModel
 from sebastian.domain.side_effect import (
     SideEffect,
-    CompleteTask,
+    PatchTask,
     CreateCalendarEvent,
     CreateTask,
     DeleteCalendarEvent,
@@ -39,7 +39,7 @@ from sebastian.domain.side_effect import (
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 SIDE_EFFECT_MAP: dict[type[SideEffect], type[EventGridModel[Any]]] = {
-    CompleteTask: CompleteTaskEventGrid,
+    PatchTask: CompleteTaskEventGrid,
     CreateCalendarEvent: CreateCalendarEventEventGrid,
     CreateTask: CreateTaskEventGrid,
     DeleteCalendarEvent: DeleteCalendarEventEventGrid,

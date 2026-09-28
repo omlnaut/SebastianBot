@@ -19,7 +19,11 @@ class GoogleTaskClient:
         return self._service.get_tasklists()
 
     def create_task_with_notes(
-        self, tasklist: TaskLists, title: str, notes: str, due_date: datetime
+        self,
+        tasklist: TaskLists,
+        title: str,
+        notes: str,
+        due_date: datetime | None = None,
     ) -> Task:
         task_body = build_task_body(title, notes, due_date)
         parsed = post_create_task(self._service, tasklist, task_body)
@@ -56,5 +60,25 @@ class GoogleTaskClient:
         )
         return [_response_to_domain(task) for task in tasks_response]
 
-    def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:
-        self._service.set_task_to_complete(to_id(tasklist), task_id)
+    def patch_task(
+        self,
+        # todo: TaskRef for identification
+        tasklist: TaskLists,
+        task_id: str,
+        title: str | None = None,
+        notes: str | None = None,
+        due_date: datetime | None = None,
+        completed: bool | None = None,
+    ) -> None:
+        """Setting a parameter None does not update the field"""
+        self._service.patch_task(
+            to_id(tasklist),
+            task_id,
+            title=title,
+            notes=notes,
+            due_date=due_date,
+            completed=completed,
+        )
+
+    def delete_task(self, tasklist: TaskLists, task_id: str) -> None:
+        self._service.delete_task(to_id(tasklist), task_id)

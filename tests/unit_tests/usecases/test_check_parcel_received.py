@@ -1,4 +1,4 @@
-from sebastian.domain.side_effect import CompleteTask
+from sebastian.domain.side_effect import PatchTask
 from sebastian.domain.task import Task, TaskLists
 from sebastian.usecases.features.check_parcel_received.handler import Handler, Request
 
@@ -41,9 +41,13 @@ def test_check_parcel_received_completes_task_when_contract_note_is_retrieved():
     )
     dhl = _FakeDhlClient(retrieved=True)
 
-    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(Request())
+    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(
+        Request()
+    )
 
-    assert result == [CompleteTask(tasklist=TaskLists.Default, task_id="task-1")]
+    assert result == [
+        PatchTask.CompleteTask(tasklist=TaskLists.Default, task_id="task-1")
+    ]
     assert dhl.calls == ["AB12CD34"]
 
 
@@ -51,7 +55,9 @@ def test_check_parcel_received_skips_task_tag_without_tracking_number():
     task = _task("task-1", "Book\nAbholort: Packstation 123\nDELIVERY_READY")
     dhl = _FakeDhlClient(retrieved=True)
 
-    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(Request())
+    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(
+        Request()
+    )
 
     assert result == []
     assert dhl.calls == []
@@ -61,7 +67,9 @@ def test_check_parcel_received_malformed_notes_are_skipped_safely():
     task = _task("task-1", "Book Tracking: inline-value\nDELIVERY_READY")
     dhl = _FakeDhlClient(retrieved=True)
 
-    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(Request())
+    result = Handler(task_client=_FakeTaskClient([task]), dhl_client=dhl).handle(
+        Request()
+    )
 
     assert result == []
     assert dhl.calls == []

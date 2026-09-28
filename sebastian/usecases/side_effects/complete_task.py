@@ -13,9 +13,9 @@ class Request:
 
 
 class TaskClient(Protocol):
-    def set_task_to_completed(self, tasklist: TaskLists, task_id: str) -> None:
-        """Should mark the given task as completed"""
-        ...
+    def patch_task(
+        self, tasklist: TaskLists, task_id: str, *, completed: bool | None = None
+    ) -> None: ...
 
 
 class Handler(UseCaseHandler[Request]):
@@ -23,5 +23,5 @@ class Handler(UseCaseHandler[Request]):
         self._client = task_client
 
     def handle(self, request: Request) -> Sequence[SideEffect]:
-        self._client.set_task_to_completed(request.tasklist, request.task_id)
+        self._client.patch_task(request.tasklist, request.task_id, completed=True)
         return []

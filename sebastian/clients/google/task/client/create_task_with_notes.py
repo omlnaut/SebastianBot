@@ -14,9 +14,13 @@ def post_create_task(
     return created
 
 
-def build_task_body(title: str, notes: str, due_date: datetime) -> dict[str, str]:
-    return {
+def build_task_body(
+    title: str, notes: str, due_date: datetime | None = None
+) -> dict[str, str]:
+    body = {
         "title": title,
         "notes": notes,
-        "due": due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
     }
+    if due_date is not None:
+        body["due"] = due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    return body
