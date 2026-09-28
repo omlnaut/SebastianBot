@@ -46,8 +46,8 @@ def test_google_task_client_integration(google_task_client: GoogleTaskClient):
         return found_task.id
 
     def set_task_as_completed(task_id: str):
-        google_task_client.set_task_to_completed(
-            tasklist=TaskLists.Default, task_id=task_id
+        google_task_client.patch_task(
+            tasklist=TaskLists.Default, task_id=task_id, completed=True
         )
 
     def check_task_is_completed(task_id: str):
@@ -88,7 +88,7 @@ def test_set_task_due_date_on_dateless_task_then_delete(
     assert fetch_task(task_id).due is None
 
     due_date = datetime(2026, 6, 21, tzinfo=timezone.utc)
-    google_task_client.set_task_due_date(
+    google_task_client.patch_task(
         tasklist=TaskLists.Default, task_id=task_id, due_date=due_date
     )
     assert fetch_task(task_id).due == due_date

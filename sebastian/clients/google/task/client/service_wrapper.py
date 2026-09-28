@@ -40,49 +40,30 @@ class TaskServiceWrapper:
         tasks = self._service.tasks().list(**list_params).execute()
         return [TaskResponse(**task) for task in tasks.get("items", [])]
 
-    def set_task_to_complete(self, tasklist_id: str, task_id: str) -> TaskResponse:
-        updated = (
-            self._service.tasks()
-            .patch(tasklist=tasklist_id, task=task_id, body={"status": "completed"})
-            .execute()
-        )
-        return TaskResponse(**updated)
-
-    def set_task_due_date(
-        self, tasklist_id: str, task_id: str, due_date: datetime
-    ) -> TaskResponse:
-        updated = (
-            self._service.tasks()
-            .patch(
-                tasklist=tasklist_id,
-                task=task_id,
-                body={"due": due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")},
-            )
-            .execute()
-        )
-        return TaskResponse(**updated)
-
     def patch_task(
         self,
         tasklist_id: str,
         task_id: str,
-        title: str,
+        title: str | None = None,
         notes: str | None = None,
         due_date: datetime | None = None,
+        completed: bool | None = None,
     ) -> TaskResponse:
+        body: dict[str, str | None] = {}
+        if title is not None:
+            body["title"] = title
+        if due_date is not None:
+            body["due"] = due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        if completed is not None:
+            body["status"] = "completed" if completed else "needsAction"
+        body["notes"] = notes
         updated = (
             self._service.tasks()
             .patch(
                 tasklist=tasklist_id,
                 task=task_id,
                 body={
-                    "title": title,
-                    "notes": notes,
-                    "due": (
-                        due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-                        if due_date
-                        else None
-                    ),
+                    **body,
                 },
             )
             .execute()
