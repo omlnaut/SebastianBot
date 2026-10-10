@@ -10,6 +10,9 @@ from cloud.functions.features.bibo_lending_sync_function import (
 from cloud.functions.features.check_parcel_received_function import (
     check_parcel_received,
 )
+from cloud.functions.features.set_missing_task_due_date_function import (
+    set_missing_task_due_date,
+)
 from cloud.functions.features.ingredient_parser_function import parse_ingredients
 
 # from cloud.functions.features.delivery_ready_function import check_delivery_ready

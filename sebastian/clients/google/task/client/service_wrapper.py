@@ -56,7 +56,8 @@ class TaskServiceWrapper:
             body["due"] = due_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         if completed is not None:
             body["status"] = "completed" if completed else "needsAction"
-        body["notes"] = notes
+        if notes is not None:
+            body["notes"] = notes
         updated = (
             self._service.tasks()
             .patch(

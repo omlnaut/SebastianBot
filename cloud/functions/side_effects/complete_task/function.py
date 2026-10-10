@@ -13,7 +13,10 @@ def complete_task(
 ):
     def create_request(event: CompleteTaskEventGrid) -> usecases.complete_task.Request:
         return usecases.complete_task.Request(
-            tasklist=event.tasklist, task_id=event.task_id
+            tasklist=event.tasklist,
+            task_id=event.task_id,
+            completed=event.completed,
+            due_date=event.due_date,
         )
 
     perform_usecase_from_eventgrid(
