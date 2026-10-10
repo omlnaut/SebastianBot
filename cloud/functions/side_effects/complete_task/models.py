@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
@@ -8,6 +9,8 @@ from sebastian.domain.side_effect import PatchTask
 class CompleteTaskEventGrid(EventGridModel[PatchTask]):
     tasklist: TaskLists
     task_id: str
+    completed: bool | None = None
+    due_date: date | None = None
 
     @classmethod
     @override
@@ -15,4 +18,6 @@ class CompleteTaskEventGrid(EventGridModel[PatchTask]):
         return cls(
             tasklist=app_event.tasklist,
             task_id=app_event.task_id,
+            completed=app_event.completed,
+            due_date=app_event.due_date,
         )

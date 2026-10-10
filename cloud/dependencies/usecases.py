@@ -8,6 +8,7 @@ from sebastian.usecases.features import (
     manga_update,
     mietplan,
     return_tracker,
+    set_missing_task_due_date,
     winsim,
     ingredient_parser,
 )
@@ -94,6 +95,14 @@ def resolve_check_parcel_received(
     return check_parcel_received.Handler(
         task_client=task_client or resolve_google_task_client(),
         dhl_client=dhl_client or resolve_dhl_client(),
+    )
+
+
+def resolve_set_missing_task_due_date(
+    task_client: set_missing_task_due_date.TaskClient | None = None,
+) -> UseCaseHandler[set_missing_task_due_date.Request]:
+    return set_missing_task_due_date.Handler(
+        task_client=task_client or resolve_google_task_client(),
     )
 
 

@@ -51,10 +51,16 @@ class ModifyMailLabel(SideEffect):
 class PatchTask(SideEffect):
     tasklist: TaskLists
     task_id: str = Field(min_length=1)
+    completed: bool | None = None
+    due_date: date | None = None
 
     @classmethod
     def CompleteTask(cls, tasklist: TaskLists, task_id: str) -> Self:
-        return cls(tasklist=tasklist, task_id=task_id)
+        return cls(tasklist=tasklist, task_id=task_id, completed=True)
+
+    @classmethod
+    def SetDueDate(cls, tasklist: TaskLists, task_id: str, due_date: date) -> Self:
+        return cls(tasklist=tasklist, task_id=task_id, due_date=due_date)
 
 
 class DeleteCalendarEvent(SideEffect):
