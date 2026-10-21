@@ -1,10 +1,13 @@
 from google.oauth2.credentials import Credentials
 
+from sebastian.clients.google.gmail.parsing import normalize_hit
 from sebastian.domain.gmail import (
     FullMailResponse,
     GmailLabel,
     GmailLabelResponse,
+    Label,
     PdfAttachment,
+    SearchPage,
 )
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
@@ -43,3 +46,31 @@ class GmailClient:
     def get_labels(self) -> list[GmailLabelResponse]:
         """Fetch all labels available in the authenticated Gmail account."""
         return self._service.fetch_labels()
+
+    def search(
+        self, query: str, limit: int, page_token: str | None = None
+    ) -> SearchPage:
+        """Search mail with a raw Gmail query, returning cheap metadata hits."""
+        page = self._service.list_message_ids(query, limit, page_token)
+        label_names = {label.id: label.name for label in self.labels()}
+        hits = [
+            normalize_hit(self._service.fetch_search_message(message_id), label_names)
+            for message_id in page.ids
+        ]
+        return SearchPage(
+            hits=hits,
+            next_page_token=page.next_page_token,
+            result_size_estimate=page.result_size_estimate,
+        )
+
+    def labels(self) -> list[Label]:
+        """List labels with ids resolved to readable names."""
+        return [
+            Label(
+                id=label.id,
+                name=label.name,
+                type=label.type,
+                visibility=label.label_list_visibility,
+            )
+            for label in self._service.list_labels()
+        ]

@@ -105,3 +105,51 @@ class FullMailResponse(BaseModel):
 
         received_at = datetime.fromtimestamp(timestamp, tz=timezone.utc)
         return now - received_at
+
+
+@dataclass(frozen=True)
+class AttachmentInfo:
+    """Attachment metadata as surfaced by a search hit."""
+
+    filename: str
+    mime_type: str
+    size: int
+
+
+@dataclass(frozen=True)
+class MailHit:
+    """The shared hit shape used by both search results and `show`."""
+
+    id: str
+    thread_id: str
+    sender: str
+    to: list[str]
+    cc: list[str]
+    subject: str
+    date: str | None
+    internal_date: str
+    labels: list[str]
+    label_ids: list[str]
+    snippet: str
+    size_estimate: int
+    has_attachments: bool
+    attachments: list[AttachmentInfo]
+
+
+@dataclass(frozen=True)
+class SearchPage:
+    """One page of a metadata-only search."""
+
+    hits: list[MailHit]
+    next_page_token: str | None
+    result_size_estimate: int | None
+
+
+@dataclass(frozen=True)
+class Label:
+    """A Gmail label with its id resolved to a readable name."""
+
+    id: str
+    name: str
+    type: str | None
+    visibility: str | None

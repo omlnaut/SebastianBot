@@ -1,7 +1,13 @@
 import base64
+from datetime import datetime, timezone
 from email.utils import getaddresses, parsedate_to_datetime
 
-from sebastian.domain.gmail import ParsedAttachment, ParsedMail
+from sebastian.domain.gmail import (
+    AttachmentInfo,
+    MailHit,
+    ParsedAttachment,
+    ParsedMail,
+)
 
 
 def parse_payload(payload: dict) -> ParsedMail:
@@ -100,4 +106,46 @@ def _format_date(value: str | None) -> str | None:
     try:
         return parsedate_to_datetime(value).isoformat()
     except (TypeError, ValueError):
+        return None
+
+
+def normalize_hit(message: dict, label_names: dict[str, str]) -> MailHit:
+    """Turn a raw Gmail message into the shared hit shape, resolving label names."""
+    parsed = parse_payload(message.get("payload") or {})
+    label_ids = list(message.get("labelIds") or [])
+    internal_date = message.get("internalDate") or ""
+
+    return MailHit(
+        id=message["id"],
+        thread_id=message.get("threadId") or "",
+        sender=parsed.sender,
+        to=parsed.to,
+        cc=parsed.cc,
+        subject=parsed.subject,
+        date=parsed.date or _date_from_internal(internal_date),
+        internal_date=internal_date,
+        labels=[label_names.get(label_id, label_id) for label_id in label_ids],
+        label_ids=label_ids,
+        snippet=message.get("snippet") or "",
+        size_estimate=message.get("sizeEstimate") or 0,
+        has_attachments=bool(parsed.attachments),
+        attachments=[
+            AttachmentInfo(
+                filename=attachment.filename,
+                mime_type=attachment.mime_type,
+                size=attachment.size,
+            )
+            for attachment in parsed.attachments
+        ],
+    )
+
+
+def _date_from_internal(internal_date: str) -> str | None:
+    if not internal_date:
+        return None
+    try:
+        return datetime.fromtimestamp(
+            int(internal_date) / 1000, tz=timezone.utc
+        ).isoformat()
+    except (TypeError, ValueError, OverflowError, OSError):
         return None
