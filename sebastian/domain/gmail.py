@@ -55,6 +55,31 @@ class PdfMessagePart(BaseModel):
     body: PdfMessageBody
 
 
+@dataclass(frozen=True)
+class ParsedAttachment:
+    """An attachment discovered anywhere in a mail's part tree."""
+
+    filename: str
+    mime_type: str
+    size: int
+    attachment_id: str | None = None
+
+
+@dataclass(frozen=True)
+class ParsedMail:
+    """A raw Gmail payload normalized into the fields a recall tool needs."""
+
+    sender: str
+    to: list[str]
+    cc: list[str]
+    subject: str
+    date: str | None
+    message_id: str | None
+    text_body: str | None
+    html_body: str | None
+    attachments: list[ParsedAttachment]
+
+
 class FullMailResponse(BaseModel):
     id: str
     threadId: str

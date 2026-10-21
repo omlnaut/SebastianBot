@@ -1,0 +1,15 @@
+{
+  "partId": "",
+  "mimeType": "text/html",
+  "filename": "",
+  "headers": [
+    { "name": "From", "value": "newsletter@example.com" },
+    { "name": "To", "value": "alice@example.com" },
+    { "name": "Subject", "value": "HTML only" },
+    { "name": "Date", "value": "Thu, 15 Oct 2026 07:00:00 +0200" }
+  ],
+  "body": {
+    "size": 58,
+    "data": "PGh0bWw-PGJvZHk-PHA-SGVsbG8gPGI-SFRNTDwvYj4gd29ybGQ8L3A-PC9ib2R5PjwvaHRtbD4="
+  }
+}
