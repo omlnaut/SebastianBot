@@ -2,8 +2,15 @@ import json
 
 from cli.mail import build_service_from_env, main, run
 from sebastian.clients.google.credentials import ENV_VAR
-from sebastian.clients.google.gmail.errors import GmailApiError
-from sebastian.domain.gmail import AttachmentInfo, Label, MailHit, SearchPage, ShownMail
+from sebastian.clients.google.gmail.errors import AttachmentWriteError, GmailApiError
+from sebastian.domain.gmail import (
+    AttachmentInfo,
+    Label,
+    MailHit,
+    SearchPage,
+    ShownMail,
+    WrittenAttachment,
+)
 
 
 class _FakeService:
@@ -12,10 +19,12 @@ class _FakeService:
         page: SearchPage | None = None,
         labels: list[Label] | None = None,
         shown: ShownMail | None = None,
+        written: list[WrittenAttachment] | None = None,
     ):
         self._page = page if page is not None else SearchPage([], None, None)
         self._labels = labels or []
         self._shown = shown
+        self._written = written or []
 
     def search(self, query: str, limit: int, page_token: str | None) -> SearchPage:
         return self._page
@@ -23,6 +32,11 @@ class _FakeService:
     def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail:
         assert self._shown is not None
         return self._shown
+
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        return self._written
 
     def labels(self) -> list[Label]:
         return self._labels
@@ -42,6 +56,11 @@ class _EchoService:
             truncated=False,
         )
 
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        return [WrittenAttachment(f"echo:{message_id}|{out_dir}|{force}", 1)]
+
     def labels(self) -> list[Label]:
         return []
 
@@ -53,8 +72,20 @@ class _FailingService:
     def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail:
         raise GmailApiError("Requested entity was not found.", 404)
 
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        raise GmailApiError("Requested entity was not found.", 404)
+
     def labels(self) -> list[Label]:
         return []
+
+
+class _UnwritableService(_FailingService):
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        raise AttachmentWriteError(f"output directory does not exist: {out_dir}")
 
 
 def _hit() -> MailHit:
@@ -340,6 +371,72 @@ def test_api_failure_is_json_on_stderr_with_exit_code_1(capsys):
     assert json.loads(captured.err) == {
         "command": "search",
         "error": {"kind": "api", "message": "gmail boom"},
+    }
+
+
+def test_attachments_reports_written_paths_and_sizes(capsys, tmp_path):
+    service = _FakeService(
+        written=[
+            WrittenAttachment(str(tmp_path / "Rechnung.pdf"), 91234),
+            WrittenAttachment(str(tmp_path / "Anhang.txt"), 12),
+        ]
+    )
+
+    code = run(["attachments", "m1", "--out", str(tmp_path)], service)
+
+    assert code == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert json.loads(captured.out) == {
+        "command": "attachments",
+        "messageId": "m1",
+        "files": [
+            {"path": str(tmp_path / "Rechnung.pdf"), "size": 91234},
+            {"path": str(tmp_path / "Anhang.txt"), "size": 12},
+        ],
+    }
+
+
+def test_attachments_forwards_the_directory_and_force_flag(capsys):
+    run(["attachments", "m1", "--out", "/tmp/out", "--force"], _EchoService())
+
+    files = json.loads(capsys.readouterr().out)["files"]
+    assert files == [{"path": "echo:m1|/tmp/out|True", "size": 1}]
+
+
+def test_attachments_without_an_output_directory_is_a_usage_error(capsys):
+    code = run(["attachments", "m1"], _FakeService())
+
+    assert code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert json.loads(captured.err)["error"]["kind"] == "usage"
+
+
+def test_attachments_with_an_unknown_message_id_is_an_api_error(capsys):
+    code = run(["attachments", "nope", "--out", "/tmp/out"], _FailingService())
+
+    assert code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert json.loads(captured.err) == {
+        "command": "attachments",
+        "error": {"kind": "api", "message": "Requested entity was not found."},
+    }
+
+
+def test_attachments_filesystem_failure_is_an_io_error(capsys):
+    code = run(["attachments", "m1", "--out", "/does/not/exist"], _UnwritableService())
+
+    assert code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert json.loads(captured.err) == {
+        "command": "attachments",
+        "error": {
+            "kind": "io",
+            "message": "output directory does not exist: /does/not/exist",
+        },
     }
 
 

@@ -63,6 +63,7 @@ class ParsedAttachment:
     mime_type: str
     size: int
     attachment_id: str | None = None
+    inline_data: bytes | None = None
 
 
 @dataclass(frozen=True)
@@ -113,6 +114,14 @@ class AttachmentInfo:
 
     filename: str
     mime_type: str
+    size: int
+
+
+@dataclass(frozen=True)
+class WrittenAttachment:
+    """One attachment written to disk."""
+
+    path: str
     size: int
 
 

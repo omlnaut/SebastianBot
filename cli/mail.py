@@ -9,8 +9,18 @@ from sebastian.clients.google.credentials import (
 )
 from sebastian.clients.google.gmail.body import BODY_FORMAT_TEXT, BODY_FORMATS
 from sebastian.clients.google.gmail.client import GmailClient
-from sebastian.clients.google.gmail.errors import GmailApiError, GmailAuthError
-from sebastian.domain.gmail import Label, MailHit, SearchPage, ShownMail
+from sebastian.clients.google.gmail.errors import (
+    AttachmentWriteError,
+    GmailApiError,
+    GmailAuthError,
+)
+from sebastian.domain.gmail import (
+    Label,
+    MailHit,
+    SearchPage,
+    ShownMail,
+    WrittenAttachment,
+)
 
 DEFAULT_LIMIT = 25
 MAX_LIMIT = 200
@@ -23,6 +33,10 @@ class GmailReadService(Protocol):
     def search(self, query: str, limit: int, page_token: str | None) -> SearchPage: ...
 
     def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail: ...
+
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]: ...
 
     def labels(self) -> list[Label]: ...
 
@@ -75,6 +89,8 @@ def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
             return _search(args, service)
         if command == "show":
             return _show(args, service)
+        if command == "attachments":
+            return _attachments(args, service)
         return _labels(service)
     except UsageError as error:
         return _emit_error(command, "usage", str(error), exit_code=2)
@@ -82,6 +98,8 @@ def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
         return _emit_error(command, "auth", str(error))
     except GmailApiError as error:
         return _emit_error(command, "api", str(error))
+    except AttachmentWriteError as error:
+        return _emit_error(command, "io", str(error))
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -104,6 +122,11 @@ def _build_parser() -> argparse.ArgumentParser:
     show.add_argument(
         "--max-chars", dest="max_chars", type=_at_least_one, default=DEFAULT_MAX_CHARS
     )
+
+    attachments = commands.add_parser("attachments")
+    attachments.add_argument("message_id")
+    attachments.add_argument("--out", required=True)
+    attachments.add_argument("--force", action="store_true")
 
     commands.add_parser("labels")
 
@@ -138,6 +161,22 @@ def _show(args: argparse.Namespace, service: GmailReadService) -> int:
                 "bodyFormat": shown.body_format,
                 "truncated": shown.truncated,
             },
+        }
+    )
+    return 0
+
+
+def _attachments(args: argparse.Namespace, service: GmailReadService) -> int:
+    _emit(
+        {
+            "command": "attachments",
+            "messageId": args.message_id,
+            "files": [
+                {"path": written.path, "size": written.size}
+                for written in service.save_attachments(
+                    args.message_id, args.out, args.force
+                )
+            ],
         }
     )
     return 0

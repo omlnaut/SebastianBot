@@ -1,5 +1,6 @@
 from google.oauth2.credentials import Credentials
 
+from sebastian.clients.google.gmail.attachments import write_attachments
 from sebastian.clients.google.gmail.body import render_body, truncate
 from sebastian.clients.google.gmail.parsing import normalize_hit, parse_payload
 from sebastian.domain.gmail import (
@@ -10,6 +11,7 @@ from sebastian.domain.gmail import (
     PdfAttachment,
     SearchPage,
     ShownMail,
+    WrittenAttachment,
 )
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
@@ -79,6 +81,21 @@ class GmailClient:
 
     def _label_names(self) -> dict[str, str]:
         return {label.id: label.name for label in self.labels()}
+
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        """Write one mail's attachments into ``out_dir``, fetching content now."""
+        message = self._service.fetch_full_message(message_id)
+        parsed = parse_payload(message.get("payload") or {})
+        return write_attachments(
+            parsed.attachments,
+            out_dir,
+            force,
+            fetch=lambda attachment_id: self._service.fetch_attachment(
+                message_id, attachment_id
+            ),
+        )
 
     def labels(self) -> list[Label]:
         """List labels with ids resolved to readable names."""

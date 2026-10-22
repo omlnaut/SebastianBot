@@ -196,6 +196,20 @@ class GmailServiceWrapper:
 
     @_translate_errors
     @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        """Download one attachment's content."""
+        attachment = (
+            self._service.users()
+            .messages()
+            .attachments()
+            .get(userId="me", messageId=message_id, id=attachment_id)
+            .execute()
+        )
+        data = attachment.get("data") or ""
+        return base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
     def list_labels(self) -> list[GmailLabelResponse]:
         """Fetch labels, with client errors mapped to typed Gmail errors."""
         response = self._service.users().labels().list(userId="me").execute()

@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 
 from sebastian.clients.google.gmail.client import client as gmail_client_module
 from sebastian.clients.google.gmail.client.client import GmailClient
+from sebastian.clients.google.gmail.errors import AttachmentWriteError
 from sebastian.domain.gmail import GmailLabelResponse
 
 FIXTURES = Path(__file__).parent / "fixtures" / "gmail"
@@ -17,9 +18,14 @@ class _FakeWrapper:
 
     def __init__(self, message: dict[str, Any]):
         self._message = message
+        self.fetched: list[tuple[str, str]] = []
 
     def fetch_full_message(self, msg_id: str) -> dict[str, Any]:
         return self._message
+
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        self.fetched.append((message_id, attachment_id))
+        return f"bytes-of-{attachment_id}".encode()
 
     def list_labels(self) -> list[GmailLabelResponse]:
         return [
@@ -40,17 +46,20 @@ def _message(payload_file: str, message_id: str = "m1") -> dict[str, Any]:
     }
 
 
-def _client(monkeypatch: pytest.MonkeyPatch, message: dict[str, Any]) -> GmailClient:
+def _client(
+    monkeypatch: pytest.MonkeyPatch, message: dict[str, Any]
+) -> tuple[GmailClient, _FakeWrapper]:
+    wrapper = _FakeWrapper(message)
     monkeypatch.setattr(
         gmail_client_module,
         "GmailServiceWrapper",
-        lambda _credentials: _FakeWrapper(message),
+        lambda _credentials: wrapper,
     )
-    return GmailClient(cast(Credentials, object()))
+    return GmailClient(cast(Credentials, object())), wrapper
 
 
 def test_show_returns_the_hit_shape_with_a_text_body(monkeypatch):
-    client = _client(monkeypatch, _message("nested_related.json"))
+    client, _wrapper = _client(monkeypatch, _message("nested_related.json"))
 
     shown = client.show("m1", "text", 20000)
 
@@ -64,7 +73,7 @@ def test_show_returns_the_hit_shape_with_a_text_body(monkeypatch):
 
 
 def test_show_falls_back_to_converted_html_for_html_only_mail(monkeypatch):
-    client = _client(monkeypatch, _message("html_only.json"))
+    client, _wrapper = _client(monkeypatch, _message("html_only.json"))
 
     shown = client.show("m1", "text", 20000)
 
@@ -72,7 +81,7 @@ def test_show_falls_back_to_converted_html_for_html_only_mail(monkeypatch):
 
 
 def test_show_returns_raw_html_when_requested(monkeypatch):
-    client = _client(monkeypatch, _message("html_only.json"))
+    client, _wrapper = _client(monkeypatch, _message("html_only.json"))
 
     shown = client.show("m1", "html", 20000)
 
@@ -81,7 +90,7 @@ def test_show_returns_raw_html_when_requested(monkeypatch):
 
 
 def test_show_cuts_an_over_long_body_and_flags_it(monkeypatch):
-    client = _client(monkeypatch, _message("plain_text.json"))
+    client, _wrapper = _client(monkeypatch, _message("plain_text.json"))
 
     shown = client.show("m1", "text", 5)
 
@@ -90,7 +99,7 @@ def test_show_cuts_an_over_long_body_and_flags_it(monkeypatch):
 
 
 def test_show_keeps_a_body_under_the_limit_untruncated(monkeypatch):
-    client = _client(monkeypatch, _message("plain_text.json"))
+    client, _wrapper = _client(monkeypatch, _message("plain_text.json"))
 
     shown = client.show("m1", "text", 20000)
 
@@ -99,7 +108,7 @@ def test_show_keeps_a_body_under_the_limit_untruncated(monkeypatch):
 
 
 def test_show_includes_headers_and_the_attachment_list(monkeypatch):
-    client = _client(monkeypatch, _message("nested_attachment.json"))
+    client, _wrapper = _client(monkeypatch, _message("nested_attachment.json"))
 
     shown = client.show("m1", "text", 20000)
 
@@ -109,3 +118,36 @@ def test_show_includes_headers_and_the_attachment_list(monkeypatch):
     assert [attachment.filename for attachment in shown.hit.attachments] == [
         "Rechnung.pdf"
     ]
+
+
+def test_save_attachments_writes_nested_attachments_with_fetched_content(
+    monkeypatch, tmp_path
+):
+    client, wrapper = _client(monkeypatch, _message("nested_attachment.json"))
+
+    written = client.save_attachments("m1", str(tmp_path), force=False)
+
+    assert [(Path(item.path).name, item.size) for item in written] == [
+        ("Rechnung.pdf", len(b"bytes-of-att-1"))
+    ]
+    assert wrapper.fetched == [("m1", "att-1")]
+    assert (tmp_path / "Rechnung.pdf").read_bytes() == b"bytes-of-att-1"
+
+
+def test_save_attachments_refuses_an_existing_file_without_force(monkeypatch, tmp_path):
+    client, _wrapper = _client(monkeypatch, _message("nested_attachment.json"))
+    (tmp_path / "Rechnung.pdf").write_bytes(b"keep me")
+
+    with pytest.raises(AttachmentWriteError):
+        client.save_attachments("m1", str(tmp_path), force=False)
+
+    assert (tmp_path / "Rechnung.pdf").read_bytes() == b"keep me"
+
+
+def test_save_attachments_overwrites_an_existing_file_with_force(monkeypatch, tmp_path):
+    client, _wrapper = _client(monkeypatch, _message("nested_attachment.json"))
+    (tmp_path / "Rechnung.pdf").write_bytes(b"old")
+
+    client.save_attachments("m1", str(tmp_path), force=True)
+
+    assert (tmp_path / "Rechnung.pdf").read_bytes() == b"bytes-of-att-1"

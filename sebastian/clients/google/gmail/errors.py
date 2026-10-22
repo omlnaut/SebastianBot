@@ -12,3 +12,7 @@ class GmailApiError(GmailError):
 
 class GmailAuthError(GmailError):
     """Gmail rejected the credentials or token refresh."""
+
+
+class AttachmentWriteError(GmailError):
+    """An attachment could not be written to the output directory."""

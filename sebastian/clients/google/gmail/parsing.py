@@ -70,20 +70,26 @@ def _collect_attachments(payload: dict) -> list[ParsedAttachment]:
         if not filename:
             continue
         body = part.get("body") or {}
+        inline = body.get("data")
         attachments.append(
             ParsedAttachment(
                 filename=filename,
                 mime_type=part.get("mimeType") or "",
                 size=body.get("size") or 0,
                 attachment_id=body.get("attachmentId"),
+                inline_data=_decode_bytes(inline) if inline else None,
             )
         )
     return attachments
 
 
-def _decode(data: str) -> str:
+def _decode_bytes(data: str) -> bytes:
     padding = "=" * (-len(data) % 4)
-    return base64.urlsafe_b64decode(data + padding).decode("utf-8", errors="replace")
+    return base64.urlsafe_b64decode(data + padding)
+
+
+def _decode(data: str) -> str:
+    return _decode_bytes(data).decode("utf-8", errors="replace")
 
 
 def _format_single_address(value: str | None) -> str:
