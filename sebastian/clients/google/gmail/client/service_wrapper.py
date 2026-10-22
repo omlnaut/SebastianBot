@@ -3,7 +3,7 @@
 import base64
 import re
 from functools import wraps
-from typing import Self
+from typing import Any, Self
 
 from google.auth.exceptions import RefreshError, TransportError
 from google.oauth2.credentials import Credentials
@@ -174,12 +174,23 @@ class GmailServiceWrapper:
 
     @_translate_errors
     @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
-    def fetch_search_message(self, msg_id: str) -> dict:
+    def fetch_search_message(self, msg_id: str) -> dict[str, Any]:
         """Fetch a search hit: metadata and part tree, but no body bytes."""
         return (
             self._service.users()
             .messages()
             .get(userId="me", id=msg_id, format="full", fields=SEARCH_FIELDS)
+            .execute()
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_full_message(self, msg_id: str) -> dict[str, Any]:
+        """Fetch one whole message, body bytes included."""
+        return (
+            self._service.users()
+            .messages()
+            .get(userId="me", id=msg_id, format="full")
             .execute()
         )
 

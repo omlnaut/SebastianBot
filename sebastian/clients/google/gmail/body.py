@@ -2,6 +2,10 @@ from bs4 import BeautifulSoup
 
 from sebastian.domain.gmail import ParsedMail
 
+BODY_FORMAT_TEXT = "text"
+BODY_FORMAT_HTML = "html"
+BODY_FORMATS = (BODY_FORMAT_TEXT, BODY_FORMAT_HTML)
+
 _BLOCK_TAGS = (
     "p",
     "div",
@@ -37,3 +41,24 @@ def render_text_body(parsed: ParsedMail) -> str:
     if parsed.html_body:
         return html_to_text(parsed.html_body)
     return ""
+
+
+def render_body(parsed: ParsedMail, body_format: str = BODY_FORMAT_TEXT) -> str:
+    """Render a body in the requested format.
+
+    ``text`` prefers the plain-text part and converts HTML when there is none, so
+    an HTML-only mail is never silently empty. ``html`` returns the raw HTML part
+    and falls back to the plain-text body when the mail carries no HTML at all.
+    """
+    if body_format not in BODY_FORMATS:
+        raise ValueError(f"unknown body format: {body_format}")
+    if body_format == BODY_FORMAT_HTML:
+        return parsed.html_body or parsed.text_body or ""
+    return render_text_body(parsed)
+
+
+def truncate(body: str, max_chars: int) -> tuple[str, bool]:
+    """Cut a body to ``max_chars`` and report whether anything was dropped."""
+    if len(body) <= max_chars:
+        return body, False
+    return body[:max_chars], True

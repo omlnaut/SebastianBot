@@ -7,20 +7,22 @@ from sebastian.clients.google.credentials import (
     CredentialsError,
     load_credentials_from_env,
 )
+from sebastian.clients.google.gmail.body import BODY_FORMAT_TEXT, BODY_FORMATS
 from sebastian.clients.google.gmail.client import GmailClient
 from sebastian.clients.google.gmail.errors import GmailApiError, GmailAuthError
-from sebastian.domain.gmail import Label, MailHit, SearchPage
+from sebastian.domain.gmail import Label, MailHit, SearchPage, ShownMail
 
 DEFAULT_LIMIT = 25
 MAX_LIMIT = 200
+DEFAULT_MAX_CHARS = 20000
 
 
 class GmailReadService(Protocol):
     """The read-only Gmail surface the CLI adapts to JSON."""
 
-    def search(
-        self, query: str, limit: int, page_token: str | None
-    ) -> SearchPage: ...
+    def search(self, query: str, limit: int, page_token: str | None) -> SearchPage: ...
+
+    def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail: ...
 
     def labels(self) -> list[Label]: ...
 
@@ -36,12 +38,43 @@ class _Parser(argparse.ArgumentParser):
 
 def run(argv: Sequence[str], service: GmailReadService) -> int:
     """Run one invocation against the injected service and return an exit code."""
-    command = _peek_command(argv)
     try:
-        args = _build_parser().parse_args(list(argv))
-        command = args.command
+        args = _parse_args(argv)
+    except UsageError as error:
+        return _emit_error(_peek_command(argv), "usage", str(error), exit_code=2)
+    return _dispatch(args, service)
+
+
+def main(argv: Sequence[str] | None = None, service_factory=None) -> int:
+    """Validate argv, build the real service from the environment, then run."""
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    try:
+        args = _parse_args(arguments)
+    except UsageError as error:
+        return _emit_error(_peek_command(arguments), "usage", str(error), exit_code=2)
+    factory = service_factory or build_service_from_env
+    try:
+        service = factory()
+    except CredentialsError as error:
+        return _emit_error(args.command, "auth", str(error))
+    return _dispatch(args, service)
+
+
+def build_service_from_env(env: Mapping[str, str] | None = None) -> GmailClient:
+    return GmailClient(load_credentials_from_env(env))
+
+
+def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
+    return _build_parser().parse_args(list(argv))
+
+
+def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
+    command = args.command
+    try:
         if command == "search":
             return _search(args, service)
+        if command == "show":
+            return _show(args, service)
         return _labels(service)
     except UsageError as error:
         return _emit_error(command, "usage", str(error), exit_code=2)
@@ -51,30 +84,26 @@ def run(argv: Sequence[str], service: GmailReadService) -> int:
         return _emit_error(command, "api", str(error))
 
 
-def main(argv: Sequence[str] | None = None, service_factory=None) -> int:
-    """Build the real service from the environment, then run."""
-    arguments = list(sys.argv[1:] if argv is None else argv)
-    command = _peek_command(arguments)
-    factory = service_factory or build_service_from_env
-    try:
-        service = factory()
-    except CredentialsError as error:
-        return _emit_error(command, "auth", str(error))
-    return run(arguments, service)
-
-
-def build_service_from_env(env: Mapping[str, str] | None = None) -> GmailClient:
-    return GmailClient(load_credentials_from_env(env))
-
-
 def _build_parser() -> argparse.ArgumentParser:
     parser = _Parser(prog="seamail")
     commands = parser.add_subparsers(dest="command", required=True)
 
     search = commands.add_parser("search")
     search.add_argument("query")
-    search.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
+    search.add_argument("--limit", type=_at_least_one, default=DEFAULT_LIMIT)
     search.add_argument("--page-token", dest="page_token")
+
+    show = commands.add_parser("show")
+    show.add_argument("message_id")
+    show.add_argument(
+        "--format",
+        dest="body_format",
+        choices=BODY_FORMATS,
+        default=BODY_FORMAT_TEXT,
+    )
+    show.add_argument(
+        "--max-chars", dest="max_chars", type=_at_least_one, default=DEFAULT_MAX_CHARS
+    )
 
     commands.add_parser("labels")
 
@@ -93,6 +122,22 @@ def _search(args: argparse.Namespace, service: GmailReadService) -> int:
             "resultSizeEstimate": page.result_size_estimate,
             "nextPageToken": page.next_page_token,
             "hits": [_hit_json(hit) for hit in page.hits],
+        }
+    )
+    return 0
+
+
+def _show(args: argparse.Namespace, service: GmailReadService) -> int:
+    shown = service.show(args.message_id, args.body_format, args.max_chars)
+    _emit(
+        {
+            "command": "show",
+            "message": {
+                **_hit_json(shown.hit),
+                "body": shown.body,
+                "bodyFormat": shown.body_format,
+                "truncated": shown.truncated,
+            },
         }
     )
     return 0
@@ -117,9 +162,18 @@ def _labels(service: GmailReadService) -> int:
 
 
 def _effective_limit(limit: int) -> int:
-    if limit < 1:
-        raise UsageError("--limit must be at least 1")
     return min(limit, MAX_LIMIT)
+
+
+def _at_least_one(raw: str) -> int:
+    """An argparse type that rejects non-positive numbers as a usage error."""
+    try:
+        value = int(raw)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid integer: {raw}") from None
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return value
 
 
 def _hit_json(hit: MailHit) -> dict:
@@ -158,7 +212,9 @@ def _emit(payload: dict) -> None:
     print(json.dumps(payload), file=sys.stdout)
 
 
-def _emit_error(command: str | None, kind: str, message: str, exit_code: int = 1) -> int:
+def _emit_error(
+    command: str | None, kind: str, message: str, exit_code: int = 1
+) -> int:
     error = {"command": command, "error": {"kind": kind, "message": message}}
     print(json.dumps(error), file=sys.stderr)
     return exit_code

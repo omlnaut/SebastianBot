@@ -146,6 +146,16 @@ class SearchPage:
 
 
 @dataclass(frozen=True)
+class ShownMail:
+    """One mail read in full: the shared hit shape plus its rendered body."""
+
+    hit: MailHit
+    body: str
+    body_format: str
+    truncated: bool
+
+
+@dataclass(frozen=True)
 class Label:
     """A Gmail label with its id resolved to a readable name."""
 

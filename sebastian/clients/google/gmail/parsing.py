@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime, timezone
 from email.utils import getaddresses, parsedate_to_datetime
+from typing import Any
 
 from sebastian.domain.gmail import (
     AttachmentInfo,
@@ -10,7 +11,7 @@ from sebastian.domain.gmail import (
 )
 
 
-def parse_payload(payload: dict) -> ParsedMail:
+def parse_payload(payload: dict[str, Any]) -> ParsedMail:
     """Turn a raw Gmail message payload into a normalized mail model.
 
     Fixes, in one place, the three parsing defects a recall tool hits:
@@ -109,7 +110,7 @@ def _format_date(value: str | None) -> str | None:
         return None
 
 
-def normalize_hit(message: dict, label_names: dict[str, str]) -> MailHit:
+def normalize_hit(message: dict[str, Any], label_names: dict[str, str]) -> MailHit:
     """Turn a raw Gmail message into the shared hit shape, resolving label names."""
     parsed = parse_payload(message.get("payload") or {})
     label_ids = list(message.get("labelIds") or [])
