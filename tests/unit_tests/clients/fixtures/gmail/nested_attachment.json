@@ -1,0 +1,38 @@
+{
+  "partId": "",
+  "mimeType": "multipart/mixed",
+  "filename": "",
+  "headers": [
+    { "name": "From", "value": "Vendor <service@vendor.example>" },
+    { "name": "To", "value": "alice@example.com" },
+    { "name": "Subject", "value": "Your invoice" },
+    { "name": "Date", "value": "Sat, 17 Oct 2026 08:30:00 +0000" }
+  ],
+  "parts": [
+    {
+      "partId": "0",
+      "mimeType": "multipart/alternative",
+      "filename": "",
+      "parts": [
+        {
+          "partId": "0.0",
+          "mimeType": "text/plain",
+          "filename": "",
+          "body": { "size": 10, "data": "UGxhaW4gYm9keQ==" }
+        },
+        {
+          "partId": "0.1",
+          "mimeType": "text/html",
+          "filename": "",
+          "body": { "size": 24, "data": "PHA-SFRNTCA8aT5ib2R5PC9pPjwvcD4=" }
+        }
+      ]
+    },
+    {
+      "partId": "1",
+      "mimeType": "application/pdf",
+      "filename": "Rechnung.pdf",
+      "body": { "size": 91234, "attachmentId": "att-1" }
+    }
+  ]
+}

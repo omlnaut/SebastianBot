@@ -2,13 +2,18 @@
 
 import base64
 import re
-from typing import Self
+from functools import wraps
+from typing import Any, Self
 
+from google.auth.exceptions import RefreshError, TransportError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from pydantic import BaseModel, ConfigDict, Field
+from tenacity import RetryError
 
 from sebastian.clients.google.gmail.client.retry_decorator import retry_on_network_error
+from sebastian.clients.google.gmail.errors import GmailApiError, GmailAuthError
 from sebastian.domain.gmail import FullMailResponse, GmailLabelResponse, PdfMessagePart
 
 
@@ -18,6 +23,69 @@ class MessageId(BaseModel):
     @classmethod
     def from_response(cls, response: dict) -> Self:
         return cls(id=response["id"])
+
+
+class MessageIdPage(BaseModel):
+    ids: list[str]
+    next_page_token: str | None = None
+    result_size_estimate: int | None = None
+
+
+def _search_fields() -> str:
+    """Projection for a search hit: metadata plus the part tree, never body data."""
+    leaves = ("filename", "mimeType", "body/size")
+    nested = [
+        f"payload/{'/'.join(['parts'] * depth)}/{leaf}"
+        for depth in range(1, 5)
+        for leaf in leaves
+    ]
+    return ",".join(
+        [
+            "id",
+            "threadId",
+            "labelIds",
+            "snippet",
+            "sizeEstimate",
+            "internalDate",
+            "payload/mimeType",
+            "payload/filename",
+            "payload/body/size",
+            "payload/headers",
+            *nested,
+        ]
+    )
+
+
+SEARCH_FIELDS = _search_fields()
+
+
+def _translate_errors(function):
+    """Map lower-level client exceptions onto the CLI's typed error kinds."""
+
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except RetryError as error:
+            cause = error.last_attempt.exception() if error.last_attempt else error
+            raise _as_gmail_error(cause) from error
+        except (HttpError, RefreshError, TransportError, OSError) as error:
+            raise _as_gmail_error(error) from error
+
+    return wrapper
+
+
+def _as_gmail_error(error: BaseException) -> Exception:
+    if isinstance(error, HttpError):
+        status = getattr(error.resp, "status", None)
+        if status in (401, 403):
+            return GmailAuthError(str(error))
+        return GmailApiError(str(error), status)
+    if isinstance(error, RefreshError):
+        return GmailAuthError(str(error))
+    if isinstance(error, (TransportError, OSError)):
+        return GmailApiError(str(error))
+    return GmailApiError(str(error))
 
 
 class GmailServiceWrapper:
@@ -80,6 +148,75 @@ class GmailServiceWrapper:
         response = self._service.users().labels().list(userId="me").execute()
         labels = response.get("labels", [])
         return [GmailLabelResponse.model_validate(label) for label in labels]
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def list_message_ids(
+        self, query: str, max_results: int, page_token: str | None = None
+    ) -> MessageIdPage:
+        """List one page of message ids for a raw Gmail query."""
+        response = (
+            self._service.users()
+            .messages()
+            .list(
+                userId="me",
+                q=query,
+                maxResults=max_results,
+                pageToken=page_token,
+            )
+            .execute()
+        )
+        return MessageIdPage(
+            ids=[message["id"] for message in response.get("messages", [])],
+            next_page_token=response.get("nextPageToken"),
+            result_size_estimate=response.get("resultSizeEstimate"),
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_search_message(self, msg_id: str) -> dict[str, Any]:
+        """Fetch a search hit: metadata and part tree, but no body bytes."""
+        return (
+            self._service.users()
+            .messages()
+            .get(userId="me", id=msg_id, format="full", fields=SEARCH_FIELDS)
+            .execute()
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_full_message(self, msg_id: str) -> dict[str, Any]:
+        """Fetch one whole message, body bytes included."""
+        return (
+            self._service.users()
+            .messages()
+            .get(userId="me", id=msg_id, format="full")
+            .execute()
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        """Download one attachment's content."""
+        attachment = (
+            self._service.users()
+            .messages()
+            .attachments()
+            .get(userId="me", messageId=message_id, id=attachment_id)
+            .execute()
+        )
+        data = attachment.get("data") or ""
+        return base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def list_labels(self) -> list[GmailLabelResponse]:
+        """Fetch labels, with client errors mapped to typed Gmail errors."""
+        response = self._service.users().labels().list(userId="me").execute()
+        return [
+            GmailLabelResponse.model_validate(label)
+            for label in response.get("labels", [])
+        ]
 
 
 def to_full_mail_response(response: dict) -> FullMailResponse:

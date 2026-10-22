@@ -1,10 +1,17 @@
 from google.oauth2.credentials import Credentials
 
+from sebastian.clients.google.gmail.attachments import write_attachments
+from sebastian.clients.google.gmail.body import render_body, truncate
+from sebastian.clients.google.gmail.parsing import normalize_hit, parse_payload
 from sebastian.domain.gmail import (
     FullMailResponse,
     GmailLabel,
     GmailLabelResponse,
+    Label,
     PdfAttachment,
+    SearchPage,
+    ShownMail,
+    WrittenAttachment,
 )
 
 from .download_pdf_attachments import download_pdf_attachments_from_messages
@@ -43,3 +50,61 @@ class GmailClient:
     def get_labels(self) -> list[GmailLabelResponse]:
         """Fetch all labels available in the authenticated Gmail account."""
         return self._service.fetch_labels()
+
+    def search(
+        self, query: str, limit: int, page_token: str | None = None
+    ) -> SearchPage:
+        """Search mail with a raw Gmail query, returning cheap metadata hits."""
+        page = self._service.list_message_ids(query, limit, page_token)
+        label_names = self._label_names()
+        hits = [
+            normalize_hit(self._service.fetch_search_message(message_id), label_names)
+            for message_id in page.ids
+        ]
+        return SearchPage(
+            hits=hits,
+            next_page_token=page.next_page_token,
+            result_size_estimate=page.result_size_estimate,
+        )
+
+    def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail:
+        """Read one mail in full through the shared parser and hit normalization."""
+        message = self._service.fetch_full_message(message_id)
+        parsed = parse_payload(message.get("payload") or {})
+        body, truncated = truncate(render_body(parsed, body_format), max_chars)
+        return ShownMail(
+            hit=normalize_hit(message, self._label_names()),
+            body=body,
+            body_format=body_format,
+            truncated=truncated,
+        )
+
+    def _label_names(self) -> dict[str, str]:
+        return {label.id: label.name for label in self.labels()}
+
+    def save_attachments(
+        self, message_id: str, out_dir: str, force: bool
+    ) -> list[WrittenAttachment]:
+        """Write one mail's attachments into ``out_dir``, fetching content now."""
+        message = self._service.fetch_full_message(message_id)
+        parsed = parse_payload(message.get("payload") or {})
+        return write_attachments(
+            parsed.attachments,
+            out_dir,
+            force,
+            fetch=lambda attachment_id: self._service.fetch_attachment(
+                message_id, attachment_id
+            ),
+        )
+
+    def labels(self) -> list[Label]:
+        """List labels with ids resolved to readable names."""
+        return [
+            Label(
+                id=label.id,
+                name=label.name,
+                type=label.type,
+                visibility=label.label_list_visibility,
+            )
+            for label in self._service.list_labels()
+        ]
