@@ -9,12 +9,15 @@ DEFAULT_FILENAME = "attachment"
 
 
 def sanitize_filename(filename: str) -> str:
-    """Reduce a mail-supplied filename to a safe basename inside the output dir.
+    """Reduce a mail-supplied filename to a safe name inside the output dir.
 
-    Drops any directory component (both separators), control characters and
-    leading dots, so a hostile or malformed name cannot escape the directory.
+    Both path separators are replaced with ``_`` rather than truncating: inside
+    a MIME part a ``/`` is an ordinary filename character and the leading part
+    often identifies the document. Control characters and leading/trailing
+    dots are dropped, so a hostile or malformed name cannot escape the
+    directory.
     """
-    name = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    name = filename.replace("\\", "_").replace("/", "_")
     name = "".join(character for character in name if character.isprintable())
     name = name.strip().strip(".")
     return name or DEFAULT_FILENAME
@@ -33,8 +36,12 @@ def write_attachments(
     short-lived). Collisions with existing files are refused unless ``force``.
     """
     directory = Path(out_dir)
-    if not directory.is_dir():
-        raise AttachmentWriteError(f"output directory does not exist: {directory}")
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise AttachmentWriteError(
+            f"could not create output directory {directory}: {error}"
+        ) from error
 
     targets = _plan_targets(attachments, directory)
     existing = [str(target) for target, _ in targets if target.exists()]

@@ -95,9 +95,21 @@ def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
     except UsageError as error:
         return _emit_error(command, "usage", str(error), exit_code=2)
     except GmailAuthError as error:
-        return _emit_error(command, "auth", str(error))
+        return _emit_error(
+            command,
+            "auth",
+            str(error),
+            status=error.status,
+            reason=error.reason,
+        )
     except GmailApiError as error:
-        return _emit_error(command, "api", str(error))
+        return _emit_error(
+            command,
+            "api",
+            str(error),
+            status=error.status,
+            reason=error.reason,
+        )
     except AttachmentWriteError as error:
         return _emit_error(command, "io", str(error))
 
@@ -125,7 +137,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
     attachments = commands.add_parser("attachments")
     attachments.add_argument("message_id")
-    attachments.add_argument("--out", required=True)
+    attachments.add_argument(
+        "--out",
+        required=True,
+        help="directory to write the attachments into (created if missing)",
+    )
     attachments.add_argument("--force", action="store_true")
 
     commands.add_parser("labels")
@@ -252,10 +268,20 @@ def _emit(payload: dict) -> None:
 
 
 def _emit_error(
-    command: str | None, kind: str, message: str, exit_code: int = 1
+    command: str | None,
+    kind: str,
+    message: str,
+    exit_code: int = 1,
+    status: int | None = None,
+    reason: str | None = None,
 ) -> int:
-    error = {"command": command, "error": {"kind": kind, "message": message}}
-    print(json.dumps(error), file=sys.stderr)
+    error: dict[str, object] = {"kind": kind}
+    if status is not None:
+        error["status"] = status
+    if reason is not None:
+        error["reason"] = reason
+    error["message"] = message
+    print(json.dumps({"command": command, "error": error}), file=sys.stderr)
     return exit_code
 
 

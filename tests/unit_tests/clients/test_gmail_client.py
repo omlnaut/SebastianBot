@@ -134,6 +134,16 @@ def test_save_attachments_writes_nested_attachments_with_fetched_content(
     assert (tmp_path / "Rechnung.pdf").read_bytes() == b"bytes-of-att-1"
 
 
+def test_save_attachments_creates_a_missing_output_directory(monkeypatch, tmp_path):
+    client, _wrapper = _client(monkeypatch, _message("nested_attachment.json"))
+    out = tmp_path / "fresh" / "nested"
+
+    written = client.save_attachments("m1", str(out), force=False)
+
+    assert Path(written[0].path) == out / "Rechnung.pdf"
+    assert (out / "Rechnung.pdf").read_bytes() == b"bytes-of-att-1"
+
+
 def test_save_attachments_refuses_an_existing_file_without_force(monkeypatch, tmp_path):
     client, _wrapper = _client(monkeypatch, _message("nested_attachment.json"))
     (tmp_path / "Rechnung.pdf").write_bytes(b"keep me")

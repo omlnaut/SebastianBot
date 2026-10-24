@@ -80,17 +80,22 @@ def test_traversal_filename_cannot_escape_the_output_directory(tmp_path):
         [_attachment("../../../etc/passwd")], out, False, _fetch
     )
 
-    assert Path(written[0].path) == out / "passwd"
-    assert (out / "passwd").exists()
+    target = Path(written[0].path)
+    assert target.parent == out
+    assert target == out / "_.._.._etc_passwd"
+    assert target.exists()
     assert sorted(path.name for path in tmp_path.iterdir()) == ["out"]
 
 
-def test_windows_style_traversal_is_reduced_to_a_basename(tmp_path):
+def test_windows_style_traversal_is_neutralized_within_the_output_directory(
+    tmp_path,
+):
     written = write_attachments(
         [_attachment("..\\..\\evil.sh")], tmp_path, False, _fetch
     )
 
-    assert Path(written[0].path) == tmp_path / "evil.sh"
+    assert Path(written[0].path) == tmp_path / "_.._evil.sh"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["_.._evil.sh"]
 
 
 def test_dot_only_filenames_get_a_safe_default(tmp_path):
@@ -99,8 +104,18 @@ def test_dot_only_filenames_get_a_safe_default(tmp_path):
     assert Path(written[0].path) == tmp_path / "attachment"
 
 
-def test_sanitize_filename_strips_directories_and_control_characters():
-    assert sanitize_filename("../../x\n.pdf") == "x.pdf"
+def test_sanitize_filename_replaces_separators_instead_of_truncating():
+    assert (
+        sanitize_filename("121901_Infoblatt Antrag/NachweisService.pdf")
+        == "121901_Infoblatt Antrag_NachweisService.pdf"
+    )
+    assert (
+        sanitize_filename("Postbank\\Rechnung.pdf") == "Postbank_Rechnung.pdf"
+    )
+
+
+def test_sanitize_filename_strips_control_characters_and_leading_dots():
+    assert sanitize_filename("../../x\n.pdf") == "_.._x.pdf"
     assert sanitize_filename(".hidden") == "hidden"
 
 
@@ -126,7 +141,7 @@ def test_duplicate_filenames_within_one_mail_get_distinct_paths(tmp_path):
     attachments = [
         _attachment("report.pdf", "att-1"),
         _attachment("report.pdf", "att-2"),
-        _attachment("dir\\report.pdf", "att-3"),
+        _attachment("dir/report.pdf", "att-3"),
     ]
 
     written = write_attachments(attachments, tmp_path, False, _fetch)
@@ -134,19 +149,28 @@ def test_duplicate_filenames_within_one_mail_get_distinct_paths(tmp_path):
     assert [Path(item.path).name for item in written] == [
         "report.pdf",
         "report-2.pdf",
-        "report-3.pdf",
+        "dir_report.pdf",
     ]
     assert (tmp_path / "report-2.pdf").read_bytes() == _fetch("att-2")
 
 
-def test_a_missing_output_directory_is_an_io_error(tmp_path):
-    missing = tmp_path / "nope"
+def test_a_missing_output_directory_is_created(tmp_path):
+    missing = tmp_path / "fresh" / "nested"
+
+    written = write_attachments([_attachment("a.pdf")], missing, False, _fetch)
+
+    assert Path(written[0].path) == missing / "a.pdf"
+    assert (missing / "a.pdf").read_bytes() == _fetch("att-1")
+
+
+def test_an_output_path_that_is_a_file_is_an_io_error(tmp_path):
+    blocker = tmp_path / "not-a-directory"
+    blocker.write_bytes(b"x")
 
     with pytest.raises(AttachmentWriteError) as error:
-        write_attachments([_attachment("a.pdf")], missing, False, _fetch)
+        write_attachments([_attachment("a.pdf")], blocker, False, _fetch)
 
-    assert "does not exist" in str(error.value)
-    assert not missing.exists()
+    assert "could not create output directory" in str(error.value)
 
 
 def test_an_attachment_without_content_or_id_is_an_io_error(tmp_path):

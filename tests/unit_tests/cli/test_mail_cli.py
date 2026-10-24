@@ -2,7 +2,11 @@ import json
 
 from cli.mail import build_service_from_env, main, run
 from sebastian.clients.google.credentials import ENV_VAR
-from sebastian.clients.google.gmail.errors import AttachmentWriteError, GmailApiError
+from sebastian.clients.google.gmail.errors import (
+    AttachmentWriteError,
+    GmailApiError,
+    GmailAuthError,
+)
 from sebastian.domain.gmail import (
     AttachmentInfo,
     Label,
@@ -70,22 +74,27 @@ class _FailingService:
         raise GmailApiError("gmail boom", 500)
 
     def show(self, message_id: str, body_format: str, max_chars: int) -> ShownMail:
-        raise GmailApiError("Requested entity was not found.", 404)
+        raise GmailApiError("Requested entity was not found.", 404, "notFound")
 
     def save_attachments(
         self, message_id: str, out_dir: str, force: bool
     ) -> list[WrittenAttachment]:
-        raise GmailApiError("Requested entity was not found.", 404)
+        raise GmailApiError("Requested entity was not found.", 404, "notFound")
 
     def labels(self) -> list[Label]:
         return []
+
+
+class _ExpiredTokenService(_FailingService):
+    def search(self, query: str, limit: int, page_token: str | None) -> SearchPage:
+        raise GmailAuthError("Invalid Credentials", 401, "authError")
 
 
 class _UnwritableService(_FailingService):
     def save_attachments(
         self, message_id: str, out_dir: str, force: bool
     ) -> list[WrittenAttachment]:
-        raise AttachmentWriteError(f"output directory does not exist: {out_dir}")
+        raise AttachmentWriteError(f"could not create output directory: {out_dir}")
 
 
 def _hit() -> MailHit:
@@ -332,7 +341,29 @@ def test_show_with_an_unknown_message_id_is_an_api_error(capsys):
     assert captured.out == ""
     assert json.loads(captured.err) == {
         "command": "show",
-        "error": {"kind": "api", "message": "Requested entity was not found."},
+        "error": {
+            "kind": "api",
+            "status": 404,
+            "reason": "notFound",
+            "message": "Requested entity was not found.",
+        },
+    }
+
+
+def test_an_expired_token_is_reported_as_an_auth_error(capsys):
+    code = run(["search", "x"], _ExpiredTokenService())
+
+    assert code == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert json.loads(captured.err) == {
+        "command": "search",
+        "error": {
+            "kind": "auth",
+            "status": 401,
+            "reason": "authError",
+            "message": "Invalid Credentials",
+        },
     }
 
 
@@ -370,7 +401,7 @@ def test_api_failure_is_json_on_stderr_with_exit_code_1(capsys):
     assert captured.out == ""
     assert json.loads(captured.err) == {
         "command": "search",
-        "error": {"kind": "api", "message": "gmail boom"},
+        "error": {"kind": "api", "status": 500, "message": "gmail boom"},
     }
 
 
@@ -421,7 +452,12 @@ def test_attachments_with_an_unknown_message_id_is_an_api_error(capsys):
     assert captured.out == ""
     assert json.loads(captured.err) == {
         "command": "attachments",
-        "error": {"kind": "api", "message": "Requested entity was not found."},
+        "error": {
+            "kind": "api",
+            "status": 404,
+            "reason": "notFound",
+            "message": "Requested entity was not found.",
+        },
     }
 
 
@@ -435,7 +471,7 @@ def test_attachments_filesystem_failure_is_an_io_error(capsys):
         "command": "attachments",
         "error": {
             "kind": "io",
-            "message": "output directory does not exist: /does/not/exist",
+            "message": "could not create output directory: /does/not/exist",
         },
     }
 

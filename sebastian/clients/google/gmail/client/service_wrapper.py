@@ -5,7 +5,7 @@ import re
 from functools import wraps
 from typing import Any, Self
 
-from google.auth.exceptions import RefreshError, TransportError
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -13,7 +13,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from tenacity import RetryError
 
 from sebastian.clients.google.gmail.client.retry_decorator import retry_on_network_error
-from sebastian.clients.google.gmail.errors import GmailApiError, GmailAuthError
+from sebastian.clients.google.gmail.errors import (
+    GmailApiError,
+    GmailAuthError,
+    gmail_error_from_http,
+)
 from sebastian.domain.gmail import FullMailResponse, GmailLabelResponse, PdfMessagePart
 
 
@@ -77,14 +81,9 @@ def _translate_errors(function):
 
 def _as_gmail_error(error: BaseException) -> Exception:
     if isinstance(error, HttpError):
-        status = getattr(error.resp, "status", None)
-        if status in (401, 403):
-            return GmailAuthError(str(error))
-        return GmailApiError(str(error), status)
+        return gmail_error_from_http(error)
     if isinstance(error, RefreshError):
         return GmailAuthError(str(error))
-    if isinstance(error, (TransportError, OSError)):
-        return GmailApiError(str(error))
     return GmailApiError(str(error))
 
 
