@@ -47,3 +47,23 @@ def test_domain_should_not_import_from_cloud():
         .should_not_import("cloud.*")
         .check("sebastian")
     )
+
+
+def test_cli_should_not_import_cloud():
+    """The host CLI must not pull in the Azure/cloud package."""
+    (
+        archrule("cli should not import cloud")
+        .match("cli.*")
+        .should_not_import("cloud.*")
+        .check("cli")
+    )
+
+
+def test_cli_should_not_import_azure():
+    """The host CLI must not depend on Azure SDK packages at runtime."""
+    (
+        archrule("cli should not import azure")
+        .match("cli.*")
+        .should_not_import("azure.*")
+        .check("cli")
+    )

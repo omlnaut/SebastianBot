@@ -1,0 +1,12 @@
+# Direct dependencies of the host CLI (`seamail`) only.
+#
+# Derived from [tool.poetry.dependencies] in pyproject.toml, which stays the
+# source of truth; keep the two in sync (tests/unit_tests/test_cli_requirements.py
+# fails when they drift). Used by scripts/setup_seamail.sh to build the CLI's
+# dedicated virtualenv, so it intentionally excludes Azure/framework packages.
+beautifulsoup4
+google-api-python-client
+google-auth
+google-auth-oauthlib
+pydantic
+tenacity
