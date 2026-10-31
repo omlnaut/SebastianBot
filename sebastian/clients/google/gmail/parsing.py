@@ -27,6 +27,7 @@ def parse_payload(payload: dict[str, Any]) -> ParsedMail:
         subject=headers.get("subject", ""),
         date=_format_date(headers.get("date")),
         message_id=headers.get("message-id"),
+        references=headers.get("references"),
         text_body=_find_body(payload, "text/plain"),
         html_body=_find_body(payload, "text/html"),
         attachments=_collect_attachments(payload),

@@ -62,6 +62,8 @@ def _search_fields() -> str:
 
 SEARCH_FIELDS = _search_fields()
 
+REPLY_CONTEXT_HEADERS = ["Message-Id", "References", "Subject", "From", "To", "Cc"]
+
 
 def _translate_errors(function):
     """Map lower-level client exceptions onto the CLI's typed error kinds."""
@@ -216,6 +218,40 @@ class GmailServiceWrapper:
             GmailLabelResponse.model_validate(label)
             for label in response.get("labels", [])
         ]
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def create_draft(self, message: dict[str, Any]) -> dict[str, Any]:
+        """Create one draft from an already encoded raw message."""
+        return (
+            self._service.users()
+            .drafts()
+            .create(userId="me", body={"message": message})
+            .execute()
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_reply_context(self, msg_id: str) -> dict[str, Any]:
+        """Fetch only the headers a reply draft is derived from."""
+        return (
+            self._service.users()
+            .messages()
+            .get(
+                userId="me",
+                id=msg_id,
+                format="metadata",
+                metadataHeaders=REPLY_CONTEXT_HEADERS,
+            )
+            .execute()
+        )
+
+    @_translate_errors
+    @retry_on_network_error(max_retries=3, initial_delay=1.0, backoff_factor=2.0)
+    def fetch_profile_address(self) -> str:
+        """The authenticated account's own address, used to exclude it on reply-all."""
+        profile = self._service.users().getProfile(userId="me").execute()
+        return str(profile.get("emailAddress") or "")
 
 
 def to_full_mail_response(response: dict) -> FullMailResponse:

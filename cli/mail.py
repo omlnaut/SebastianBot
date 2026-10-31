@@ -1,7 +1,8 @@
 import argparse
 import json
 import sys
-from typing import Mapping, Protocol, Sequence
+from pathlib import Path
+from typing import Mapping, Protocol, Sequence, TextIO
 
 from sebastian.clients.google.credentials import (
     CredentialsError,
@@ -9,14 +10,27 @@ from sebastian.clients.google.credentials import (
 )
 from sebastian.clients.google.gmail.body import BODY_FORMAT_TEXT, BODY_FORMATS
 from sebastian.clients.google.gmail.client import GmailClient
+from sebastian.clients.google.gmail.compose import (
+    compose_draft,
+    derive_reply_target,
+    parse_recipients,
+    parse_renames,
+    resolve_attachments,
+)
 from sebastian.clients.google.gmail.errors import (
     AttachmentWriteError,
+    DraftInputError,
+    DraftIoError,
     GmailApiError,
     GmailAuthError,
 )
 from sebastian.domain.gmail import (
+    ComposedDraft,
+    CreatedDraft,
+    DraftRequest,
     Label,
     MailHit,
+    ReplyContext,
     SearchPage,
     ShownMail,
     WrittenAttachment,
@@ -27,8 +41,8 @@ MAX_LIMIT = 200
 DEFAULT_MAX_CHARS = 20000
 
 
-class GmailReadService(Protocol):
-    """The read-only Gmail surface the CLI adapts to JSON."""
+class GmailService(Protocol):
+    """The Gmail surface the CLI adapts to JSON: reads, plus draft creation."""
 
     def search(self, query: str, limit: int, page_token: str | None) -> SearchPage: ...
 
@@ -40,6 +54,12 @@ class GmailReadService(Protocol):
 
     def labels(self) -> list[Label]: ...
 
+    def reply_context(self, message_id: str) -> ReplyContext: ...
+
+    def own_address(self) -> str: ...
+
+    def create_draft(self, draft: ComposedDraft) -> CreatedDraft: ...
+
 
 class UsageError(Exception):
     """Raised when argv does not describe a valid invocation."""
@@ -50,16 +70,18 @@ class _Parser(argparse.ArgumentParser):
         raise UsageError(message)
 
 
-def run(argv: Sequence[str], service: GmailReadService) -> int:
+def run(argv: Sequence[str], service: GmailService, stdin: TextIO | None = None) -> int:
     """Run one invocation against the injected service and return an exit code."""
     try:
         args = _parse_args(argv)
     except UsageError as error:
         return _emit_error(_peek_command(argv), "usage", str(error), exit_code=2)
-    return _dispatch(args, service)
+    return _dispatch(args, service, stdin)
 
 
-def main(argv: Sequence[str] | None = None, service_factory=None) -> int:
+def main(
+    argv: Sequence[str] | None = None, service_factory=None, stdin: TextIO | None = None
+) -> int:
     """Validate argv, build the real service from the environment, then run."""
     arguments = list(sys.argv[1:] if argv is None else argv)
     try:
@@ -71,7 +93,7 @@ def main(argv: Sequence[str] | None = None, service_factory=None) -> int:
         service = factory()
     except CredentialsError as error:
         return _emit_error(args.command, "auth", str(error))
-    return _dispatch(args, service)
+    return _dispatch(args, service, stdin)
 
 
 def build_service_from_env(env: Mapping[str, str] | None = None) -> GmailClient:
@@ -82,7 +104,9 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return _build_parser().parse_args(list(argv))
 
 
-def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
+def _dispatch(
+    args: argparse.Namespace, service: GmailService, stdin: TextIO | None = None
+) -> int:
     command = args.command
     try:
         if command == "search":
@@ -91,9 +115,15 @@ def _dispatch(args: argparse.Namespace, service: GmailReadService) -> int:
             return _show(args, service)
         if command == "attachments":
             return _attachments(args, service)
+        if command == "draft":
+            return _draft(args, service, stdin)
         return _labels(service)
     except UsageError as error:
         return _emit_error(command, "usage", str(error), exit_code=2)
+    except DraftInputError as error:
+        return _emit_error(command, "usage", str(error), exit_code=2)
+    except DraftIoError as error:
+        return _emit_error(command, "io", str(error))
     except GmailAuthError as error:
         return _emit_error(
             command,
@@ -146,10 +176,45 @@ def _build_parser() -> argparse.ArgumentParser:
 
     commands.add_parser("labels")
 
+    draft = commands.add_parser("draft")
+    draft.add_argument("--to", action="append", default=[])
+    draft.add_argument("--cc", action="append", default=[])
+    draft.add_argument("--bcc", action="append", default=[])
+    draft.add_argument("--subject")
+    draft.add_argument(
+        "--body-file",
+        dest="body_file",
+        help="read the body from this file instead of stdin",
+    )
+    draft.add_argument("--attach", action="append", default=[])
+    draft.add_argument(
+        "--attach-name",
+        dest="attach_name",
+        action="append",
+        default=[],
+        help="rename an attachment: <basename>=<newname>",
+    )
+    draft.add_argument(
+        "--reply-to",
+        dest="reply_to",
+        help="message id to reply to; derives recipients, subject and thread",
+    )
+    draft.add_argument(
+        "--all",
+        action="store_true",
+        help="with --reply-to: also include the original To and Cc recipients",
+    )
+    draft.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="validate and compose, but create nothing in Gmail",
+    )
+
     return parser
 
 
-def _search(args: argparse.Namespace, service: GmailReadService) -> int:
+def _search(args: argparse.Namespace, service: GmailService) -> int:
     limit = _effective_limit(args.limit)
     page = service.search(args.query, limit, args.page_token)
     _emit(
@@ -166,7 +231,7 @@ def _search(args: argparse.Namespace, service: GmailReadService) -> int:
     return 0
 
 
-def _show(args: argparse.Namespace, service: GmailReadService) -> int:
+def _show(args: argparse.Namespace, service: GmailService) -> int:
     shown = service.show(args.message_id, args.body_format, args.max_chars)
     _emit(
         {
@@ -182,7 +247,7 @@ def _show(args: argparse.Namespace, service: GmailReadService) -> int:
     return 0
 
 
-def _attachments(args: argparse.Namespace, service: GmailReadService) -> int:
+def _attachments(args: argparse.Namespace, service: GmailService) -> int:
     _emit(
         {
             "command": "attachments",
@@ -198,7 +263,7 @@ def _attachments(args: argparse.Namespace, service: GmailReadService) -> int:
     return 0
 
 
-def _labels(service: GmailReadService) -> int:
+def _labels(service: GmailService) -> int:
     _emit(
         {
             "command": "labels",
@@ -214,6 +279,115 @@ def _labels(service: GmailReadService) -> int:
         }
     )
     return 0
+
+
+def _draft(
+    args: argparse.Namespace, service: GmailService, stdin: TextIO | None
+) -> int:
+    _check_draft_flags(args)
+    request = _draft_request(args, service, stdin)
+    composed = compose_draft(request)
+    created = None if args.dry_run else service.create_draft(composed)
+    _emit(
+        {
+            "command": "draft",
+            "dryRun": bool(args.dry_run),
+            "draft": (
+                None
+                if created is None
+                else {
+                    "id": created.draft_id,
+                    "messageId": created.message_id,
+                    "threadId": created.thread_id,
+                }
+            ),
+            "message": _draft_message_json(request, composed.encoded_bytes),
+        }
+    )
+    return 0
+
+
+def _check_draft_flags(args: argparse.Namespace) -> None:
+    if args.reply_to and args.to:
+        raise UsageError(
+            "--to cannot be combined with --reply-to; a reply derives its recipients "
+            "(--cc/--bcc may still be added)"
+        )
+    if args.all and not args.reply_to:
+        raise UsageError("--all needs --reply-to")
+    if not args.reply_to and not args.to:
+        raise UsageError("draft needs --to, or --reply-to <message-id>")
+
+
+def _draft_request(
+    args: argparse.Namespace, service: GmailService, stdin: TextIO | None
+) -> DraftRequest:
+    body = _read_body(args.body_file, stdin)
+    attachments = resolve_attachments(args.attach, parse_renames(args.attach_name))
+
+    to = parse_recipients(args.to)
+    derived_cc: list[str] = []
+    subject = args.subject or ""
+    thread_id: str | None = None
+    in_reply_to: str | None = None
+    references: str | None = None
+
+    if args.reply_to:
+        context = service.reply_context(args.reply_to)
+        own_address = service.own_address() if args.all else None
+        target = derive_reply_target(context, own_address, bool(args.all))
+        to = target.to
+        derived_cc = target.cc
+        subject = args.subject or target.subject
+        thread_id = target.thread_id
+        in_reply_to = target.in_reply_to
+        references = target.references
+
+    return DraftRequest(
+        to=to,
+        cc=parse_recipients([*derived_cc, *args.cc]),
+        bcc=parse_recipients(args.bcc),
+        subject=subject,
+        body=body,
+        attachments=attachments,
+        thread_id=thread_id,
+        in_reply_to=in_reply_to,
+        references=references,
+    )
+
+
+def _read_body(body_file: str | None, stdin: TextIO | None) -> str:
+    """Read the draft body from a file or stdin, never from argv."""
+    if body_file:
+        try:
+            return Path(body_file).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            detail = getattr(error, "strerror", None) or str(error)
+            raise DraftIoError(
+                f"could not read body file {body_file}: {detail}"
+            ) from error
+    source = sys.stdin if stdin is None else stdin
+    return source.read()
+
+
+def _draft_message_json(request: DraftRequest, encoded_bytes: int) -> dict:
+    return {
+        "to": request.to,
+        "cc": request.cc,
+        "bcc": request.bcc,
+        "subject": request.subject,
+        "bodyChars": len(request.body),
+        "attachments": [
+            {
+                "path": attachment.path,
+                "filename": attachment.filename,
+                "mimeType": attachment.mime_type,
+                "size": attachment.size,
+            }
+            for attachment in request.attachments
+        ],
+        "encodedBytes": encoded_bytes,
+    }
 
 
 def _effective_limit(limit: int) -> int:
