@@ -75,7 +75,7 @@ def _translate_errors(function):
         except RetryError as error:
             cause = error.last_attempt.exception() if error.last_attempt else error
             raise _as_gmail_error(cause) from error
-        except (HttpError, RefreshError, TransportError, OSError) as error:
+        except (HttpError, RefreshError, OSError) as error:
             raise _as_gmail_error(error) from error
 
     return wrapper
