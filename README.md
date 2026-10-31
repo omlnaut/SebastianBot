@@ -110,6 +110,27 @@ Security notes:
 - Do not store tokens in tracked files like `README.md`, `pyproject.toml`, or workflow files.
 - Prefer a fine-grained token scoped to this repository only, with minimum required permissions.
 
+### Host CLI: `seamail`
+
+`seamail` is a read-only Gmail recall CLI for agents: search with Gmail's own query syntax, read one mail in full, list labels, pull attachments. It runs as a plain short-lived host process — no container, no Azure login, no Key Vault — on WSL today and a Raspberry Pi later.
+
+```bash
+scripts/setup_seamail.sh   # idempotent: installs uv if missing, builds the venv, writes the PATH shim
+export SEAMAIL_GOOGLE_CREDENTIALS="$(cat /path/to/credentials.json)"
+
+seamail search 'from:installer subject:KfW after:2026/01/01'
+seamail show <message-id> [--format text|html] [--max-chars 20000]
+seamail labels
+seamail attachments <message-id> --out ~/Downloads [--force]
+```
+
+- Every successful call prints one JSON object on stdout. Failures print JSON on stderr with a machine-readable `kind` (`auth`, `api`, `usage`, `io`); exit codes are `0` success, `1` runtime error, `2` usage error.
+- API errors carry `status` and, when Gmail names one, `reason` alongside a single-sentence `message` (no Python repr or request URL): `{"kind": "api", "status": 404, "reason": "notFound", "message": "Requested entity was not found."}`. A `401` (expired/revoked token) or a permission `403` is reported as `kind: auth`; quota/rate-limit `403`s stay `api`.
+- `attachments --out DIR` creates `DIR` (including parents) when missing; existing files are only replaced with `--force`.
+- The CLI never writes to Gmail. Labels are resolved to names on every call; search returns metadata only and a `nextPageToken` instead of paginating for you.
+- `SEAMAIL_GOOGLE_CREDENTIALS` holds the credentials JSON *content* (not a path); token refresh happens in-process and nothing is written back.
+- Its dependencies are the direct ones listed in `cli-requirements.txt`; `pyproject.toml` stays the source of truth and `tests/unit_tests/test_cli_requirements.py` guards the two from drifting. The Azure deployment and `requirements.txt` are untouched.
+
 ### Testing
 
 The project uses **pytest** for testing with a focus on the application layer (`sebastian/`).
