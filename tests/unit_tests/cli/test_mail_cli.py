@@ -1,4 +1,6 @@
+import io
 import json
+from pathlib import Path
 
 from cli.mail import build_service_from_env, main, run
 from sebastian.clients.google.credentials import ENV_VAR
@@ -9,15 +11,31 @@ from sebastian.clients.google.gmail.errors import (
 )
 from sebastian.domain.gmail import (
     AttachmentInfo,
+    ComposedDraft,
+    CreatedDraft,
     Label,
     MailHit,
+    ReplyContext,
     SearchPage,
     ShownMail,
     WrittenAttachment,
 )
 
 
-class _FakeService:
+class _DraftUnsupported:
+    """Read-only fakes reach a draft method only if the CLI is wired wrong."""
+
+    def reply_context(self, message_id: str) -> ReplyContext:
+        raise AssertionError("reply_context must not be called")
+
+    def own_address(self) -> str:
+        raise AssertionError("own_address must not be called")
+
+    def create_draft(self, draft: ComposedDraft) -> CreatedDraft:
+        raise AssertionError("create_draft must not be called")
+
+
+class _FakeService(_DraftUnsupported):
     def __init__(
         self,
         page: SearchPage | None = None,
@@ -46,7 +64,7 @@ class _FakeService:
         return self._labels
 
 
-class _EchoService:
+class _EchoService(_DraftUnsupported):
     """Echoes the request it received back into nextPageToken, so stdout reveals the plumbing."""
 
     def search(self, query: str, limit: int, page_token: str | None) -> SearchPage:
@@ -69,7 +87,7 @@ class _EchoService:
         return []
 
 
-class _FailingService:
+class _FailingService(_DraftUnsupported):
     def search(self, query: str, limit: int, page_token: str | None) -> SearchPage:
         raise GmailApiError("gmail boom", 500)
 
@@ -499,3 +517,255 @@ def test_invalid_credentials_json_is_auth_error(capsys):
     assert error["command"] == "labels"
     assert error["error"]["kind"] == "auth"
     assert ENV_VAR in error["error"]["message"]
+
+
+class _DraftService:
+    """A draft-capable service: records what it was asked to create."""
+
+    def __init__(
+        self,
+        context: ReplyContext | None = None,
+        own_address: str = "me@example.com",
+        create_error: Exception | None = None,
+    ):
+        self._context = context if context is not None else _reply_context()
+        self._own_address = own_address
+        self._create_error = create_error
+        self.composed: list[ComposedDraft] = []
+        self.context_ids: list[str] = []
+        self.own_address_calls = 0
+
+    def reply_context(self, message_id: str) -> ReplyContext:
+        self.context_ids.append(message_id)
+        return self._context
+
+    def own_address(self) -> str:
+        self.own_address_calls += 1
+        return self._own_address
+
+    def create_draft(self, draft: ComposedDraft) -> CreatedDraft:
+        if self._create_error is not None:
+            raise self._create_error
+        self.composed.append(draft)
+        return CreatedDraft(
+            draft_id="r-1",
+            message_id="m-new",
+            thread_id=draft.request.thread_id or "thread-new",
+        )
+
+
+def _reply_context(**overrides) -> ReplyContext:
+    fields = {
+        "thread_id": "t1",
+        "sender": "Alice Example <alice@example.com>",
+        "to": ["me@example.com"],
+        "cc": [],
+        "subject": "Klimaanlage",
+        "message_id_header": "<m1@example.com>",
+        "references": None,
+    }
+    fields.update(overrides)
+    return ReplyContext(**fields)
+
+
+def _draft(argv: list[str], service: _DraftService, body: str = "Hallo.\n") -> int:
+    return run(["draft", *argv], service, io.StringIO(body))
+
+
+def test_draft_creates_the_draft_and_echoes_what_was_composed(capsys):
+    service = _DraftService()
+
+    code = _draft(
+        ["--to", "alice@example.com", "--subject", "Kurzfrage"], service, "Hallo.\n"
+    )
+
+    assert code == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert json.loads(captured.out) == {
+        "command": "draft",
+        "dryRun": False,
+        "draft": {"id": "r-1", "messageId": "m-new", "threadId": "thread-new"},
+        "message": {
+            "to": ["alice@example.com"],
+            "cc": [],
+            "bcc": [],
+            "subject": "Kurzfrage",
+            "bodyChars": 7,
+            "attachments": [],
+            "encodedBytes": service.composed[0].encoded_bytes,
+        },
+    }
+
+
+def test_draft_takes_the_body_from_stdin_never_from_argv(capsys):
+    service = _DraftService()
+
+    _draft(["--to", "alice@example.com"], service, "Zeile eins\nZeile zwei\n")
+
+    assert service.composed[0].request.body == "Zeile eins\nZeile zwei\n"
+    assert json.loads(capsys.readouterr().out)["message"]["bodyChars"] == 22
+
+
+def test_draft_reads_the_body_from_a_file(capsys, tmp_path: Path):
+    body_file = tmp_path / "body.txt"
+    body_file.write_text("Aus der Datei äöü.\n", encoding="utf-8")
+    service = _DraftService()
+
+    code = _draft(["--to", "alice@example.com", "--body-file", str(body_file)], service)
+
+    assert code == 0
+    assert service.composed[0].request.body == "Aus der Datei äöü.\n"
+
+
+def test_draft_dry_run_composes_but_creates_nothing(capsys):
+    service = _DraftService()
+
+    code = _draft(["--to", "alice@example.com", "--dry-run"], service)
+
+    assert code == 0
+    assert service.composed == []
+    out = json.loads(capsys.readouterr().out)
+    assert out["dryRun"] is True
+    assert out["draft"] is None
+    assert out["message"]["to"] == ["alice@example.com"]
+
+
+def test_draft_reply_derives_recipients_subject_and_thread(capsys):
+    service = _DraftService()
+
+    code = _draft(["--reply-to", "m1"], service)
+
+    assert code == 0
+    request = service.composed[0].request
+    assert request.to == ["Alice Example <alice@example.com>"]
+    assert request.subject == "Re: Klimaanlage"
+    assert request.thread_id == "t1"
+    assert request.in_reply_to == "<m1@example.com>"
+    assert service.own_address_calls == 0
+
+
+def test_draft_reply_all_asks_for_the_own_address_and_adds_the_original_copies(capsys):
+    service = _DraftService(
+        _reply_context(
+            to=["Alice Example <alice@example.com>"], cc=["Dave <dave@example.com>"]
+        )
+    )
+
+    _draft(["--reply-to", "m1", "--all"], service)
+
+    request = service.composed[0].request
+    assert service.own_address_calls == 1
+    assert request.to == ["Alice Example <alice@example.com>"]
+    assert request.cc == ["Dave <dave@example.com>"]
+
+
+def test_draft_reply_keeps_an_explicit_cc_and_appends_it_to_the_derived_one(capsys):
+    service = _DraftService(_reply_context(cc=["Dave <dave@example.com>"]))
+    _draft(["--reply-to", "m1", "--all", "--cc", "erin@example.com"], service)
+
+    assert service.composed[0].request.cc == [
+        "Dave <dave@example.com>",
+        "erin@example.com",
+    ]
+
+
+def test_draft_reply_honours_an_explicit_subject_override(capsys):
+    service = _DraftService()
+
+    _draft(["--reply-to", "m1", "--subject", "Anderer Betreff"], service)
+
+    assert service.composed[0].request.subject == "Anderer Betreff"
+
+
+def test_draft_echoes_an_attachment_with_its_visible_name(capsys, tmp_path: Path):
+    path = tmp_path / "scan.pdf"
+    path.write_bytes(b"%PDF-1.7 fake")
+    service = _DraftService()
+
+    _draft(
+        [
+            "--to",
+            "alice@example.com",
+            "--attach",
+            str(path),
+            "--attach-name",
+            "scan.pdf=Rechnung Oktober.pdf",
+        ],
+        service,
+    )
+
+    assert json.loads(capsys.readouterr().out)["message"]["attachments"] == [
+        {
+            "path": str(path),
+            "filename": "Rechnung Oktober.pdf",
+            "mimeType": "application/pdf",
+            "size": 13,
+        }
+    ]
+
+
+def test_draft_requires_a_recipient_source(capsys):
+    service = _DraftService()
+
+    code = _draft(["--subject", "x"], service)
+
+    assert code == 2
+    error = _error(capsys)
+    assert error["command"] == "draft"
+    assert error["error"]["kind"] == "usage"
+    assert "--to" in error["error"]["message"]
+
+
+def test_draft_rejects_to_together_with_reply_to(capsys):
+    code = _draft(["--reply-to", "m1", "--to", "alice@example.com"], _DraftService())
+
+    assert code == 2
+    assert "cannot be combined" in _error(capsys)["error"]["message"]
+
+
+def test_draft_rejects_all_without_reply_to(capsys):
+    code = _draft(["--to", "alice@example.com", "--all"], _DraftService())
+
+    assert code == 2
+    assert "--all needs --reply-to" in _error(capsys)["error"]["message"]
+
+
+def test_draft_reports_an_unparseable_recipient_as_a_usage_error(capsys):
+    code = _draft(["--to", "not an address"], _DraftService())
+
+    assert code == 2
+    assert "not a usable email address" in _error(capsys)["error"]["message"]
+
+
+def test_draft_reports_a_missing_attachment_as_a_usage_error(capsys, tmp_path: Path):
+    code = _draft(
+        ["--to", "a@b.c", "--attach", str(tmp_path / "nope.pdf")], _DraftService()
+    )
+
+    assert code == 2
+    error = _error(capsys)
+    assert error["error"]["kind"] == "usage"
+    assert "does not exist" in error["error"]["message"]
+
+
+def test_draft_reports_an_unreadable_body_file_as_an_io_error(capsys, tmp_path: Path):
+    code = _draft(
+        ["--to", "a@b.c", "--body-file", str(tmp_path / "missing.txt")], _DraftService()
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["error"]["kind"] == "io"
+    assert "could not read body file" in error["error"]["message"]
+
+
+def test_draft_reports_an_api_failure_when_creating(capsys):
+    service = _DraftService(create_error=GmailApiError("Request too large", 400))
+
+    code = _draft(["--to", "a@b.c"], service)
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["error"]["kind"] == "api"
+    assert error["error"]["status"] == 400

@@ -76,6 +76,7 @@ class ParsedMail:
     subject: str
     date: str | None
     message_id: str | None
+    references: str | None
     text_body: str | None
     html_body: str | None
     attachments: list[ParsedAttachment]
@@ -172,3 +173,73 @@ class Label:
     name: str
     type: str | None
     visibility: str | None
+
+
+@dataclass(frozen=True)
+class OutgoingAttachment:
+    """One file to attach to an outgoing draft, already read from disk."""
+
+    path: str
+    filename: str
+    mime_type: str
+    size: int
+    data: bytes
+
+
+@dataclass(frozen=True)
+class DraftRequest:
+    """Everything one composed draft needs, with recipients already validated."""
+
+    to: list[str]
+    cc: list[str]
+    bcc: list[str]
+    subject: str
+    body: str
+    attachments: list[OutgoingAttachment]
+    thread_id: str | None = None
+    in_reply_to: str | None = None
+    references: str | None = None
+
+
+@dataclass(frozen=True)
+class ComposedDraft:
+    """A draft rendered to MIME, ready to hand to the Gmail API."""
+
+    raw: bytes
+    encoded: str
+    encoded_bytes: int
+    request: DraftRequest
+
+
+@dataclass(frozen=True)
+class CreatedDraft:
+    """The identifiers Gmail returned for a created draft."""
+
+    draft_id: str
+    message_id: str
+    thread_id: str
+
+
+@dataclass(frozen=True)
+class ReplyContext:
+    """The few fields of an existing mail that a reply draft is derived from."""
+
+    thread_id: str
+    sender: str
+    to: list[str]
+    cc: list[str]
+    subject: str
+    message_id_header: str | None
+    references: str | None
+
+
+@dataclass(frozen=True)
+class ReplyTarget:
+    """Recipients and threading headers derived from a mail being replied to."""
+
+    to: list[str]
+    cc: list[str]
+    subject: str
+    thread_id: str
+    in_reply_to: str | None
+    references: str | None
