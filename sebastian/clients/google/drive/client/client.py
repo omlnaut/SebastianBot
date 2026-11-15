@@ -15,7 +15,6 @@ class GoogleDriveClient:
         Args:
             credentials: Google OAuth2 credentials for authentication
         """
-        self._credentials = credentials
         self._service = build("drive", "v3", credentials=credentials, cache_discovery=False)  # type: ignore
 
     def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
