@@ -31,7 +31,7 @@ def _fetch(attachment_id: str) -> bytes:
     return f"data-for-{attachment_id}".encode()
 
 
-def test_nested_attachments_from_a_mail_are_written(tmp_path):
+def test_nested_attachments_from_a_mail_are_written(tmp_path: Path):
     parsed = _parsed("nested_attachment.json")
 
     written = write_attachments(parsed.attachments, tmp_path, False, _fetch)
@@ -42,7 +42,7 @@ def test_nested_attachments_from_a_mail_are_written(tmp_path):
     assert (tmp_path / "Rechnung.pdf").read_bytes() == _fetch("att-1")
 
 
-def test_attachment_content_is_fetched_in_the_same_call(tmp_path):
+def test_attachment_content_is_fetched_in_the_same_call(tmp_path: Path):
     fetched: list[str] = []
 
     def fetch(attachment_id: str) -> bytes:
@@ -55,7 +55,7 @@ def test_attachment_content_is_fetched_in_the_same_call(tmp_path):
     assert written[0].size == len(b"payload")
 
 
-def test_inline_attachment_content_is_not_fetched(tmp_path):
+def test_inline_attachment_content_is_not_fetched(tmp_path: Path):
     attachment = ParsedAttachment(
         filename="inline.txt",
         mime_type="text/plain",
@@ -65,14 +65,18 @@ def test_inline_attachment_content_is_not_fetched(tmp_path):
     )
     fetched: list[str] = []
 
-    written = write_attachments([attachment], tmp_path, False, fetched.append)
+    def fetch(attachment_id: str) -> bytes:
+        fetched.append(attachment_id)
+        return b"unexpected"
+
+    written = write_attachments([attachment], tmp_path, False, fetch)
 
     assert fetched == []
     assert (tmp_path / "inline.txt").read_bytes() == b"inline"
     assert written[0].size == len(b"inline")
 
 
-def test_traversal_filename_cannot_escape_the_output_directory(tmp_path):
+def test_traversal_filename_cannot_escape_the_output_directory(tmp_path: Path):
     out = tmp_path / "out"
     out.mkdir()
 
@@ -88,7 +92,7 @@ def test_traversal_filename_cannot_escape_the_output_directory(tmp_path):
 
 
 def test_windows_style_traversal_is_neutralized_within_the_output_directory(
-    tmp_path,
+    tmp_path: Path,
 ):
     written = write_attachments(
         [_attachment("..\\..\\evil.sh")], tmp_path, False, _fetch
@@ -98,7 +102,7 @@ def test_windows_style_traversal_is_neutralized_within_the_output_directory(
     assert sorted(path.name for path in tmp_path.iterdir()) == ["_.._evil.sh"]
 
 
-def test_dot_only_filenames_get_a_safe_default(tmp_path):
+def test_dot_only_filenames_get_a_safe_default(tmp_path: Path):
     written = write_attachments([_attachment("..")], tmp_path, False, _fetch)
 
     assert Path(written[0].path) == tmp_path / "attachment"
@@ -119,7 +123,7 @@ def test_sanitize_filename_strips_control_characters_and_leading_dots():
     assert sanitize_filename(".hidden") == "hidden"
 
 
-def test_existing_files_are_not_overwritten_without_force(tmp_path):
+def test_existing_files_are_not_overwritten_without_force(tmp_path: Path):
     (tmp_path / "Rechnung.pdf").write_bytes(b"keep me")
 
     with pytest.raises(AttachmentWriteError) as error:
@@ -129,7 +133,7 @@ def test_existing_files_are_not_overwritten_without_force(tmp_path):
     assert (tmp_path / "Rechnung.pdf").read_bytes() == b"keep me"
 
 
-def test_existing_files_are_overwritten_with_force(tmp_path):
+def test_existing_files_are_overwritten_with_force(tmp_path: Path):
     (tmp_path / "Rechnung.pdf").write_bytes(b"old")
 
     write_attachments([_attachment("Rechnung.pdf")], tmp_path, True, _fetch)
@@ -137,7 +141,7 @@ def test_existing_files_are_overwritten_with_force(tmp_path):
     assert (tmp_path / "Rechnung.pdf").read_bytes() == _fetch("att-1")
 
 
-def test_duplicate_filenames_within_one_mail_get_distinct_paths(tmp_path):
+def test_duplicate_filenames_within_one_mail_get_distinct_paths(tmp_path: Path):
     attachments = [
         _attachment("report.pdf", "att-1"),
         _attachment("report.pdf", "att-2"),
@@ -154,7 +158,7 @@ def test_duplicate_filenames_within_one_mail_get_distinct_paths(tmp_path):
     assert (tmp_path / "report-2.pdf").read_bytes() == _fetch("att-2")
 
 
-def test_a_missing_output_directory_is_created(tmp_path):
+def test_a_missing_output_directory_is_created(tmp_path: Path):
     missing = tmp_path / "fresh" / "nested"
 
     written = write_attachments([_attachment("a.pdf")], missing, False, _fetch)
@@ -163,7 +167,7 @@ def test_a_missing_output_directory_is_created(tmp_path):
     assert (missing / "a.pdf").read_bytes() == _fetch("att-1")
 
 
-def test_an_output_path_that_is_a_file_is_an_io_error(tmp_path):
+def test_an_output_path_that_is_a_file_is_an_io_error(tmp_path: Path):
     blocker = tmp_path / "not-a-directory"
     blocker.write_bytes(b"x")
 
@@ -173,7 +177,7 @@ def test_an_output_path_that_is_a_file_is_an_io_error(tmp_path):
     assert "could not create output directory" in str(error.value)
 
 
-def test_an_attachment_without_content_or_id_is_an_io_error(tmp_path):
+def test_an_attachment_without_content_or_id_is_an_io_error(tmp_path: Path):
     attachment = ParsedAttachment(
         filename="broken.pdf", mime_type="application/pdf", size=0
     )

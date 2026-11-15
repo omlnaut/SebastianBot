@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from sebastian.clients.google.gmail.body import html_to_text, render_text_body
 from sebastian.clients.google.gmail.parsing import parse_payload
@@ -8,7 +9,7 @@ from sebastian.domain.gmail import ParsedAttachment
 FIXTURES = Path(__file__).parent / "fixtures" / "gmail"
 
 
-def _payload(name: str) -> dict:
+def _payload(name: str) -> dict[str, Any]:
     return json.loads((FIXTURES / name).read_text())
 
 

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Mapping
+from typing import Any, Callable, List, Mapping, cast
 
 from pydantic import BaseModel
 
@@ -43,13 +43,19 @@ def load_credentials_from_env(env: Mapping[str, str] | None = None):
         raise CredentialsError(f"{ENV_VAR} is not set")
 
     try:
-        data = json.loads(raw)
+        data: Any = json.loads(raw)
     except json.JSONDecodeError as error:
         raise CredentialsError(f"{ENV_VAR} is not valid JSON: {error}") from error
 
-    info = data.get("credentials", data) if isinstance(data, dict) else data
+    info: Any = data
+    if isinstance(data, dict):
+        info = cast(dict[str, Any], data).get("credentials", data)
     try:
-        return GoogleCredentials.from_authorized_user_info(info)
+        loader = cast(
+            Callable[[dict[str, Any]], GoogleCredentials],
+            GoogleCredentials.from_authorized_user_info,  # pyright: ignore[reportUnknownMemberType]
+        )
+        return loader(info)
     except (TypeError, ValueError) as error:
         raise CredentialsError(
             f"{ENV_VAR} is not a valid credentials object: {error}"

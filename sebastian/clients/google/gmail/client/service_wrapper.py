@@ -5,7 +5,7 @@ import re
 from functools import wraps
 from typing import Any, Self
 
-from google.auth.exceptions import RefreshError
+from google.auth.exceptions import RefreshError, TransportError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -71,7 +71,9 @@ def _translate_errors(function):
         try:
             return function(*args, **kwargs)
         except RetryError as error:
-            cause = error.last_attempt.exception() if error.last_attempt else error
+            cause = error.last_attempt.exception() if error.last_attempt else None
+            if cause is None:
+                cause = error
             raise _as_gmail_error(cause) from error
         except (HttpError, RefreshError, TransportError, OSError) as error:
             raise _as_gmail_error(error) from error
