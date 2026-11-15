@@ -23,11 +23,11 @@ azure-eventgrid = "^4.22.0"
 ipykernel = "^7.1"
 pre-commit = "^4.0"
 poetry-plugin-export = "^1.10.0"
-pytest-xdist = "^3.8.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^9.0"
 pytest-cov = "^7.0"
+pytest-xdist = "^3.8.0"
 pytest-archon = "^0.0.7"
 azure-mgmt-eventgrid = "^10.4.0"
 azure-mgmt-web = "^10.1.0"
