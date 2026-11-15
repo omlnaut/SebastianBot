@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+import pytest
 from googleapiclient.errors import HttpError
 
 from sebastian.clients.google.gmail.errors import (
@@ -126,3 +127,14 @@ def test_a_reason_is_taken_from_details_when_errors_is_absent():
 
     assert isinstance(error, GmailApiError)
     assert error.reason == "notFound"
+
+
+def test_translation_maps_a_socket_error_instead_of_raising_a_name_error():
+    from sebastian.clients.google.gmail.client.service_wrapper import _translate_errors
+
+    @_translate_errors
+    def explode():
+        raise OSError("network down")
+
+    with pytest.raises(GmailApiError, match="network down"):
+        explode()

@@ -1,14 +1,19 @@
+from typing import Any
+
 from google.oauth2.credentials import Credentials
 
 from sebastian.clients.google.gmail.attachments import write_attachments
 from sebastian.clients.google.gmail.body import render_body, truncate
 from sebastian.clients.google.gmail.parsing import normalize_hit, parse_payload
 from sebastian.domain.gmail import (
+    ComposedDraft,
+    CreatedDraft,
     FullMailResponse,
     GmailLabel,
     GmailLabelResponse,
     Label,
     PdfAttachment,
+    ReplyContext,
     SearchPage,
     ShownMail,
     WrittenAttachment,
@@ -108,3 +113,34 @@ class GmailClient:
             )
             for label in self._service.list_labels()
         ]
+
+    def own_address(self) -> str:
+        """The authenticated account's address, so reply-all can exclude it."""
+        return self._service.fetch_profile_address()
+
+    def reply_context(self, message_id: str) -> ReplyContext:
+        """Read the headers a reply draft is derived from, without the body."""
+        message = self._service.fetch_reply_context(message_id)
+        parsed = parse_payload(message.get("payload") or {})
+        return ReplyContext(
+            thread_id=message.get("threadId") or "",
+            sender=parsed.sender,
+            to=parsed.to,
+            cc=parsed.cc,
+            subject=parsed.subject,
+            message_id_header=parsed.message_id,
+            references=parsed.references,
+        )
+
+    def create_draft(self, draft: ComposedDraft) -> CreatedDraft:
+        """Create one Gmail draft. This is the only write the CLI performs."""
+        message: dict[str, Any] = {"raw": draft.encoded}
+        if draft.request.thread_id:
+            message["threadId"] = draft.request.thread_id
+        response = self._service.create_draft(message)
+        created = response.get("message") or {}
+        return CreatedDraft(
+            draft_id=response["id"],
+            message_id=created["id"],
+            thread_id=created.get("threadId") or draft.request.thread_id or "",
+        )

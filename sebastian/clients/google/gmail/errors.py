@@ -43,6 +43,14 @@ class AttachmentWriteError(GmailError):
     """An attachment could not be written to the output directory."""
 
 
+class DraftInputError(GmailError):
+    """A draft was requested in a form that cannot be composed (usage error)."""
+
+
+class DraftIoError(GmailError):
+    """A file a draft needs could not be read (io error)."""
+
+
 def _is_json_object(value: object) -> TypeGuard[dict[str, Any]]:
     if not isinstance(value, dict):
         return False
