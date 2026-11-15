@@ -139,7 +139,7 @@ The project uses **pytest** for testing with a focus on the application layer (`
 - `tests/unit_tests/` - Unit tests (no external dependencies, run in CI)
 - `tests/integration_tests/` - Integration tests (require credentials, run locally)
 
-Tests run in parallel via pytest-xdist (`-n auto --dist loadfile` in `pyproject.toml`), so each test file runs on a single worker and files run concurrently. Use `-n0` to run serially (e.g. for debugging).
+Integration tests (dev machine only, `pytest-xdist` in the dev group) run in parallel per file via `tests/integration_tests/pytest.ini` (`-n auto --dist loadfile`) when invoked as `poetry run pytest tests/integration_tests`. Use `-n0` to run serially. CI and unit tests are unaffected.
 
 **Run all tests:**
 ```bash
