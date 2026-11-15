@@ -3,9 +3,9 @@
 import base64
 import re
 from functools import wraps
-from typing import Any, Self
+from typing import Any
 
-from google.auth.exceptions import RefreshError
+from google.auth.exceptions import RefreshError, TransportError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -23,10 +23,6 @@ from sebastian.domain.gmail import FullMailResponse, GmailLabelResponse, PdfMess
 
 class MessageId(BaseModel):
     id: str
-
-    @classmethod
-    def from_response(cls, response: dict) -> Self:
-        return cls(id=response["id"])
 
 
 class MessageIdPage(BaseModel):
@@ -73,7 +69,9 @@ def _translate_errors(function):
         try:
             return function(*args, **kwargs)
         except RetryError as error:
-            cause = error.last_attempt.exception() if error.last_attempt else error
+            cause = error.last_attempt.exception() if error.last_attempt else None
+            if cause is None:
+                cause = error
             raise _as_gmail_error(cause) from error
         except (HttpError, RefreshError, OSError) as error:
             raise _as_gmail_error(error) from error
@@ -91,7 +89,6 @@ def _as_gmail_error(error: BaseException) -> Exception:
 
 class GmailServiceWrapper:
     def __init__(self, credentials: Credentials):
-        self._credentials = credentials
         self._service = build(
             "gmail", "v1", credentials=credentials, cache_discovery=False
         )

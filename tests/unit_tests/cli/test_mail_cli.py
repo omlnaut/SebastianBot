@@ -1,6 +1,9 @@
 import io
 import json
 from pathlib import Path
+from typing import Any
+
+import pytest
 
 from cli.mail import build_service_from_env, main, run
 from sebastian.clients.google.credentials import ENV_VAR
@@ -134,7 +137,7 @@ def _hit() -> MailHit:
     )
 
 
-def _error(capsys) -> dict:
+def _error(capsys: pytest.CaptureFixture[str]) -> dict[str, Any]:
     return json.loads(capsys.readouterr().err)
 
 
@@ -142,7 +145,9 @@ def _shown(body: str = "the body", truncated: bool = False) -> ShownMail:
     return ShownMail(hit=_hit(), body=body, body_format="text", truncated=truncated)
 
 
-def test_search_emits_one_json_object_with_the_shared_hit_shape(capsys):
+def test_search_emits_one_json_object_with_the_shared_hit_shape(
+    capsys: pytest.CaptureFixture[str],
+):
     service = _FakeService(SearchPage([_hit()], "next-token", 12))
 
     code = run(["search", "from:alice"], service)
@@ -184,32 +189,36 @@ def test_search_emits_one_json_object_with_the_shared_hit_shape(capsys):
     }
 
 
-def test_search_defaults_to_a_limit_of_25(capsys):
+def test_search_defaults_to_a_limit_of_25(capsys: pytest.CaptureFixture[str]):
     run(["search", "x"], _EchoService())
 
     assert json.loads(capsys.readouterr().out)["limit"] == 25
 
 
-def test_search_honours_an_explicit_lower_limit(capsys):
+def test_search_honours_an_explicit_lower_limit(capsys: pytest.CaptureFixture[str]):
     run(["search", "x", "--limit", "3"], _EchoService())
 
     assert json.loads(capsys.readouterr().out)["limit"] == 3
 
 
-def test_search_clamps_a_limit_above_the_cap(capsys):
+def test_search_clamps_a_limit_above_the_cap(capsys: pytest.CaptureFixture[str]):
     run(["search", "x", "--limit", "500"], _EchoService())
 
     assert json.loads(capsys.readouterr().out)["limit"] == 200
 
 
-def test_search_forwards_the_page_token_and_returns_next_page_token(capsys):
+def test_search_forwards_the_page_token_and_returns_next_page_token(
+    capsys: pytest.CaptureFixture[str],
+):
     run(["search", "x", "--page-token", "token-abc"], _EchoService())
 
     out = json.loads(capsys.readouterr().out)
     assert out["nextPageToken"] == "echo:x|25|token-abc"
 
 
-def test_labels_returns_id_name_type_and_visibility(capsys):
+def test_labels_returns_id_name_type_and_visibility(
+    capsys: pytest.CaptureFixture[str],
+):
     service = _FakeService(
         labels=[Label(id="INBOX", name="Inbox", type="system", visibility="labelShow")]
     )
@@ -230,7 +239,9 @@ def test_labels_returns_id_name_type_and_visibility(capsys):
     }
 
 
-def test_show_emits_one_json_object_with_the_hit_shape_plus_body(capsys):
+def test_show_emits_one_json_object_with_the_hit_shape_plus_body(
+    capsys: pytest.CaptureFixture[str],
+):
     service = _FakeService(shown=_shown(body="the body", truncated=False))
 
     code = run(["show", "m1"], service)
@@ -268,7 +279,7 @@ def test_show_emits_one_json_object_with_the_hit_shape_plus_body(capsys):
     }
 
 
-def test_show_reports_a_truncated_body(capsys):
+def test_show_reports_a_truncated_body(capsys: pytest.CaptureFixture[str]):
     service = _FakeService(shown=_shown(body="cut here", truncated=True))
 
     run(["show", "m1"], service)
@@ -278,7 +289,9 @@ def test_show_reports_a_truncated_body(capsys):
     assert message["truncated"] is True
 
 
-def test_show_defaults_to_text_and_a_20000_character_limit(capsys):
+def test_show_defaults_to_text_and_a_20000_character_limit(
+    capsys: pytest.CaptureFixture[str],
+):
     run(["show", "m1"], _EchoService())
 
     message = json.loads(capsys.readouterr().out)["message"]
@@ -286,21 +299,21 @@ def test_show_defaults_to_text_and_a_20000_character_limit(capsys):
     assert message["body"] == "echo:m1|text|20000"
 
 
-def test_show_opts_into_html(capsys):
+def test_show_opts_into_html(capsys: pytest.CaptureFixture[str]):
     run(["show", "m1", "--format", "html"], _EchoService())
 
     message = json.loads(capsys.readouterr().out)["message"]
     assert message["bodyFormat"] == "html"
 
 
-def test_show_forwards_an_explicit_max_chars(capsys):
+def test_show_forwards_an_explicit_max_chars(capsys: pytest.CaptureFixture[str]):
     run(["show", "m1", "--max-chars", "120"], _EchoService())
 
     message = json.loads(capsys.readouterr().out)["message"]
     assert message["body"] == "echo:m1|text|120"
 
 
-def test_show_rejects_an_unknown_body_format(capsys):
+def test_show_rejects_an_unknown_body_format(capsys: pytest.CaptureFixture[str]):
     code = run(["show", "m1", "--format", "markdown"], _FakeService())
 
     assert code == 2
@@ -311,7 +324,7 @@ def test_show_rejects_an_unknown_body_format(capsys):
     assert error["error"]["kind"] == "usage"
 
 
-def test_show_rejects_a_max_chars_below_one(capsys):
+def test_show_rejects_a_max_chars_below_one(capsys: pytest.CaptureFixture[str]):
     code = run(["show", "m1", "--max-chars", "0"], _FakeService())
 
     assert code == 2
@@ -323,7 +336,7 @@ def test_show_rejects_a_max_chars_below_one(capsys):
     assert "--max-chars" in error["error"]["message"]
 
 
-def test_search_rejects_a_limit_below_one(capsys):
+def test_search_rejects_a_limit_below_one(capsys: pytest.CaptureFixture[str]):
     code = run(["search", "x", "--limit", "0"], _FakeService())
 
     assert code == 2
@@ -332,7 +345,9 @@ def test_search_rejects_a_limit_below_one(capsys):
     assert error["error"]["kind"] == "usage"
 
 
-def test_usage_errors_are_reported_before_credentials_are_loaded(capsys):
+def test_usage_errors_are_reported_before_credentials_are_loaded(
+    capsys: pytest.CaptureFixture[str],
+):
     def factory():
         raise AssertionError("an invalid invocation must not build the service")
 
@@ -344,14 +359,18 @@ def test_usage_errors_are_reported_before_credentials_are_loaded(capsys):
     assert json.loads(captured.err)["error"]["kind"] == "usage"
 
 
-def test_show_without_a_message_id_is_a_usage_error(capsys):
+def test_show_without_a_message_id_is_a_usage_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["show"], _FakeService())
 
     assert code == 2
     assert _error(capsys)["error"]["kind"] == "usage"
 
 
-def test_show_with_an_unknown_message_id_is_an_api_error(capsys):
+def test_show_with_an_unknown_message_id_is_an_api_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["show", "nope"], _FailingService())
 
     assert code == 1
@@ -368,7 +387,9 @@ def test_show_with_an_unknown_message_id_is_an_api_error(capsys):
     }
 
 
-def test_an_expired_token_is_reported_as_an_auth_error(capsys):
+def test_an_expired_token_is_reported_as_an_auth_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["search", "x"], _ExpiredTokenService())
 
     assert code == 1
@@ -385,7 +406,7 @@ def test_an_expired_token_is_reported_as_an_auth_error(capsys):
     }
 
 
-def test_unknown_flag_is_a_usage_error_on_stderr(capsys):
+def test_unknown_flag_is_a_usage_error_on_stderr(capsys: pytest.CaptureFixture[str]):
     code = run(["search", "x", "--nope"], _FakeService())
 
     assert code == 2
@@ -397,21 +418,23 @@ def test_unknown_flag_is_a_usage_error_on_stderr(capsys):
     }
 
 
-def test_missing_query_is_a_usage_error(capsys):
+def test_missing_query_is_a_usage_error(capsys: pytest.CaptureFixture[str]):
     code = run(["search"], _FakeService())
 
     assert code == 2
     assert _error(capsys)["error"]["kind"] == "usage"
 
 
-def test_missing_command_is_a_usage_error(capsys):
+def test_missing_command_is_a_usage_error(capsys: pytest.CaptureFixture[str]):
     code = run([], _FakeService())
 
     assert code == 2
     assert _error(capsys)["error"]["kind"] == "usage"
 
 
-def test_api_failure_is_json_on_stderr_with_exit_code_1(capsys):
+def test_api_failure_is_json_on_stderr_with_exit_code_1(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["search", "x"], _FailingService())
 
     assert code == 1
@@ -423,7 +446,9 @@ def test_api_failure_is_json_on_stderr_with_exit_code_1(capsys):
     }
 
 
-def test_attachments_reports_written_paths_and_sizes(capsys, tmp_path):
+def test_attachments_reports_written_paths_and_sizes(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+):
     service = _FakeService(
         written=[
             WrittenAttachment(str(tmp_path / "Rechnung.pdf"), 91234),
@@ -446,14 +471,18 @@ def test_attachments_reports_written_paths_and_sizes(capsys, tmp_path):
     }
 
 
-def test_attachments_forwards_the_directory_and_force_flag(capsys):
+def test_attachments_forwards_the_directory_and_force_flag(
+    capsys: pytest.CaptureFixture[str],
+):
     run(["attachments", "m1", "--out", "/tmp/out", "--force"], _EchoService())
 
     files = json.loads(capsys.readouterr().out)["files"]
     assert files == [{"path": "echo:m1|/tmp/out|True", "size": 1}]
 
 
-def test_attachments_without_an_output_directory_is_a_usage_error(capsys):
+def test_attachments_without_an_output_directory_is_a_usage_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["attachments", "m1"], _FakeService())
 
     assert code == 2
@@ -462,7 +491,9 @@ def test_attachments_without_an_output_directory_is_a_usage_error(capsys):
     assert json.loads(captured.err)["error"]["kind"] == "usage"
 
 
-def test_attachments_with_an_unknown_message_id_is_an_api_error(capsys):
+def test_attachments_with_an_unknown_message_id_is_an_api_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["attachments", "nope", "--out", "/tmp/out"], _FailingService())
 
     assert code == 1
@@ -479,7 +510,9 @@ def test_attachments_with_an_unknown_message_id_is_an_api_error(capsys):
     }
 
 
-def test_attachments_filesystem_failure_is_an_io_error(capsys):
+def test_attachments_filesystem_failure_is_an_io_error(
+    capsys: pytest.CaptureFixture[str],
+):
     code = run(["attachments", "m1", "--out", "/does/not/exist"], _UnwritableService())
 
     assert code == 1
@@ -494,7 +527,9 @@ def test_attachments_filesystem_failure_is_an_io_error(capsys):
     }
 
 
-def test_missing_credentials_is_auth_error_naming_the_variable(capsys):
+def test_missing_credentials_is_auth_error_naming_the_variable(
+    capsys: pytest.CaptureFixture[str],
+):
     code = main(["search", "x"], service_factory=lambda: build_service_from_env({}))
 
     assert code == 1
@@ -506,7 +541,7 @@ def test_missing_credentials_is_auth_error_naming_the_variable(capsys):
     assert ENV_VAR in error["error"]["message"]
 
 
-def test_invalid_credentials_json_is_auth_error(capsys):
+def test_invalid_credentials_json_is_auth_error(capsys: pytest.CaptureFixture[str]):
     code = main(
         ["labels"],
         service_factory=lambda: build_service_from_env({ENV_VAR: "{not json"}),

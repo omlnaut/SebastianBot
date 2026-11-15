@@ -1,4 +1,5 @@
 import json
+from typing import Any, Protocol, cast
 
 import pytest
 
@@ -9,7 +10,12 @@ from sebastian.clients.google.credentials import (
 )
 
 
-def _bare_credentials(**overrides) -> dict:
+class _GoogleCredentialsView(Protocol):
+    client_id: str | None
+    refresh_token: str | None
+
+
+def _bare_credentials(**overrides: Any) -> dict[str, Any]:
     data = {
         "client_id": "client-id",
         "client_secret": "client-secret",
@@ -26,15 +32,21 @@ def _bare_credentials(**overrides) -> dict:
 
 
 def test_loader_accepts_the_bare_authorized_user_object():
-    credentials = load_credentials_from_env({ENV_VAR: json.dumps(_bare_credentials())})
+    credentials = cast(
+        _GoogleCredentialsView,
+        load_credentials_from_env({ENV_VAR: json.dumps(_bare_credentials())}),
+    )
 
     assert credentials.client_id == "client-id"
     assert credentials.refresh_token == "refresh-token"
 
 
 def test_loader_accepts_the_wrapped_secret_shape():
-    credentials = load_credentials_from_env(
-        {ENV_VAR: json.dumps({"credentials": _bare_credentials()})}
+    credentials = cast(
+        _GoogleCredentialsView,
+        load_credentials_from_env(
+            {ENV_VAR: json.dumps({"credentials": _bare_credentials()})}
+        ),
     )
 
     assert credentials.refresh_token == "refresh-token"

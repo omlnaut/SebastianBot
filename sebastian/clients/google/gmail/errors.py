@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, TypeGuard, cast
 
 from googleapiclient.errors import HttpError
 
@@ -51,6 +51,14 @@ class DraftIoError(GmailError):
     """A file a draft needs could not be read (io error)."""
 
 
+def _is_json_object(value: object) -> TypeGuard[dict[str, Any]]:
+    if not isinstance(value, dict):
+        return False
+    return all(
+        isinstance(key, str) for key in cast(dict[object, object], value)
+    )
+
+
 def gmail_error_from_http(error: HttpError) -> GmailApiError | GmailAuthError:
     """Translate an ``HttpError`` into a typed error with a printable message.
 
@@ -70,7 +78,8 @@ def _is_auth_failure(status: int | None, reason: str | None) -> bool:
 
 
 def _status_of(error: HttpError) -> int | None:
-    status = getattr(error.resp, "status", None)
+    response: object = error.resp
+    status = getattr(response, "status", None)
     return status if isinstance(status, int) else None
 
 
@@ -80,29 +89,32 @@ def _details_of(error: HttpError) -> tuple[str, str | None]:
         message = payload.get("message")
         if isinstance(message, str) and message.strip():
             return message.strip(), _reason_of(payload)
-    return (error.reason or "Gmail API request failed").strip(), None
+    reason: object = getattr(error, "reason", None)
+    if isinstance(reason, str):
+        return reason.strip() or "Gmail API request failed", None
+    return "Gmail API request failed", None
 
 
 def _error_payload(content: bytes) -> dict[str, Any] | None:
     try:
-        body = json.loads(content.decode("utf-8"))
+        body: object = json.loads(content.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
         return None
-    if not isinstance(body, dict):
+    if not _is_json_object(body):
         return None
     payload = body.get("error")
-    return payload if isinstance(payload, dict) else None
+    return payload if _is_json_object(payload) else None
 
 
 def _reason_of(payload: dict[str, Any]) -> str | None:
-    errors = payload.get("errors")
+    errors: object = payload.get("errors")
     if isinstance(errors, list):
-        for entry in errors:
-            if isinstance(entry, dict) and isinstance(entry.get("reason"), str):
+        for entry in cast(list[object], errors):
+            if _is_json_object(entry) and isinstance(entry.get("reason"), str):
                 return entry["reason"]
-    details = payload.get("details")
+    details: object = payload.get("details")
     if isinstance(details, list):
-        for entry in details:
-            if isinstance(entry, dict) and isinstance(entry.get("reason"), str):
+        for entry in cast(list[object], details):
+            if _is_json_object(entry) and isinstance(entry.get("reason"), str):
                 return entry["reason"]
     return None

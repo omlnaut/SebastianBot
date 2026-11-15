@@ -1,7 +1,7 @@
 import base64
 from datetime import datetime, timezone
 from email.utils import getaddresses, parsedate_to_datetime
-from typing import Any
+from typing import Any, Iterator, TypeGuard, cast
 
 from sebastian.domain.gmail import (
     AttachmentInfo,
@@ -9,6 +9,19 @@ from sebastian.domain.gmail import (
     ParsedAttachment,
     ParsedMail,
 )
+
+
+def _is_json_object(value: object) -> TypeGuard[dict[str, Any]]:
+    if not isinstance(value, dict):
+        return False
+    return all(
+        isinstance(key, str) for key in cast(dict[object, object], value)
+    )
+
+
+def _body(part: dict[str, Any]) -> dict[str, Any]:
+    body: object = part.get("body")
+    return body if _is_json_object(body) else {}
 
 
 def parse_payload(payload: dict[str, Any]) -> ParsedMail:
@@ -34,7 +47,7 @@ def parse_payload(payload: dict[str, Any]) -> ParsedMail:
     )
 
 
-def _parse_headers(headers: list[dict]) -> dict[str, str]:
+def _parse_headers(headers: list[dict[str, Any]]) -> dict[str, str]:
     parsed: dict[str, str] = {}
     for header in headers:
         name = (header.get("name") or "").lower()
@@ -43,42 +56,52 @@ def _parse_headers(headers: list[dict]) -> dict[str, str]:
     return parsed
 
 
-def _walk(part: dict):
+def _walk(part: dict[str, Any]) -> Iterator[dict[str, Any]]:
     yield part
-    for child in part.get("parts") or []:
-        yield from _walk(child)
+    children: object = part.get("parts")
+    if isinstance(children, list):
+        for child in cast(list[object], children):
+            if _is_json_object(child):
+                yield from _walk(child)
 
 
-def _is_body_part(part: dict) -> bool:
-    body = part.get("body") or {}
+def _is_body_part(part: dict[str, Any]) -> bool:
+    body = _body(part)
     return not part.get("filename") and "attachmentId" not in body
 
 
-def _find_body(payload: dict, mime_type: str) -> str | None:
+def _find_body(payload: dict[str, Any], mime_type: str) -> str | None:
     for part in _walk(payload):
         if part.get("mimeType") != mime_type or not _is_body_part(part):
             continue
-        data = (part.get("body") or {}).get("data")
-        if data:
+        data = _body(part).get("data")
+        if isinstance(data, str) and data:
             return _decode(data)
     return None
 
 
-def _collect_attachments(payload: dict) -> list[ParsedAttachment]:
+def _collect_attachments(payload: dict[str, Any]) -> list[ParsedAttachment]:
     attachments: list[ParsedAttachment] = []
     for part in _walk(payload):
         filename = part.get("filename")
-        if not filename:
+        if not isinstance(filename, str) or not filename:
             continue
-        body = part.get("body") or {}
+        body = _body(part)
         inline = body.get("data")
+        mime_type = part.get("mimeType")
+        size = body.get("size")
+        attachment_id = body.get("attachmentId")
         attachments.append(
             ParsedAttachment(
                 filename=filename,
-                mime_type=part.get("mimeType") or "",
-                size=body.get("size") or 0,
-                attachment_id=body.get("attachmentId"),
-                inline_data=_decode_bytes(inline) if inline else None,
+                mime_type=mime_type if isinstance(mime_type, str) else "",
+                size=size if isinstance(size, int) else 0,
+                attachment_id=(
+                    attachment_id if isinstance(attachment_id, str) else None
+                ),
+                inline_data=(
+                    _decode_bytes(inline) if isinstance(inline, str) else None
+                ),
             )
         )
     return attachments
@@ -120,7 +143,16 @@ def _format_date(value: str | None) -> str | None:
 def normalize_hit(message: dict[str, Any], label_names: dict[str, str]) -> MailHit:
     """Turn a raw Gmail message into the shared hit shape, resolving label names."""
     parsed = parse_payload(message.get("payload") or {})
-    label_ids = list(message.get("labelIds") or [])
+    raw_label_ids: object = message.get("labelIds")
+    label_ids = (
+        [
+            label_id
+            for label_id in cast(list[object], raw_label_ids)
+            if isinstance(label_id, str)
+        ]
+        if isinstance(raw_label_ids, list)
+        else []
+    )
     internal_date = message.get("internalDate") or ""
 
     return MailHit(

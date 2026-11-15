@@ -31,10 +31,8 @@ def _mail(mail_id: str, label_ids: list[str] | None = None) -> FullMailResponse:
 class _FakeGmailClient:
     def __init__(self, mails: list[FullMailResponse]):
         self._mails = mails
-        self.last_query: str | None = None
 
     def fetch_mails(self, query: str) -> list[FullMailResponse]:
-        self.last_query = query
         return self._mails
 
 

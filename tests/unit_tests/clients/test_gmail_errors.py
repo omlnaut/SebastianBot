@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import pytest
 from googleapiclient.errors import HttpError
@@ -17,7 +18,7 @@ class _Response:
 
 
 def _http_error(
-    status: int, body: dict | None = None, reason: str = "Error"
+    status: int, body: dict[str, Any] | None = None, reason: str = "Error"
 ) -> HttpError:
     content = json.dumps(body).encode("utf-8") if body is not None else b"not json"
     return HttpError(
@@ -27,7 +28,7 @@ def _http_error(
     )
 
 
-def _not_found_body() -> dict:
+def _not_found_body() -> dict[str, Any]:
     return {
         "error": {
             "code": 404,

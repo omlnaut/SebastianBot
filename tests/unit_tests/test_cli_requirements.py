@@ -31,7 +31,10 @@ def _declared_requirements() -> list[str]:
     for line in CLI_REQUIREMENTS.read_text().splitlines():
         entry = line.split("#", 1)[0].strip()
         if entry:
-            declared.append(_normalize(re.match(r"[A-Za-z0-9_.-]+", entry).group(0)))
+            match = re.match(r"[A-Za-z0-9_.-]+", entry)
+            if match is None:
+                raise ValueError(f"Invalid requirement entry: {entry}")
+            declared.append(_normalize(match.group(0)))
     return declared
 
 

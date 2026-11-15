@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Mapping, Protocol, Sequence, TextIO
+from typing import Callable, Mapping, Protocol, Sequence, TextIO
 
 from sebastian.clients.google.credentials import (
     CredentialsError,
@@ -80,7 +80,9 @@ def run(argv: Sequence[str], service: GmailService, stdin: TextIO | None = None)
 
 
 def main(
-    argv: Sequence[str] | None = None, service_factory=None, stdin: TextIO | None = None
+    argv: Sequence[str] | None = None,
+    service_factory: Callable[[], GmailClient] | None = None,
+    stdin: TextIO | None = None,
 ) -> int:
     """Validate argv, build the real service from the environment, then run."""
     arguments = list(sys.argv[1:] if argv is None else argv)
@@ -88,7 +90,7 @@ def main(
         args = _parse_args(arguments)
     except UsageError as error:
         return _emit_error(_peek_command(arguments), "usage", str(error), exit_code=2)
-    factory = service_factory or build_service_from_env
+    factory: Callable[[], GmailClient] = service_factory or build_service_from_env
     try:
         service = factory()
     except CredentialsError as error:
@@ -405,7 +407,7 @@ def _at_least_one(raw: str) -> int:
     return value
 
 
-def _hit_json(hit: MailHit) -> dict:
+def _hit_json(hit: MailHit) -> dict[str, object]:
     return {
         "id": hit.id,
         "threadId": hit.thread_id,
@@ -437,7 +439,7 @@ def _peek_command(argv: Sequence[str]) -> str | None:
     return None
 
 
-def _emit(payload: dict) -> None:
+def _emit(payload: dict[str, object]) -> None:
     print(json.dumps(payload), file=sys.stdout)
 
 
