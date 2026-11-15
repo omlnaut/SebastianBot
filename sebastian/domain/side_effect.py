@@ -40,10 +40,6 @@ class ModifyMailLabel(SideEffect):
         return cls(email_id=email_id, remove_labels=[GmailLabels.Unread])
 
     @classmethod
-    def MarkAsUnread(cls, email_id: str) -> "ModifyMailLabel":
-        return cls(email_id=email_id, add_labels=[GmailLabels.Unread])
-
-    @classmethod
     def MarkAsProcessed(cls, email_id: str) -> "ModifyMailLabel":
         return cls(email_id=email_id, add_labels=[GmailLabels.Processed])
 

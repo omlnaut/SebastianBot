@@ -3,7 +3,7 @@
 import base64
 import re
 from functools import wraps
-from typing import Any, Self
+from typing import Any
 
 from google.auth.exceptions import RefreshError, TransportError
 from google.oauth2.credentials import Credentials
@@ -23,10 +23,6 @@ from sebastian.domain.gmail import FullMailResponse, GmailLabelResponse, PdfMess
 
 class MessageId(BaseModel):
     id: str
-
-    @classmethod
-    def from_response(cls, response: dict) -> Self:
-        return cls(id=response["id"])
 
 
 class MessageIdPage(BaseModel):
@@ -91,7 +87,6 @@ def _as_gmail_error(error: BaseException) -> Exception:
 
 class GmailServiceWrapper:
     def __init__(self, credentials: Credentials):
-        self._credentials = credentials
         self._service = build(
             "gmail", "v1", credentials=credentials, cache_discovery=False
         )
