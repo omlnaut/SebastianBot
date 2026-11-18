@@ -55,6 +55,7 @@ The project follows clean architecture principles with a clear separation betwee
 | MangaUpdate | Monitors manga update sources | Daily at 3:05 AM |
 | WinSim | Archives WinSim invoices to Google Drive | Daily at 9:00 PM |
 | Mietplan | Manages rental payment schedules | Daily at 9:01 PM |
+| SetMissingTaskDueDate | Sets today's Berlin date on undated tasks in both Google accounts' default lists | Hourly at :00 |
 
 ## GitHub Copilot Agent Integration
 
@@ -94,6 +95,29 @@ The devcontainer includes:
 - GitHub CLI (`gh`)
 - Poetry for dependency management
 - All Python dependencies pre-installed
+
+### Second Google Tasks account
+
+The due-date automation requires both `GoogleCredentials` and
+`GoogleCredentialsSecond` in Azure Key Vault. Other integrations continue to use
+the original account. If either account fails, the other is still processed and
+the failure is reported through Telegram.
+
+To authorize the second account:
+
+1. Enable the Google Tasks API for the OAuth client and ensure the second account
+   is permitted by its OAuth consent screen. Place the desktop OAuth client JSON
+   at `investigations/google_token/credentials.json`.
+2. Run `python investigations/google_token/create_credentials.py --tasks-only --output /secure/path/google-tasks-second.json`
+   and sign in as the second account. Use a new private output path: the command
+   refuses to overwrite an existing file and creates it with owner-only permissions.
+3. Store the resulting JSON, including its `credentials` wrapper, as the
+   `GoogleCredentialsSecond` Key Vault secret. Grant the function app access to
+   the secret, then securely remove the temporary JSON file.
+
+These credentials contain a refresh token and must not be committed or shared.
+If the required second secret is missing or invalid, its failure is reported
+while the original account continues to run.
 
 ### GitHub CLI Authentication (safe setup)
 
