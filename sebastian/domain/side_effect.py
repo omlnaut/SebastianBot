@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from sebastian.domain.calendar import Calendars
 from sebastian.domain.gmail import GmailLabel, GmailLabels
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import GoogleTaskAccount, TaskLists
 
 
 class SideEffect(BaseModel):
@@ -49,6 +49,7 @@ class PatchTask(SideEffect):
     task_id: str = Field(min_length=1)
     completed: bool | None = None
     due_date: date | None = None
+    account: GoogleTaskAccount = GoogleTaskAccount.Original
 
     @classmethod
     def CompleteTask(cls, tasklist: TaskLists, task_id: str) -> Self:

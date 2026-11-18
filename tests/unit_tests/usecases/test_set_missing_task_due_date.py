@@ -2,7 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from sebastian.domain.side_effect import PatchTask
-from sebastian.domain.task import Task, TaskLists
+from sebastian.domain.task import GoogleTaskAccount, Task, TaskLists
 from sebastian.usecases.features.set_missing_task_due_date.handler import (
     Handler,
     Request,
@@ -52,3 +52,15 @@ def test_ignores_other_tasklists_by_default():
 
 def test_empty_task_list():
     assert Handler(task_client=_FakeTaskClient([])).handle(Request()) == []
+
+
+def test_second_account_is_attached_to_due_date_effect():
+    client = _FakeTaskClient([_task("t1", None)])
+
+    result = Handler(task_client=client).handle(
+        Request(account=GoogleTaskAccount.Second)
+    )
+
+    assert len(result) == 1
+    assert isinstance(result[0], PatchTask)
+    assert result[0].account == GoogleTaskAccount.Second
