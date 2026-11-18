@@ -2,7 +2,7 @@ from datetime import date
 from typing import Self, override
 
 from cloud.helper.event_grid import EventGridModel
-from sebastian.domain.task import TaskLists
+from sebastian.domain.task import GoogleTaskAccount, TaskLists
 from sebastian.domain.side_effect import PatchTask
 
 
@@ -11,6 +11,7 @@ class CompleteTaskEventGrid(EventGridModel[PatchTask]):
     task_id: str
     completed: bool | None = None
     due_date: date | None = None
+    account: GoogleTaskAccount = GoogleTaskAccount.Original
 
     @classmethod
     @override
@@ -20,4 +21,5 @@ class CompleteTaskEventGrid(EventGridModel[PatchTask]):
             task_id=app_event.task_id,
             completed=app_event.completed,
             due_date=app_event.due_date,
+            account=app_event.account,
         )

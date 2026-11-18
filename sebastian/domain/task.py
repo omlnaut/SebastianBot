@@ -10,6 +10,11 @@ class TaskLists(Enum):
     Bibo = auto()
 
 
+class GoogleTaskAccount(str, Enum):
+    Original = "original"
+    Second = "second"
+
+
 class TaskTags(str, Enum):
     DeliveryReady = "DELIVERY_READY"
     BiboSync = "BIBO_SYNC"

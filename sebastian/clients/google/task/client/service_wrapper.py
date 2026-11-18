@@ -78,3 +78,7 @@ class TaskServiceWrapper:
         tasklists_response = self._service.tasklists().list().execute()
         items = tasklists_response.get("items", [])
         return [TaskList.model_validate(item) for item in items]
+
+    def get_default_tasklist_id(self) -> str:
+        response = self._service.tasklists().get(tasklist="@default").execute()
+        return TaskList.model_validate(response).id

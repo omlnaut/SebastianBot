@@ -6,6 +6,7 @@ from sebastian.clients.bibo.client import BiboClient
 from sebastian.clients.deepseek.client import DeepSeekClient
 from sebastian.clients.dhl.client import DhlClient
 from sebastian.domain.bibo import BiboAccounts
+from sebastian.domain.task import GoogleTaskAccount
 from sebastian.clients.google.calendar_event.client import CalendarEventClient
 from sebastian.clients.google.drive.client import GoogleDriveClient
 from sebastian.clients.google.gmail.client import GmailClient
@@ -16,8 +17,17 @@ from sebastian.clients.telegram.client import TelegramClient
 
 
 @lru_cache()
-def load_google_credentials() -> Credentials:
-    credentials_model = get_secret(SecretKeys.GoogleCredentials)
+def load_google_credentials(
+    account: GoogleTaskAccount = GoogleTaskAccount.Original,
+) -> Credentials:
+    match account:
+        case GoogleTaskAccount.Original:
+            key = SecretKeys.GoogleCredentials
+        case GoogleTaskAccount.Second:
+            key = SecretKeys.GoogleCredentialsSecond
+        case _:
+            raise ValueError(f"Unknown Google task account: {account}")
+    credentials_model = get_secret(key)
     creds = Credentials.from_authorized_user_info(credentials_model.credentials.model_dump())  # type: ignore
     return creds
 
@@ -41,9 +51,17 @@ def resolve_telegram_client() -> TelegramClient:
 
 
 @lru_cache()
-def resolve_google_task_client() -> GoogleTaskClient:
-    credentials = load_google_credentials()
-    return GoogleTaskClient(credentials)
+def resolve_google_task_client(
+    account: GoogleTaskAccount = GoogleTaskAccount.Original,
+) -> GoogleTaskClient:
+    credentials = (
+        load_google_credentials()
+        if account == GoogleTaskAccount.Original
+        else load_google_credentials(account)
+    )
+    return GoogleTaskClient(
+        credentials, use_account_default=account == GoogleTaskAccount.Second
+    )
 
 
 @lru_cache()

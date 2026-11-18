@@ -5,7 +5,7 @@ from typing import Sequence
 from zoneinfo import ZoneInfo
 
 from sebastian.domain.side_effect import PatchTask, SideEffect
-from sebastian.domain.task import Task, TaskLists
+from sebastian.domain.task import GoogleTaskAccount, Task, TaskLists
 from sebastian.usecases.usecase_handler import UseCaseHandler
 
 from .protocols import TaskClient
@@ -18,6 +18,7 @@ _TIMEZONE = ZoneInfo("Europe/Berlin")
 @dataclass
 class Request:
     tasklists: tuple[TaskLists, ...] = (TaskLists.Default,)
+    account: GoogleTaskAccount = GoogleTaskAccount.Original
 
 
 class Handler(UseCaseHandler[Request]):
@@ -29,23 +30,27 @@ class Handler(UseCaseHandler[Request]):
         effects: list[SideEffect] = []
 
         for tasklist in request.tasklists:
-            effects.extend(self._handle_tasklist(tasklist, today))
+            effects.extend(self._handle_tasklist(tasklist, today, request.account))
 
         logging.info(
             f"SetMissingTaskDueDate: {len(effects)} tasks get due date {today}"
         )
         return effects
 
-    def _handle_tasklist(self, tasklist: TaskLists, today: date) -> list[PatchTask]:
+    def _handle_tasklist(
+        self, tasklist: TaskLists, today: date, account: GoogleTaskAccount
+    ) -> list[PatchTask]:
         effects: list[PatchTask] = []
         for task in self._task_client.get_tasks(tasklist=tasklist):
-            if (effect := self._handle_task(task, today)) is not None:
+            if (effect := self._handle_task(task, today, account)) is not None:
                 effects.append(effect)
         return effects
 
-    def _handle_task(self, task: Task, today: date) -> PatchTask | None:
+    def _handle_task(
+        self, task: Task, today: date, account: GoogleTaskAccount
+    ) -> PatchTask | None:
         if task.due is None:
-            return PatchTask.SetDueDate(
-                tasklist=task.tasklist, task_id=task.id, due_date=today
+            return PatchTask(
+                tasklist=task.tasklist, task_id=task.id, due_date=today, account=account
             )
         return None
