@@ -58,6 +58,9 @@ class SecretKeys:
     GoogleCredentials: TypedSecretKey[_GoogleSecret] = TypedSecretKey(
         "GoogleCredentials", _GoogleSecret
     )
+    GoogleCredentialsSecond: TypedSecretKey[_GoogleSecret] = TypedSecretKey(
+        "GoogleCredentialsSecond", _GoogleSecret
+    )
     MangaUpdateCredentials: TypedSecretKey[_MangaUpdateSecret] = TypedSecretKey(
         "MangaUpdateCredentials", _MangaUpdateSecret
     )

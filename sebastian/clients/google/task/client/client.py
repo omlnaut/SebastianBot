@@ -12,11 +12,17 @@ from .create_task_with_notes import build_task_body, post_create_task
 
 
 class GoogleTaskClient:
-    def __init__(self, credentials: Credentials):
+    def __init__(self, credentials: Credentials, use_account_default: bool = False):
         self._service = TaskServiceWrapper(credentials)
+        self._use_account_default = use_account_default
 
     def _fetch_tasklists(self) -> list[TaskList]:
         return self._service.get_tasklists()
+
+    def _tasklist_id(self, tasklist: TaskLists) -> str:
+        if self._use_account_default and tasklist == TaskLists.Default:
+            return self._service.get_default_tasklist_id()
+        return to_id(tasklist)
 
     def create_task_with_notes(
         self,
@@ -26,7 +32,7 @@ class GoogleTaskClient:
         due_date: datetime | None = None,
     ) -> Task:
         task_body = build_task_body(title, notes, due_date)
-        parsed = post_create_task(self._service, tasklist, task_body)
+        parsed = post_create_task(self._service, self._tasklist_id(tasklist), task_body)
         return Task(
             id=parsed.id,
             title=parsed.title,
@@ -53,7 +59,7 @@ class GoogleTaskClient:
             )
 
         tasks_response = self._service.get_tasks(
-            to_id(tasklist),
+            self._tasklist_id(tasklist),
             include_completed=include_completed,
             due_min=due.start if due is not None else None,
             due_max=due.end if due is not None else None,
@@ -72,7 +78,7 @@ class GoogleTaskClient:
     ) -> None:
         """Setting a parameter None does not update the field"""
         self._service.patch_task(
-            to_id(tasklist),
+            self._tasklist_id(tasklist),
             task_id,
             title=title,
             notes=notes,
@@ -81,4 +87,4 @@ class GoogleTaskClient:
         )
 
     def delete_task(self, tasklist: TaskLists, task_id: str) -> None:
-        self._service.delete_task(to_id(tasklist), task_id)
+        self._service.delete_task(self._tasklist_id(tasklist), task_id)
