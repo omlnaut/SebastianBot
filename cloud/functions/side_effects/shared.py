@@ -58,6 +58,10 @@ def perform_usecase_from_eventgrid(
     create_request: Callable[[TEventModel], TRequest],
     resolve_handler: Callable[[], UseCaseHandler[TRequest]],
     az_event: func.EventGridEvent,
+    *,
+    resolve_handler_for_event: Callable[[TEventModel], UseCaseHandler[TRequest]]
+    | None = None,
+    safe_error_context: Callable[[TEventModel], str] | None = None,
 ) -> None:
     """
     Perform a usecase by creating a request from the EventGrid event,
@@ -74,11 +78,16 @@ def perform_usecase_from_eventgrid(
         )
 
     event_model = _extract_first_arg_type(create_request)
+    event: TEventModel | None = None
     try:
         logging.info(f"EventGrid {event_model.base_name()} triggered")
         event = parse_payload(az_event, event_model)
         request = create_request(event)
-        handler = resolve_handler()
+        handler = (
+            resolve_handler_for_event(event)
+            if resolve_handler_for_event is not None
+            else resolve_handler()
+        )
 
         actor_result = handler.handle(request)
 
@@ -89,9 +98,16 @@ def perform_usecase_from_eventgrid(
             send_eventgrid_events(events_to_send)
 
     except Exception as e:
-        error_msg = f"Error {event_model.base_name()}: {str(e)}"
+        if safe_error_context is not None:
+            context = (
+                safe_error_context(event) if event is not None else "unknown account"
+            )
+            error_msg = f"Error {event_model.base_name()} ({context}): {type(e).__name__}"
+        else:
+            error_msg = f"Error {event_model.base_name()}: {str(e)}"
         logging.error(error_msg)
-        logging.error(f"Error payload: {az_event.get_json()}")
+        if safe_error_context is None:
+            logging.error(f"Error payload: {az_event.get_json()}")
         send_eventgrid_events([SendTelegramMessageEventGrid(message=error_msg)])
 
     logging.info(f"EventGrid {event_model.base_name()} completed")

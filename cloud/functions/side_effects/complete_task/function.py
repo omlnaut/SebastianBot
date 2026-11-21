@@ -23,4 +23,8 @@ def complete_task(
         create_request,
         usecases.resolve_complete_task,
         azeventgrid,
+        resolve_handler_for_event=lambda event: usecases.resolve_complete_task(
+            account=event.account
+        ),
+        safe_error_context=lambda event: f"account {event.account.value}",
     )

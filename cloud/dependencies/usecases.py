@@ -23,6 +23,7 @@ from sebastian.usecases.side_effects import (
     send_telegram_message,
 )
 from sebastian.usecases.usecase_handler import UseCaseHandler
+from sebastian.domain.task import GoogleTaskAccount
 
 from .clients import (
     resolve_deepseek_client,
@@ -100,9 +101,15 @@ def resolve_check_parcel_received(
 
 def resolve_set_missing_task_due_date(
     task_client: set_missing_task_due_date.TaskClient | None = None,
+    account: GoogleTaskAccount = GoogleTaskAccount.Original,
 ) -> UseCaseHandler[set_missing_task_due_date.Request]:
     return set_missing_task_due_date.Handler(
-        task_client=task_client or resolve_google_task_client(),
+        task_client=task_client
+        or (
+            resolve_google_task_client()
+            if account == GoogleTaskAccount.Original
+            else resolve_google_task_client(account)
+        ),
     )
 
 
@@ -170,9 +177,15 @@ def resolve_modify_mail_label(
 
 def resolve_complete_task(
     task_client: complete_task.TaskClient | None = None,
+    account: GoogleTaskAccount = GoogleTaskAccount.Original,
 ) -> UseCaseHandler[complete_task.Request]:
     return complete_task.Handler(
-        task_client=task_client or resolve_google_task_client(),
+        task_client=task_client
+        or (
+            resolve_google_task_client()
+            if account == GoogleTaskAccount.Original
+            else resolve_google_task_client(account)
+        ),
     )
 
 
