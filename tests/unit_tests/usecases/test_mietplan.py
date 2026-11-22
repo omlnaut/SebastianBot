@@ -497,9 +497,74 @@ def test_a_failing_download_is_recorded_and_the_run_continues():
     ]
     assert result == [
         SendMessage(
-            message="Found new mietplan files:\n- Miete/a.pdf\n- Miete/c.pdf"
+            message=(
+                "Found new mietplan files:\n"
+                "- Miete/a.pdf\n"
+                "- Miete/c.pdf\n"
+                "Failed:\n"
+                "- Miete/broken.pdf: read timeout"
+            )
         )
     ]
+
+
+def test_a_run_where_every_file_fails_still_sends_the_failures():
+    # The timer's former failure path was an exception reaching the cloud layer.
+    # Per-file continuation removed it, so an all-failed night must still produce
+    # a Telegram message naming the files that did not make it.
+    folders = [
+        _folder(
+            ["Miete"],
+            [_file("a.pdf", url="/u/a"), _file("b.pdf", url="/u/b")],
+        )
+    ]
+    mietplan = _FakeMietplanClient(
+        folders,
+        {"/u/a": b"a", "/u/b": b"b"},
+        fail_on={
+            "/u/a": TimeoutError("read timeout"),
+            "/u/b": ValueError("not a PDF"),
+        },
+    )
+    handler = Handler(mietplan, _FakeGoogleDriveClient(), _GDRIVE_FOLDER_ID)
+
+    result = handler.handle(Request(max_file_age=None))
+
+    assert handler.report.uploaded == []
+    assert handler.report.failed == [
+        SyncFailure(path="Miete/a.pdf", error="read timeout"),
+        SyncFailure(path="Miete/b.pdf", error="not a PDF"),
+    ]
+    assert result == [
+        SendMessage(
+            message=(
+                "Found new mietplan files:\n"
+                "Failed:\n"
+                "- Miete/a.pdf: read timeout\n"
+                "- Miete/b.pdf: not a PDF"
+            )
+        )
+    ]
+
+
+def test_a_dry_run_sends_nothing_even_when_a_lookup_fails():
+    class _FailingLookupDrive(_FakeGoogleDriveClient):
+        def find_file(self, filename_with_path: str, base_folder_id: str):
+            raise RuntimeError("drive unavailable")
+
+    folders = [_folder(["Miete"], [_file("a.pdf", url="/u/a")])]
+    handler = Handler(
+        _FakeMietplanClient(folders, {"/u/a": b"a"}),
+        _FailingLookupDrive(),
+        _GDRIVE_FOLDER_ID,
+    )
+
+    result = handler.handle(Request(max_file_age=None, dry_run=True))
+
+    assert handler.report.failed == [
+        SyncFailure(path="Miete/a.pdf", error="drive unavailable")
+    ]
+    assert result == []
 
 
 def test_a_failing_drive_lookup_is_recorded_and_the_run_continues():

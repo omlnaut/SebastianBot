@@ -107,10 +107,10 @@ class Handler(UseCaseHandler[Request]):
             f"{len(self.report.replaced)} replaced)."
         )
 
-        if request.dry_run or not written_files:
+        if request.dry_run or (not written_files and not self.report.failed):
             return []
 
-        message = _create_message(written_files)
+        message = _create_message(written_files, self.report.failed)
         return [SendMessage(message=message)]
 
     def _sync_file(
@@ -197,11 +197,16 @@ class Handler(UseCaseHandler[Request]):
         logging.info(f"    Replaced Google Drive file_id: {file_id}")
 
 
-def _create_message(written_files: list[str]) -> str:
-    message = "Found new mietplan files:\n" + "\n".join(
-        [f"- {file}" for file in written_files]
-    )
-    return message
+def _create_message(
+    written_files: list[str], failures: list[SyncFailure]
+) -> str:
+    lines = [f"- {file}" for file in written_files]
+    if failures:
+        lines.append("Failed:")
+        lines.extend(
+            f"- {failure.path}: {failure.error}" for failure in failures
+        )
+    return "Found new mietplan files:\n" + "\n".join(lines)
 
 
 def _build_upload_path(file: MietplanFile, folder: MietplanFolder) -> str:
