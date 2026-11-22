@@ -3,6 +3,8 @@ from googleapiclient.discovery import build  # type: ignore
 
 from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
 
+from .find_file import find_file_with_path  # type: ignore
+from .replace_file import replace_file_content  # type: ignore
 from .upload_file import upload_file_with_path  # type: ignore
 
 
@@ -35,6 +37,41 @@ class GoogleDriveClient:
             content=request.content,
             base_folder_id=request.folder_id,
             mime_type=request.mime_type,
+            app_properties=request.app_properties,
         )
 
         return UploadFileResponse(file_id=file_id)
+
+    def find_file(self, filename_with_path: str, base_folder_id: str) -> str | None:
+        """Find a file by its full path inside a base folder.
+
+        Args:
+            filename_with_path: Path like "sub1/sub2/example.txt", relative to base_folder_id
+            base_folder_id: ID of the folder the search starts from
+
+        Returns:
+            The file's ID, or None when no file exists at that path
+        """
+        return find_file_with_path(
+            service=self._service,  # type: ignore
+            filename_with_path=filename_with_path,
+            base_folder_id=base_folder_id,
+        )
+
+    def replace_file(self, file_id: str, content: bytes, mime_type: str) -> None:
+        """Replace the content of an existing Drive file in place.
+
+        The file id, its parents and its sharing stay as they are: only the
+        bytes (and the content mime type) change.
+
+        Args:
+            file_id: ID of the existing file to update
+            content: The new file content
+            mime_type: The MIME type of the new content
+        """
+        replace_file_content(
+            service=self._service,  # type: ignore
+            file_id=file_id,
+            content=content,
+            mime_type=mime_type,
+        )
