@@ -7,6 +7,7 @@ No network, no credentials, no portal.
 
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Sequence
 
 import pytest
@@ -683,3 +684,59 @@ def test_umlauts_spaces_ampersands_and_parentheses_survive_sanitization(
     target = tmp_path / "out" / "Archiv" / "März & Co (final).pdf"
     assert target.is_file()
     _payload(capsys)
+
+
+def _existing_target(tmp_path) -> Path:
+    target = tmp_path / "out" / "Archiv" / "alt.pdf"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"old bytes")
+    return target
+
+
+def test_download_refuses_to_overwrite_without_force(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    target = _existing_target(tmp_path)
+    service = _DownloadService(
+        _walk(_folder("f1", ["Archiv"], [_file("alt.pdf", url="/auctores/alt.pdf")])),
+        content=b"new bytes",
+    )
+
+    code = run(
+        ["download", "Archiv/alt.pdf", "--out", str(tmp_path / "out")], service
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["command"] == "download"
+    assert error["error"]["kind"] == "io"
+    assert str(target) in error["error"]["message"]
+    assert "--force" in error["error"]["message"]
+    assert target.read_bytes() == b"old bytes"
+    assert service.downloads == []
+
+
+def test_force_replaces_an_existing_file(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    target = _existing_target(tmp_path)
+    service = _DownloadService(
+        _walk(_folder("f1", ["Archiv"], [_file("alt.pdf", url="/auctores/alt.pdf")])),
+        content=b"new bytes",
+    )
+
+    code = run(
+        [
+            "download",
+            "Archiv/alt.pdf",
+            "--out",
+            str(tmp_path / "out"),
+            "--force",
+        ],
+        service,
+    )
+
+    assert code == 0
+    assert target.read_bytes() == b"new bytes"
+    payload = _payload(capsys)
+    assert payload["file"] == {"path": str(target.resolve()), "bytes": 9}

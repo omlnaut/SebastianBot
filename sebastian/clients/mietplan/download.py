@@ -46,6 +46,12 @@ def download_to_dir(
             f"could not create output directory {target.parent}: {error}"
         ) from error
 
+    if target.exists() and not force:
+        raise MietplanDownloadIoError(
+            f"refusing to overwrite existing file: {target} "
+            "(pass --force to overwrite)"
+        )
+
     content = fetch(matched.url)
     try:
         target.write_bytes(content)
