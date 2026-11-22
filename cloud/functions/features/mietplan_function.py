@@ -117,7 +117,9 @@ def build_report_payload(
     """The resync response body: effective parameters plus per-file outcomes."""
     return {
         "dryRun": query.dry_run,
-        "maxFileAge": "all" if query.max_file_age is None else query.max_file_age.days,
+        "maxFileAge": (
+            "all" if query.max_file_age is None else str(query.max_file_age.days)
+        ),
         "folder": query.folder,
         "scannedFolders": report.scanned_folders,
         "uploaded": list(report.uploaded),

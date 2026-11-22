@@ -163,7 +163,7 @@ def test_report_payload_echoes_a_day_count_and_the_folder_prefix():
     payload = build_report_payload(query, report, duration_seconds=0.04)
 
     assert payload["dryRun"] is True
-    assert payload["maxFileAge"] == 7
+    assert payload["maxFileAge"] == "7"
     assert payload["folder"] == "Archiv"
     assert payload["durationSeconds"] == 0.0
 
@@ -188,7 +188,7 @@ def test_a_resync_run_returns_the_report_and_sends_no_side_effect(monkeypatch):
     ]
     payload = _payload_dict(response)
     assert payload["dryRun"] is False
-    assert payload["maxFileAge"] == 30
+    assert payload["maxFileAge"] == "30"
     assert payload["folder"] == "Miete"
     assert payload["scannedFolders"] == 3
     assert payload["uploaded"] == ["Miete/a.pdf"]
@@ -212,7 +212,7 @@ def test_a_dry_run_reaches_the_handler_and_is_echoed(monkeypatch):
     ]
     payload = _payload_dict(response)
     assert payload["dryRun"] is True
-    assert payload["maxFileAge"] == 1
+    assert payload["maxFileAge"] == "1"
     assert payload["uploaded"] == ["Miete/a.pdf"]
     assert sent == []
 
