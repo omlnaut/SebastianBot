@@ -100,8 +100,11 @@ class Handler(UseCaseHandler[Request]):
 
         self.report = SyncReport()
 
+        files_in_scope, scanned_folders = self._get_files_in_scope(request)
+        self.report.scanned_folders = scanned_folders
+
         written_files: list[str] = []
-        for file, folder in self._get_files_in_scope(request):
+        for file, folder in files_in_scope:
             written = self._sync_file(file, folder, request.dry_run)
             if written is not None:
                 written_files.append(written)
@@ -165,11 +168,13 @@ class Handler(UseCaseHandler[Request]):
 
     def _get_files_in_scope(
         self, request: Request
-    ) -> list[tuple[MietplanFile, MietplanFolder]]:
+    ) -> tuple[list[tuple[MietplanFile, MietplanFolder]], int]:
+        """Return the files in scope and how many folders the walk visited."""
         prefix = _path_segments(request.folder)
         in_scope: list[tuple[MietplanFile, MietplanFolder]] = []
+        scanned_folders = 0
         for folder in self.mietplan_client.walk_from_top_folder():
-            self.report.scanned_folders += 1
+            scanned_folders += 1
             if prefix and not is_path_prefix(folder.path, prefix):
                 continue
             in_scope.extend(
@@ -178,7 +183,7 @@ class Handler(UseCaseHandler[Request]):
                 if request.max_file_age is None
                 or is_within_timedelta(file.creation_date, request.max_file_age)
             )
-        return in_scope
+        return in_scope, scanned_folders
 
     def _download_file_from_mietplan(self, file: MietplanFile) -> bytes:
         logging.info("    Downloading...")
