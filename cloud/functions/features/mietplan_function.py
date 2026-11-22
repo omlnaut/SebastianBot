@@ -11,6 +11,7 @@ from azure.functions import TimerRequest
 from cloud.dependencies.usecases import resolve_mietplan
 from cloud.functions.side_effects.shared import perform_usecase_from_request
 from function_app import app
+from sebastian.clients.mietplan.errors import MietplanAuthError
 from sebastian.usecases.features import mietplan
 
 from ..TriggerTimes import TriggerTimes
@@ -78,8 +79,19 @@ def handle_resync(
             {"error": {"kind": "usage", "message": str(error)}}, status_code=400
         )
 
-    handler = resolve_handler()
-    handler.handle(query.to_request())
+    try:
+        handler = resolve_handler()
+        handler.handle(query.to_request())
+    except MietplanAuthError as error:
+        logging.exception("Resync failed authentication")
+        return _json_response(
+            {"error": {"kind": "auth", "message": str(error)}}, status_code=500
+        )
+    except Exception as error:
+        logging.exception("Resync failed")
+        return _json_response(
+            {"error": {"kind": "api", "message": str(error)}}, status_code=500
+        )
     duration_seconds = time.monotonic() - started
 
     return _json_response(
@@ -105,7 +117,9 @@ def build_report_payload(
     """The resync response body: effective parameters plus per-file outcomes."""
     return {
         "dryRun": query.dry_run,
-        "maxFileAge": "all" if query.max_file_age is None else query.max_file_age.days,
+        "maxFileAge": (
+            "all" if query.max_file_age is None else str(query.max_file_age.days)
+        ),
         "folder": query.folder,
         "scannedFolders": report.scanned_folders,
         "uploaded": list(report.uploaded),

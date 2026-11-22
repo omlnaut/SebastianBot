@@ -40,7 +40,7 @@ def drive_client() -> GoogleDriveClient:
         # build() does not touch the network; this does, so an invalid token
         # skips here instead of failing the test with an auth error.
         client._service.about().get(fields="user").execute()  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-    except Exception as error:  # noqa: BLE001 - any credential failure means "skip"
+    except Exception as error:  # any credential failure means "skip"
         pytest.skip(
             f"Google Drive credentials unavailable "
             f"({type(error).__name__}: {error})"

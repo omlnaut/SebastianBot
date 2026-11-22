@@ -928,3 +928,35 @@ def test_force_never_writes_through_a_symlink_outside_out(
     assert error["error"]["kind"] == "io"
     assert outside.read_bytes() == b"untouched"
     assert service.downloads == []
+
+
+def test_a_symlinked_ancestor_cannot_create_directories_outside_out(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "Archiv").symlink_to(outside, target_is_directory=True)
+    service = _DownloadService(
+        _walk(
+            _folder(
+                "f1",
+                ["Archiv", "2019"],
+                [_file("alt.pdf", url="/auctores/alt.pdf")],
+            )
+        )
+    )
+
+    code = run(
+        ["download", "Archiv/2019/alt.pdf", "--out", str(out)], service
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["error"]["kind"] == "io"
+    # Refusing is not enough: no directory may have been created through the
+    # symlinked ancestor before the guard ran.
+    assert not (outside / "2019").exists()
+    assert list(outside.iterdir()) == []
+    assert service.downloads == []

@@ -4,7 +4,12 @@ from datetime import timedelta
 from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
-from sebastian.domain.mietplan import MietplanFile, MietplanFolder
+from sebastian.domain.mietplan import (
+    MietplanFile,
+    MietplanFolder,
+    is_path_prefix,
+    join_path,
+)
 from sebastian.domain.side_effect import SideEffect, SendMessage
 from sebastian.usecases.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -95,8 +100,11 @@ class Handler(UseCaseHandler[Request]):
 
         self.report = SyncReport()
 
+        files_in_scope, scanned_folders = self._get_files_in_scope(request)
+        self.report.scanned_folders = scanned_folders
+
         written_files: list[str] = []
-        for file, folder in self._get_files_in_scope(request):
+        for file, folder in files_in_scope:
             written = self._sync_file(file, folder, request.dry_run)
             if written is not None:
                 written_files.append(written)
@@ -107,10 +115,10 @@ class Handler(UseCaseHandler[Request]):
             f"{len(self.report.replaced)} replaced)."
         )
 
-        if request.dry_run or not written_files:
+        if request.dry_run or (not written_files and not self.report.failed):
             return []
 
-        message = _create_message(written_files)
+        message = _create_message(written_files, self.report.failed)
         return [SendMessage(message=message)]
 
     def _sync_file(
@@ -160,12 +168,14 @@ class Handler(UseCaseHandler[Request]):
 
     def _get_files_in_scope(
         self, request: Request
-    ) -> list[tuple[MietplanFile, MietplanFolder]]:
+    ) -> tuple[list[tuple[MietplanFile, MietplanFolder]], int]:
+        """Return the files in scope and how many folders the walk visited."""
         prefix = _path_segments(request.folder)
         in_scope: list[tuple[MietplanFile, MietplanFolder]] = []
+        scanned_folders = 0
         for folder in self.mietplan_client.walk_from_top_folder():
-            self.report.scanned_folders += 1
-            if prefix and folder.path[: len(prefix)] != prefix:
+            scanned_folders += 1
+            if prefix and not is_path_prefix(folder.path, prefix):
                 continue
             in_scope.extend(
                 (file, folder)
@@ -173,7 +183,7 @@ class Handler(UseCaseHandler[Request]):
                 if request.max_file_age is None
                 or is_within_timedelta(file.creation_date, request.max_file_age)
             )
-        return in_scope
+        return in_scope, scanned_folders
 
     def _download_file_from_mietplan(self, file: MietplanFile) -> bytes:
         logging.info("    Downloading...")
@@ -197,15 +207,20 @@ class Handler(UseCaseHandler[Request]):
         logging.info(f"    Replaced Google Drive file_id: {file_id}")
 
 
-def _create_message(written_files: list[str]) -> str:
-    message = "Found new mietplan files:\n" + "\n".join(
-        [f"- {file}" for file in written_files]
-    )
-    return message
+def _create_message(
+    written_files: list[str], failures: list[SyncFailure]
+) -> str:
+    lines = [f"- {file}" for file in written_files]
+    if failures:
+        lines.append("Failed:")
+        lines.extend(
+            f"- {failure.path}: {failure.error}" for failure in failures
+        )
+    return "Found new mietplan files:\n" + "\n".join(lines)
 
 
 def _build_upload_path(file: MietplanFile, folder: MietplanFolder) -> str:
-    return f"{'/'.join(folder.path)}/{file.name}".strip("/")
+    return join_path([*folder.path, file.name]).strip("/")
 
 
 def _path_segments(prefix: str | None) -> list[str]:

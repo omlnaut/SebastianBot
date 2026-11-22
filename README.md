@@ -131,6 +131,24 @@ seamail attachments <message-id> --out ~/Downloads [--force]
 - `SEAMAIL_GOOGLE_CREDENTIALS` holds the credentials JSON *content* (not a path); token refresh happens in-process and nothing is written back.
 - Its dependencies are the direct ones listed in `cli-requirements.txt`; `pyproject.toml` stays the source of truth and `tests/unit_tests/test_cli_requirements.py` guards the two from drifting. The Azure deployment and `requirements.txt` are untouched.
 
+### Host CLI: `seadepot`
+
+`seadepot` is a read-only Mietplan (webdepot) CLI for agents: walk the portal tree, filter the files locally, and download one found document to disk. Like `seamail` it runs as a plain short-lived host process — no container, no Azure login, no Key Vault, no credentials store — on WSL today and a Raspberry Pi later. The two CLIs share conventions (JSON envelope, error `kind`, exit codes, own venv and shim), not code.
+
+```bash
+scripts/setup_seadepot.sh   # idempotent: installs uv if missing, builds the venv, writes the PATH shim
+export SEAMIETPLAN_CREDENTIALS='{"username":"…","password":"…"}'   # the credentials JSON content, not a path
+
+seadepot search [SUBSTRING] [--folder PREFIX] [--after YYYY-MM-DD] [--before YYYY-MM-DD] [--limit N]
+seadepot download <folder-path>/<filename> --out DIR [--force]
+```
+
+- `search` walks the whole tree (the portal has no search endpoint) and filters locally: a case-insensitive substring over `folder/path/name`, `--folder` as a segment-wise path prefix (`Archiv` covers `Archiv/2019`, not `Archiv2`), inclusive `--after`/`--before` dates on the portal creation date, and `--limit` (default 50, cap 500). `--limit` truncates only the printed result list, never the walk; `truncated: true` says so and `scannedFolders` reports the walk's extent.
+- `download` takes exactly the `path` a search printed, re-walks to resolve it, and mirrors the folder path below `--out`, creating parents as needed. Every path segment is sanitized; a path that cannot be made safe is a usage error rather than a write outside `--out`. An existing file is only replaced with `--force`.
+- Every successful call prints one JSON object on stdout. `search` returns `command`, the effective `filters`, `count`, `scannedFolders`, `truncated`, `files` and `warnings`; `download` returns `command`, `path` and `file` (`path`, `bytes`). Failures print JSON on stderr with a machine-readable `kind` (`auth`, `api`, `usage`, `io`); exit codes are `0` success, `1` runtime error, `2` usage error.
+- `SEAMIETPLAN_CREDENTIALS` holds the bare credentials JSON *content* (not a path): `{"username": …, "password": …}`. A rejected login is `kind: auth`, never an empty result. The CLI only reads this variable and never writes credentials anywhere.
+- Its dependencies are the direct ones in `cli-requirements.txt`; `tests/unit_tests/test_cli_requirements.py` walks both entry points so the CLI cannot import something undeclared. `pyproject.toml`, `requirements.txt` and the Azure deployment are untouched.
+
 ### Testing
 
 The project uses **pytest** for testing with a focus on the application layer (`sebastian/`).

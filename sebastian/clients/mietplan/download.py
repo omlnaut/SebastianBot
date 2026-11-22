@@ -8,6 +8,8 @@ from sebastian.domain.mietplan import (
     MietplanWalk,
     MietplanWalkWarning,
     WrittenMietplanFile,
+    is_path_prefix,
+    join_path,
 )
 
 from .errors import (
@@ -47,6 +49,11 @@ def download_to_dir(
             f'unsafe path "{portal_path}": it escapes the output directory'
         )
 
+    # Check the resolved target before creating anything: a symlinked ancestor
+    # inside ``--out`` must not create directories outside it, not even for a
+    # write that is then refused.
+    _resolve_inside_output(target, output_root)
+
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
     except OSError as error:
@@ -54,16 +61,8 @@ def download_to_dir(
             f"could not create output directory {target.parent}: {error}"
         ) from error
 
-    try:
-        resolved_target = target.resolve()
-    except (OSError, RuntimeError) as error:
-        raise MietplanDownloadIoError(
-            f"could not resolve {target}: {error}"
-        ) from error
-    if not resolved_target.is_relative_to(output_root):
-        raise MietplanDownloadIoError(
-            f"refusing to write outside the output directory: {target}"
-        )
+    # Re-check after creating the parents, so a symlink is never written through.
+    _resolve_inside_output(target, output_root)
 
     if target.exists() and not force:
         raise MietplanDownloadIoError(
@@ -79,6 +78,20 @@ def download_to_dir(
     return WrittenMietplanFile(
         portal_path=portal_path, path=str(target), size=len(content)
     )
+
+
+def _resolve_inside_output(target: Path, output_root: Path) -> None:
+    """Refuse a target that resolves outside ``output_root`` (including via symlink)."""
+    try:
+        resolved_target = target.resolve()
+    except (OSError, RuntimeError) as error:
+        raise MietplanDownloadIoError(
+            f"could not resolve {target}: {error}"
+        ) from error
+    if not resolved_target.is_relative_to(output_root):
+        raise MietplanDownloadIoError(
+            f"refusing to write outside the output directory: {target}"
+        )
 
 
 def _safe_segments(portal_path: str) -> tuple[list[str], list[str]]:
@@ -121,10 +134,10 @@ def _safe_segments(portal_path: str) -> tuple[list[str], list[str]]:
 def _find_file(
     walk: MietplanWalk, raw_segments: Sequence[str]
 ) -> MietplanFile | None:
-    wanted = "/".join(raw_segments)
+    wanted = join_path(raw_segments)
     for folder in walk.folders:
         for file in folder.files:
-            if "/".join([*folder.path, file.name]) == wanted:
+            if join_path([*folder.path, file.name]) == wanted:
                 return file
     return None
 
@@ -136,7 +149,7 @@ def _covering_warning(
     covering = [
         warning
         for warning in walk.warnings
-        if list(folder_segments[: len(warning.path)]) == warning.path
+        if is_path_prefix(folder_segments, warning.path)
     ]
     if not covering:
         return None

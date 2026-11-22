@@ -6,7 +6,8 @@ from ..errors import MietplanAuthError
 from ._walk_from_top_folder import REQUEST_TIMEOUT_SECONDS, folders_url
 
 # The portal answers an unauthenticated folder request with 403 (see V1 in the
-# recon note); a login page instead of JSON is the other shape of the same thing.
+# docs/specs/mietplan-verification.md); a login page instead of JSON is the other
+# shape of the same thing.
 _AUTH_REJECTED_STATUSES = frozenset({401, 403})
 
 
