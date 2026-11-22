@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Mapping, cast
+from typing import Mapping
 
 from pydantic import ValidationError
 
@@ -18,9 +18,8 @@ def load_credentials_from_env(
 ) -> MietplanCredentials:
     """Build the portal credentials from the env var holding their JSON content.
 
-    Accepts both the wrapped Key Vault secret shape (``{"credentials": {...}}``)
-    and a bare ``{"username": ..., "password": ...}`` object. The CLI only ever
-    reads this variable; nothing is written back to any store.
+    The content is the bare ``{"username": ..., "password": ...}`` object (D4);
+    the CLI only ever reads this variable and never writes it back anywhere.
     """
     source = os.environ if env is None else env
     raw = source.get(ENV_VAR)
@@ -28,15 +27,12 @@ def load_credentials_from_env(
         raise CredentialsError(f"{ENV_VAR} is not set")
 
     try:
-        data: Any = json.loads(raw)
+        data: object = json.loads(raw)
     except json.JSONDecodeError as error:
         raise CredentialsError(f"{ENV_VAR} is not valid JSON: {error}") from error
 
-    info: Any = data
-    if isinstance(data, dict):
-        info = cast(dict[str, Any], data).get("credentials", data)
     try:
-        return MietplanCredentials.model_validate(info)
+        return MietplanCredentials.model_validate(data)
     except ValidationError as error:
         raise CredentialsError(
             f"{ENV_VAR} is not a valid credentials object: {error}"

@@ -44,13 +44,13 @@ def test_the_plain_credentials_object_is_accepted():
     )
 
 
-def test_the_wrapped_key_vault_shape_is_accepted_too():
+def test_the_wrapped_key_vault_shape_is_not_accepted():
     raw = {"credentials": {"username": "me@example.com", "password": "geheim"}}
 
-    credentials = load_credentials_from_env({ENV_VAR: json.dumps(raw)})
+    with pytest.raises(CredentialsError) as raised:
+        load_credentials_from_env({ENV_VAR: json.dumps(raw)})
 
-    assert credentials.username == "me@example.com"
-    assert credentials.password == "geheim"
+    assert ENV_VAR in str(raised.value)
 
 
 def test_a_credentials_object_without_a_password_is_a_credentials_error():
