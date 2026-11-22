@@ -42,7 +42,7 @@ def resolve_mietplan(
     mietplan_client: mietplan.IMietplanClient | None = None,
     google_drive_client: mietplan.IGoogleDriveClient | None = None,
     gdrive_folder_id: str = "19gdVV_DMtdQU0xi7TgfKJCRRc4c7m0fd",
-) -> UseCaseHandler[mietplan.Request]:
+) -> mietplan.Handler:
     return mietplan.Handler(
         mietplan_client=mietplan_client or resolve_mietplan_client(),
         google_drive_client=google_drive_client or resolve_google_drive_client(),
