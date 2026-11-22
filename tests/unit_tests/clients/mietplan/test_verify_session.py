@@ -1,8 +1,8 @@
 """D10: a rejected login must fail loudly instead of producing an empty result.
 
-V1 (recorded in the recon note): an unauthenticated `getFolders` request answers
-HTTP 403 with an empty HTML body, so the probe keys off the status code and off
-"the body is not JSON", never off login-form markup.
+V1 (recorded in docs/specs/mietplan-verification.md): an unauthenticated
+`getFolders` request answers HTTP 403 with an empty HTML body, so the probe keys
+off the status code and off "the body is not JSON", never off login-form markup.
 """
 
 import pytest

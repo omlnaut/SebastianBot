@@ -18,7 +18,8 @@ from ._models import MietplanFolder as MietplanRawFolder
 REQUEST_TIMEOUT_SECONDS = (10, 90)
 
 # A folder read fails either because the request failed or because the answer was
-# not the expected JSON (an expired session answers with HTML, see the recon note).
+# not the expected JSON (an expired session answers with HTML, see
+# docs/specs/mietplan-verification.md, V1).
 _READ_ERRORS = (requests.RequestException, ValueError)
 
 
