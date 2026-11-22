@@ -19,11 +19,18 @@ from sebastian.clients.mietplan.env_credentials import (
     CredentialsError,
     load_credentials_from_env,
 )
-from sebastian.clients.mietplan.errors import MietplanAuthError
+from sebastian.clients.mietplan.errors import (
+    MietplanAuthError,
+    MietplanDownloadIoError,
+    MietplanFolderReadError,
+    MietplanPathError,
+    MietplanPathNotFoundError,
+)
 from sebastian.domain.mietplan import (
     MietplanFile,
     MietplanFolder,
     MietplanWalk,
+    WrittenMietplanFile,
 )
 
 DEFAULT_LIMIT = 50
@@ -31,9 +38,13 @@ MAX_LIMIT = 500
 
 
 class MietplanService(Protocol):
-    """The Mietplan surface the CLI adapts to JSON: one tolerant tree walk."""
+    """The Mietplan surface the CLI adapts to JSON: a walk plus one download."""
 
     def walk_tolerant(self) -> MietplanWalk: ...
+
+    def download(
+        self, path: str, out_dir: str, force: bool
+    ) -> WrittenMietplanFile: ...
 
 
 class UsageError(Exception):
@@ -87,9 +98,17 @@ def _dispatch(args: argparse.Namespace, service: MietplanService) -> int:
     try:
         if command == "search":
             return _search(args, service)
+        if command == "download":
+            return _download(args, service)
         raise UsageError(f"unknown command: {command}")
     except UsageError as error:
         return _emit_error(command, "usage", str(error), exit_code=2)
+    except MietplanPathError as error:
+        return _emit_error(command, "usage", str(error), exit_code=2)
+    except (MietplanPathNotFoundError, MietplanFolderReadError) as error:
+        return _emit_error(command, "api", str(error))
+    except MietplanDownloadIoError as error:
+        return _emit_error(command, "io", str(error))
     except MietplanAuthError as error:
         return _emit_error(command, "auth", str(error))
     except requests.RequestException as error:
@@ -143,7 +162,29 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # Ticket #129 adds the `download` subcommand here.
+    download = commands.add_parser(
+        "download",
+        help="resolve a search path against the webdepot and write the file",
+        description=(
+            "Re-walk the webdepot tree to resolve exactly the path a search "
+            "printed, then write it below --out with the folder path mirrored."
+        ),
+    )
+    download.add_argument(
+        "path",
+        help="the exact folder/path/name a search printed",
+    )
+    download.add_argument(
+        "--out",
+        required=True,
+        metavar="DIR",
+        help="directory to write below (created if missing)",
+    )
+    download.add_argument(
+        "--force",
+        action="store_true",
+        help="replace the target file if it already exists",
+    )
 
     return parser
 
@@ -175,6 +216,18 @@ def _search(args: argparse.Namespace, service: MietplanService) -> int:
                 }
                 for warning in walk.warnings
             ],
+        }
+    )
+    return 0
+
+
+def _download(args: argparse.Namespace, service: MietplanService) -> int:
+    written = service.download(args.path, args.out, args.force)
+    _emit(
+        {
+            "command": "download",
+            "path": written.portal_path,
+            "file": {"path": written.path, "bytes": written.size},
         }
     )
     return 0
