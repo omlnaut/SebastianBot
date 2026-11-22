@@ -138,6 +138,11 @@ class _FakeFilesResource:
         )
         return _FakeRequest({"id": fileId})
 
+    def delete(self, fileId: str = "") -> _FakeRequest:
+        raise AssertionError(
+            f"the client must never delete a Drive file (tried fileId={fileId})"
+        )
+
 
 class FakeDriveService:
     def __init__(self, items: list[dict[str, Any]] | None = None) -> None:

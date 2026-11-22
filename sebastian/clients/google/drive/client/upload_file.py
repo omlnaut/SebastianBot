@@ -92,7 +92,12 @@ def _get_or_create_parent_folder_id(
 
 
 def _perform_upload(
-    service, filename: str, content: bytes, parent_folder_id: str, mime_type: str
+    service,
+    filename: str,
+    content: bytes,
+    parent_folder_id: str,
+    mime_type: str,
+    app_properties=None,
 ) -> str:
     """Upload the file content to the specified parent folder.
 
@@ -102,12 +107,15 @@ def _perform_upload(
         content: The file content as bytes
         parent_folder_id: The ID of the folder where the file will be uploaded
         mime_type: The MIME type of the file
+        app_properties: Optional app-defined properties to attach to the file
 
     Returns:
         The ID of the uploaded file
     """
     bytes_content = BytesIO(content)
     file_metadata = {"name": filename, "parents": [parent_folder_id]}
+    if app_properties is not None:
+        file_metadata["appProperties"] = app_properties
     media = MediaIoBaseUpload(bytes_content, mimetype=mime_type, resumable=True)
 
     uploaded_file = (
@@ -125,6 +133,7 @@ def upload_file_with_path(
     content: bytes,
     base_folder_id: str,
     mime_type: str,
+    app_properties=None,
 ) -> str:
     """Upload a file to Google Drive, creating nested folders as needed.
 
@@ -144,4 +153,6 @@ def upload_file_with_path(
 
     filename = os.path.basename(filename_with_path)
 
-    return _perform_upload(service, filename, content, parent_folder_id, mime_type)
+    return _perform_upload(
+        service, filename, content, parent_folder_id, mime_type, app_properties
+    )

@@ -45,3 +45,35 @@ def test_upload_into_a_duplicated_folder_uses_the_same_candidate_as_find_file():
     assert created["parents"] == ["folder-miete-old"]
     # The existing upload metadata is unchanged: name and parents only.
     assert "mimeType" not in created
+
+
+def test_upload_passes_optional_app_properties_through_to_the_metadata():
+    service = FakeDriveService()
+
+    _client(service).upload_file(
+        UploadFileRequest(
+            filename="Rechnung.pdf",
+            content=b"%PDF-1.7",
+            folder_id=_BASE_FOLDER_ID,
+            app_properties={"source": "mietplan"},
+        )
+    )
+
+    assert service.create_calls[0]["body"]["appProperties"] == {"source": "mietplan"}
+
+
+def test_upload_without_app_properties_keeps_the_metadata_unchanged():
+    service = FakeDriveService()
+
+    _client(service).upload_file(
+        UploadFileRequest(
+            filename="Rechnung.pdf",
+            content=b"%PDF-1.7",
+            folder_id=_BASE_FOLDER_ID,
+        )
+    )
+
+    assert service.create_calls[0]["body"] == {
+        "name": "Rechnung.pdf",
+        "parents": [_BASE_FOLDER_ID],
+    }
