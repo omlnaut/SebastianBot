@@ -6,6 +6,7 @@ from typing import Callable, Sequence
 from sebastian.domain.mietplan import (
     MietplanFile,
     MietplanWalk,
+    MietplanWalkWarning,
     WrittenMietplanFile,
 )
 
@@ -28,6 +29,12 @@ def download_to_dir(
     raw_segments, safe_segments = _safe_segments(portal_path)
     matched = _find_file(walk, raw_segments)
     if matched is None:
+        warning = _covering_warning(walk, raw_segments[:-1])
+        if warning is not None:
+            folder = "/".join(warning.path) or "/"
+            raise MietplanFolderReadError(
+                f'could not read webdepot folder "{folder}": {warning.error}'
+            )
         raise MietplanPathNotFoundError(
             f'path not found in the webdepot: "{portal_path}"'
         )
@@ -108,3 +115,17 @@ def _find_file(
             if "/".join([*folder.path, file.name]) == wanted:
                 return file
     return None
+
+
+def _covering_warning(
+    walk: MietplanWalk, folder_segments: Sequence[str]
+) -> MietplanWalkWarning | None:
+    """The deepest unreadable folder that could have held the requested file."""
+    covering = [
+        warning
+        for warning in walk.warnings
+        if list(folder_segments[: len(warning.path)]) == warning.path
+    ]
+    if not covering:
+        return None
+    return max(covering, key=lambda warning: len(warning.path))

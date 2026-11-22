@@ -740,3 +740,87 @@ def test_force_replaces_an_existing_file(
     assert target.read_bytes() == b"new bytes"
     payload = _payload(capsys)
     assert payload["file"] == {"path": str(target.resolve()), "bytes": 9}
+
+
+def test_a_path_no_longer_in_the_portal_is_an_api_error_naming_it(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    service = _DownloadService(
+        _walk(_folder("f1", ["Archiv"], [_file("alt.pdf")]))
+    )
+
+    code = run(
+        ["download", "Archiv/neu.pdf", "--out", str(tmp_path / "out")], service
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["command"] == "download"
+    assert error["error"]["kind"] == "api"
+    assert "Archiv/neu.pdf" in error["error"]["message"]
+    assert "not found" in error["error"]["message"]
+    assert not any(tmp_path.rglob("*"))
+
+
+def test_a_path_inside_an_unreadable_folder_surfaces_the_read_failure(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    service = _DownloadService(
+        _walk(
+            _folder("f1", [], []),
+            warnings=[
+                MietplanWalkWarning(
+                    folder_id="f9", path=["Archiv", "2019"], error="read timeout"
+                )
+            ],
+        )
+    )
+
+    code = run(
+        [
+            "download",
+            "Archiv/2019/neu.pdf",
+            "--out",
+            str(tmp_path / "out"),
+        ],
+        service,
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["command"] == "download"
+    assert error["error"]["kind"] == "api"
+    assert "Archiv/2019" in error["error"]["message"]
+    assert "read timeout" in error["error"]["message"]
+    assert "not found" not in error["error"]["message"]
+    assert not any(tmp_path.rglob("*"))
+
+
+def test_an_unrelated_warning_does_not_turn_a_missing_path_into_a_read_failure(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    service = _DownloadService(
+        _walk(
+            warnings=[
+                MietplanWalkWarning(
+                    folder_id="f9", path=["Archiv", "2019"], error="read timeout"
+                )
+            ],
+        )
+    )
+
+    code = run(
+        [
+            "download",
+            "Archiv/2020/neu.pdf",
+            "--out",
+            str(tmp_path / "out"),
+        ],
+        service,
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["error"]["kind"] == "api"
+    assert "not found" in error["error"]["message"]
+    assert "read timeout" not in error["error"]["message"]
