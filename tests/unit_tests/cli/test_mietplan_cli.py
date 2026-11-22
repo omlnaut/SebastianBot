@@ -625,3 +625,61 @@ def test_download_mirrors_the_folder_path_under_out_and_reports_the_file(
         "path": portal_path,
         "file": {"path": str(target.resolve()), "bytes": len(b"%PDF-1.4 real bytes")},
     }
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    [
+        "../evil.pdf",
+        "Nebenkostenabrechnung/../../evil.pdf",
+        "./evil.pdf",
+        "Nebenkostenabrechnung/./evil.pdf",
+        "/etc/passwd",
+        "//server/share/evil.pdf",
+        "\\evil.pdf",
+        "Nebenkostenabrechnung\\evil.pdf",
+        "Nebenkostenabrechnung/evil\x00.pdf",
+        "Nebenkostenabrechnung/evil\n.pdf",
+        "Nebenkostenabrechnung//evil.pdf",
+        "Nebenkostenabrechnung/   /evil.pdf",
+        "Nebenkostenabrechnung/evil.pdf/",
+        "",
+    ],
+)
+def test_an_unsafe_path_is_a_usage_error_and_writes_nothing(
+    capsys: pytest.CaptureFixture[str], tmp_path, unsafe_path: str
+):
+    service = _DownloadService(_download_tree())
+
+    code = run(
+        ["download", unsafe_path, "--out", str(tmp_path / "out")], service
+    )
+
+    assert code == 2
+    error = _error(capsys)
+    assert error["command"] == "download"
+    assert error["error"]["kind"] == "usage"
+    assert not any(tmp_path.rglob("*"))
+    assert service.downloads == []
+
+
+def test_umlauts_spaces_ampersands_and_parentheses_survive_sanitization(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    portal_path = "Archiv/März & Co (final).pdf"
+    service = _DownloadService(
+        _walk(
+            _folder(
+                "f1",
+                ["Archiv"],
+                [_file("März & Co (final).pdf", url="/auctores/maerz.pdf")],
+            )
+        )
+    )
+
+    code = run(["download", portal_path, "--out", str(tmp_path / "out")], service)
+
+    assert code == 0
+    target = tmp_path / "out" / "Archiv" / "März & Co (final).pdf"
+    assert target.is_file()
+    _payload(capsys)

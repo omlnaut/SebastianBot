@@ -25,7 +25,7 @@ def download_to_dir(
     fetch: Callable[[str], bytes],
 ) -> WrittenMietplanFile:
     """Write the file at ``portal_path`` under ``out_dir``, mirroring its folders."""
-    raw_segments = _segments(portal_path)
+    raw_segments, safe_segments = _safe_segments(portal_path)
     matched = _find_file(walk, raw_segments)
     if matched is None:
         raise MietplanPathNotFoundError(
@@ -33,7 +33,7 @@ def download_to_dir(
         )
 
     output_root = Path(out_dir).resolve()
-    target = output_root.joinpath(*raw_segments)
+    target = output_root.joinpath(*safe_segments)
     if not target.is_relative_to(output_root):
         raise MietplanPathError(
             f'unsafe path "{portal_path}": it escapes the output directory'
@@ -56,12 +56,41 @@ def download_to_dir(
     )
 
 
-def _segments(portal_path: str) -> list[str]:
-    if portal_path.startswith("/"):
+def _safe_segments(portal_path: str) -> tuple[list[str], list[str]]:
+    """Split a search path into matchable raw segments and safe target segments.
+
+    The raw segments are what the portal walk actually reported, so resolution
+    stays exact even when a real name has surrounding whitespace. The safe
+    segments are what may be joined below ``--out``; anything that cannot be
+    made safe is a usage error, never a replacement that silently changes where
+    the file lands.
+    """
+    if portal_path.startswith(("/", "\\")):
         raise MietplanPathError(
             f'unsafe path "{portal_path}": it must be relative to the output directory'
         )
-    return portal_path.split("/")
+    raw_segments = portal_path.split("/")
+    safe_segments: list[str] = []
+    for raw in raw_segments:
+        if not raw:
+            raise MietplanPathError(
+                f'unsafe path "{portal_path}": empty path segment'
+            )
+        if "\\" in raw:
+            raise MietplanPathError(
+                f'unsafe path "{portal_path}": backslashes are not allowed'
+            )
+        if any(not character.isprintable() for character in raw):
+            raise MietplanPathError(
+                f'unsafe path "{portal_path}": non-printable characters are not allowed'
+            )
+        safe = raw.strip()
+        if safe in {"", ".", ".."}:
+            raise MietplanPathError(
+                f'unsafe path "{portal_path}": segment "{raw}" is not allowed'
+            )
+        safe_segments.append(safe)
+    return raw_segments, safe_segments
 
 
 def _find_file(
