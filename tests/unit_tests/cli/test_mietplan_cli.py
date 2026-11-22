@@ -824,3 +824,69 @@ def test_an_unrelated_warning_does_not_turn_a_missing_path_into_a_read_failure(
     assert error["error"]["kind"] == "api"
     assert "not found" in error["error"]["message"]
     assert "read timeout" not in error["error"]["message"]
+
+
+def test_download_requires_out(capsys: pytest.CaptureFixture[str]):
+    service = _DownloadService(_download_tree())
+
+    code = run(["download", "Archiv/alt.pdf"], service)
+
+    assert code == 2
+    error = _error(capsys)
+    assert error["command"] == "download"
+    assert error["error"]["kind"] == "usage"
+    assert "--out" in error["error"]["message"]
+    assert service.downloads == []
+
+
+@pytest.mark.parametrize(
+    ("error", "kind", "exit_code"),
+    [
+        (MietplanAuthError("login was rejected: HTTP 403", 403), "auth", 1),
+        (requests.HTTPError("portal boom"), "api", 1),
+        (OSError("no space left on device"), "io", 1),
+    ],
+)
+def test_download_maps_service_failures_to_the_documented_kinds(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path,
+    error: Exception,
+    kind: str,
+    exit_code: int,
+):
+    service = _DownloadService(_download_tree(), error=error)
+
+    code = run(
+        [
+            "download",
+            "Nebenkostenabrechnung/2024/März & Co (final).pdf",
+            "--out",
+            str(tmp_path / "out"),
+        ],
+        service,
+    )
+
+    assert code == exit_code
+    payload = _error(capsys)
+    assert payload["command"] == "download"
+    assert payload["error"] == {"kind": kind, "message": str(error)}
+
+
+def test_a_successful_download_prints_one_json_line_on_stdout_only(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    code = run(
+        [
+            "download",
+            "Nebenkostenabrechnung/2024/März & Co (final).pdf",
+            "--out",
+            str(tmp_path / "out"),
+        ],
+        _DownloadService(_download_tree()),
+    )
+
+    assert code == 0
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out.count("\n") == 1
+    assert json.loads(captured.out)["command"] == "download"
