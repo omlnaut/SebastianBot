@@ -20,5 +20,13 @@ class IGoogleDriveClient(Protocol):
     """Protocol for Google Drive client operations."""
 
     def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
-        """Upload a file to Google Drive."""
+        """Upload a file to Google Drive, creating the folder path as needed."""
+        ...
+
+    def find_file(self, filename_with_path: str, base_folder_id: str) -> str | None:
+        """Return the id of the file at that path inside the base folder, if any."""
+        ...
+
+    def replace_file(self, file_id: str, content: bytes, mime_type: str) -> None:
+        """Replace the content of an existing file in place, keeping id and parents."""
         ...
