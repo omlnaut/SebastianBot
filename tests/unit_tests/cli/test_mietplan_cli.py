@@ -577,8 +577,10 @@ class _DownloadService:
         self._content = content
         self._error = error
         self.downloads: list[str] = []
+        self.walks = 0
 
     def walk_tolerant(self) -> MietplanWalk:
+        self.walks += 1
         return self._walk
 
     def download_file(self, download_path: str) -> bytes:
@@ -588,7 +590,9 @@ class _DownloadService:
     def download(self, path: str, out_dir: str, force: bool):
         if self._error is not None:
             raise self._error
-        return download_to_dir(path, out_dir, force, self._walk, self.download_file)
+        return download_to_dir(
+            path, out_dir, force, self.walk_tolerant, self.download_file
+        )
 
 
 def _download_tree() -> MietplanWalk:
@@ -661,6 +665,7 @@ def test_an_unsafe_path_is_a_usage_error_and_writes_nothing(
     assert error["command"] == "download"
     assert error["error"]["kind"] == "usage"
     assert not any(tmp_path.rglob("*"))
+    assert service.walks == 0
     assert service.downloads == []
 
 
@@ -759,6 +764,7 @@ def test_a_path_no_longer_in_the_portal_is_an_api_error_naming_it(
     assert error["error"]["kind"] == "api"
     assert "Archiv/neu.pdf" in error["error"]["message"]
     assert "not found" in error["error"]["message"]
+    assert service.walks == 1
     assert not any(tmp_path.rglob("*"))
 
 
@@ -793,6 +799,7 @@ def test_a_path_inside_an_unreadable_folder_surfaces_the_read_failure(
     assert "Archiv/2019" in error["error"]["message"]
     assert "read timeout" in error["error"]["message"]
     assert "not found" not in error["error"]["message"]
+    assert service.walks == 1
     assert not any(tmp_path.rglob("*"))
 
 

@@ -41,5 +41,5 @@ class MietplanClient:
     ) -> WrittenMietplanFile:
         """Re-walk the portal, resolve the path, and write the file below ``out_dir``."""
         return download_to_dir(
-            path, out_dir, force, self.walk_tolerant(), self.download_file
+            path, out_dir, force, self.walk_tolerant, self.download_file
         )

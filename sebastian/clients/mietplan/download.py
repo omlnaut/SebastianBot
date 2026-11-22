@@ -22,14 +22,15 @@ def download_to_dir(
     portal_path: str,
     out_dir: str | Path,
     force: bool,
-    walk: MietplanWalk,
+    walk: Callable[[], MietplanWalk],
     fetch: Callable[[str], bytes],
 ) -> WrittenMietplanFile:
     """Write the file at ``portal_path`` under ``out_dir``, mirroring its folders."""
     raw_segments, safe_segments = _safe_segments(portal_path)
-    matched = _find_file(walk, raw_segments)
+    tree = walk()
+    matched = _find_file(tree, raw_segments)
     if matched is None:
-        warning = _covering_warning(walk, raw_segments[:-1])
+        warning = _covering_warning(tree, raw_segments[:-1])
         if warning is not None:
             folder = "/".join(warning.path) or "/"
             raise MietplanFolderReadError(
