@@ -1,10 +1,10 @@
 from typing import Generator
 
 from sebastian.clients.shared.retry_session import create_retry_session
-from sebastian.domain.mietplan import MietplanFolder
+from sebastian.domain.mietplan import MietplanFolder, MietplanWalk
 
 from ..credentials import MietplanCredentials
-from . import _download_file, _login, _walk_from_top_folder
+from . import _download_file, _login, _verify_session, _walk_from_top_folder
 
 
 class MietplanClient:
@@ -14,9 +14,17 @@ class MietplanClient:
         self._session = create_retry_session()
 
         _login.login(self._session, credentials.username, credentials.password)
+        _verify_session.verify_session(self._session, self._MAIN_FOLDER_ID)
 
     def walk_from_top_folder(self) -> Generator[MietplanFolder, None, None]:
+        """Walk the whole tree, raising on the first folder that cannot be read."""
         yield from _walk_from_top_folder.walk_from_top_folder(
+            self._session, self._MAIN_FOLDER_ID
+        )
+
+    def walk_tolerant(self) -> MietplanWalk:
+        """Walk the whole tree, reporting unreadable folders as warnings instead."""
+        return _walk_from_top_folder.walk_tolerant(
             self._session, self._MAIN_FOLDER_ID
         )
 
