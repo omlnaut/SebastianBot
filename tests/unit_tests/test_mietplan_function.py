@@ -6,7 +6,7 @@ import pytest
 
 # The Functions entry point imports the feature modules; importing it first mirrors
 # the runtime and keeps that import graph from being circular from the test side.
-import function_app  # noqa: F401
+import function_app
 from cloud.functions.features import mietplan_function
 from cloud.functions.features.mietplan_function import (
     UsageError,
