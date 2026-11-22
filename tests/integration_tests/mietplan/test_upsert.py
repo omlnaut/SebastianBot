@@ -57,3 +57,37 @@ def test_upsert_replaces_the_same_file_id_and_keeps_it_findable(
 
 def test_find_file_of_an_absent_path_returns_none(drive_client: GoogleDriveClient):
     assert drive_client.find_file(_unique_path("absent.txt"), _ROOT_FOLDER_ID) is None
+
+
+def test_a_duplicated_name_is_answered_deterministically_live(
+    drive_client: GoogleDriveClient,
+):
+    """V4 against the real API: two files at the same path (what the old bug left).
+
+    The lookup must land on the same candidate on every call, otherwise the
+    upsert would create a new file each night. Deliberately leaves a duplicate
+    behind -- this code never deletes (D13).
+    """
+    path = _unique_path("dupe.txt")
+    first = drive_client.upload_file(
+        UploadFileRequest(
+            filename=path,
+            content=b"older copy",
+            folder_id=_ROOT_FOLDER_ID,
+            mime_type=_MIME_TYPE,
+        )
+    )
+    second = drive_client.upload_file(
+        UploadFileRequest(
+            filename=path,
+            content=b"newer copy",
+            folder_id=_ROOT_FOLDER_ID,
+            mime_type=_MIME_TYPE,
+        )
+    )
+    assert first.file_id != second.file_id
+
+    first_lookup = drive_client.find_file(path, _ROOT_FOLDER_ID)
+    second_lookup = drive_client.find_file(path, _ROOT_FOLDER_ID)
+
+    assert first_lookup == second_lookup == first.file_id
