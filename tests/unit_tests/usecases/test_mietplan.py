@@ -24,12 +24,37 @@ class _FakeMietplanClient:
 
 
 class _FakeGoogleDriveClient:
-    def __init__(self) -> None:
+    def __init__(self, existing: list[str] | None = None) -> None:
         self.uploads: list[UploadFileRequest] = []
+        # (file_id, content, mime_type) per replace_file call
+        self.replacements: list[tuple[str, bytes, str]] = []
+        self.deleted: list[str] = []
+        self.contents: dict[str, bytes] = {}
+        self._ids: dict[str, str] = {
+            path: f"existing-{index}" for index, path in enumerate(existing or [])
+        }
+        self._next_id = 0
+
+    def find_file(self, filename_with_path: str, base_folder_id: str) -> str | None:
+        return self._ids.get(filename_with_path)
 
     def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
         self.uploads.append(request)
-        return UploadFileResponse(file_id=f"file-{len(self.uploads)}")
+        self._next_id += 1
+        file_id = f"file-{self._next_id}"
+        self._ids[request.filename] = file_id
+        self.contents[file_id] = request.content
+        return UploadFileResponse(file_id=file_id)
+
+    def replace_file(self, file_id: str, content: bytes, mime_type: str) -> None:
+        self.replacements.append((file_id, content, mime_type))
+        self.contents[file_id] = content
+
+    def delete(self, file_id: str) -> None:
+        self.deleted.append(file_id)
+
+    def file_id(self, path: str) -> str:
+        return self._ids[path]
 
 
 def _at(day: date, hour: int = 12) -> datetime:
@@ -52,18 +77,29 @@ def _folder(
     return MietplanFolder(id=folder_id, path=path, files=files)
 
 
-def _handle(
+def _make_handler(
     folders: list[MietplanFolder],
     contents: dict[str, bytes] | None = None,
-    max_file_age: timedelta = timedelta(days=1),
-) -> tuple[list[SideEffect], _FakeMietplanClient, _FakeGoogleDriveClient]:
+    max_file_age: timedelta | None = timedelta(days=1),
+    drive: _FakeGoogleDriveClient | None = None,
+) -> tuple[Handler, _FakeMietplanClient, _FakeGoogleDriveClient]:
     mietplan = _FakeMietplanClient(folders, contents or {})
-    drive = _FakeGoogleDriveClient()
+    drive = drive or _FakeGoogleDriveClient()
     handler = Handler(
         mietplan_client=mietplan,
         google_drive_client=drive,
         gdrive_folder_id=_GDRIVE_FOLDER_ID,
     )
+    return handler, mietplan, drive
+
+
+def _handle(
+    folders: list[MietplanFolder],
+    contents: dict[str, bytes] | None = None,
+    max_file_age: timedelta | None = timedelta(days=1),
+    drive: _FakeGoogleDriveClient | None = None,
+) -> tuple[list[SideEffect], _FakeMietplanClient, _FakeGoogleDriveClient]:
+    handler, mietplan, drive = _make_handler(folders, contents, max_file_age, drive)
     result = handler.handle(Request(max_file_age=max_file_age))
     return list(result), mietplan, drive
 
@@ -195,7 +231,7 @@ def test_no_side_effects_when_the_walk_finds_no_folders():
     assert drive.uploads == []
 
 
-def test_each_selected_file_is_downloaded_by_url_and_uploaded_with_its_bytes():
+def test_each_selected_file_is_downloaded_by_url_and_created_when_absent():
     folders = [
         _folder(
             ["Miete"],
@@ -207,7 +243,9 @@ def test_each_selected_file_is_downloaded_by_url_and_uploaded_with_its_bytes():
     ]
     contents = {"/Miete/a.pdf": b"%PDF-1.7 a", "/Miete/b.pdf": b"%PDF-1.7 b"}
 
-    _, mietplan, drive = _handle(folders, contents)
+    drive = _FakeGoogleDriveClient()
+
+    _, mietplan, drive = _handle(folders, contents, drive=drive)
 
     assert mietplan.downloads == ["/Miete/a.pdf", "/Miete/b.pdf"]
     assert drive.uploads == [
@@ -224,3 +262,86 @@ def test_each_selected_file_is_downloaded_by_url_and_uploaded_with_its_bytes():
             mime_type="application/octet-stream",
         ),
     ]
+
+    # Flipped from the characterization of the old always-create behaviour: a
+    # second run over the same paths updates instead of creating duplicates.
+    _handle(folders, contents, drive=drive)
+
+    assert len(drive.uploads) == 2
+    assert drive.replacements == [
+        (drive.file_id("Miete/a.pdf"), b"%PDF-1.7 a", "application/octet-stream"),
+        (drive.file_id("Miete/b.pdf"), b"%PDF-1.7 b", "application/octet-stream"),
+    ]
+
+
+def test_second_sync_replaces_the_same_file_instead_of_creating_a_duplicate():
+    folders = [_folder(["Miete"], [_file("a.pdf", url="/u/a")])]
+    contents = {"/u/a": b"v1"}
+
+    handler, _, drive = _make_handler(folders, contents)
+    handler.handle(Request(max_file_age=timedelta(days=1)))
+    file_id = drive.file_id("Miete/a.pdf")
+
+    handler.handle(Request(max_file_age=timedelta(days=1)))
+
+    assert len(drive.uploads) == 1, "the second run must not create a duplicate"
+    assert drive.replacements == [(file_id, b"v1", "application/octet-stream")]
+    assert drive.deleted == []
+    assert handler.report.replaced == ["Miete/a.pdf"]
+    assert handler.report.uploaded == []
+
+
+def test_a_changed_portal_copy_replaces_the_content_of_the_same_drive_file():
+    drive = _FakeGoogleDriveClient()
+    folders = [_folder(["Miete"], [_file("a.pdf", url="/u/a")])]
+
+    first, _, _ = _handle(folders, {"/u/a": b"%PDF-1.7 first"}, drive=drive)
+    file_id = drive.file_id("Miete/a.pdf")
+
+    _, mietplan, _ = _handle(folders, {"/u/a": b"%PDF-1.7 corrected"}, drive=drive)
+
+    assert mietplan.downloads == ["/u/a"]
+    assert drive.replacements == [
+        (file_id, b"%PDF-1.7 corrected", "application/octet-stream")
+    ]
+    assert len(drive.uploads) == 1
+    assert drive.contents[file_id] == b"%PDF-1.7 corrected"
+    assert first  # the first run did write a message
+
+
+def test_report_distinguishes_uploaded_from_replaced_in_walk_order():
+    folders = [
+        _folder(
+            ["Miete"],
+            [_file("a.pdf", url="/u/a"), _file("b.pdf", url="/u/b")],
+        ),
+        _folder(["Konto"], [_file("c.pdf", url="/u/c")], folder_id="folder-konto"),
+    ]
+    contents = {"/u/a": b"a", "/u/b": b"b", "/u/c": b"c"}
+    drive = _FakeGoogleDriveClient(existing=["Miete/b.pdf"])
+
+    handler, _, drive = _make_handler(folders, contents, drive=drive)
+    handler.handle(Request(max_file_age=timedelta(days=1)))
+
+    assert handler.report.uploaded == ["Miete/a.pdf", "Konto/c.pdf"]
+    assert handler.report.replaced == ["Miete/b.pdf"]
+
+
+def test_a_none_max_file_age_includes_the_whole_webdepot():
+    old = date.today() - timedelta(days=400)
+    folders = [
+        _folder(
+            ["Archiv"],
+            [_file("old.pdf", url="/u/old", creation_date=_at(old))],
+        )
+    ]
+
+    handler, mietplan, drive = _make_handler(
+        folders, {"/u/old": b"old"}, max_file_age=None
+    )
+    result = handler.handle(Request(max_file_age=None))
+
+    assert mietplan.downloads == ["/u/old"]
+    assert [upload.filename for upload in drive.uploads] == ["Archiv/old.pdf"]
+    assert handler.report.uploaded == ["Archiv/old.pdf"]
+    assert result == [SendMessage(message="Found new mietplan files:\n- Archiv/old.pdf")]
