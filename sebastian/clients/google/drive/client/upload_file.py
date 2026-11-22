@@ -97,7 +97,7 @@ def _perform_upload(
     content: bytes,
     parent_folder_id: str,
     mime_type: str,
-    app_properties=None,
+    app_properties: dict[str, str] | None = None,
 ) -> str:
     """Upload the file content to the specified parent folder.
 
@@ -133,7 +133,7 @@ def upload_file_with_path(
     content: bytes,
     base_folder_id: str,
     mime_type: str,
-    app_properties=None,
+    app_properties: dict[str, str] | None = None,
 ) -> str:
     """Upload a file to Google Drive, creating nested folders as needed.
 
