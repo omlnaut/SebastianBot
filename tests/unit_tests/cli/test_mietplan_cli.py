@@ -13,6 +13,7 @@ import pytest
 import requests
 
 from cli.mietplan import build_service_from_env, main, run
+from sebastian.clients.mietplan.download import download_to_dir
 from sebastian.clients.mietplan.env_credentials import ENV_VAR
 from sebastian.clients.mietplan.errors import MietplanAuthError
 from sebastian.domain.mietplan import (
@@ -556,3 +557,71 @@ def test_invalid_credentials_json_is_an_auth_error(
     error = _error(capsys)
     assert error["error"]["kind"] == "auth"
     assert ENV_VAR in error["error"]["message"]
+
+
+class _DownloadService:
+    """A fake portal: a fixed walk plus fixed bytes fetched through the real writer.
+
+    Resolution, sanitization and the overwrite guard are production code (the same
+    function `MietplanClient.download` calls); only the portal is faked.
+    """
+
+    def __init__(
+        self,
+        walk: MietplanWalk | None = None,
+        content: bytes = b"%PDF-1.4 fake document",
+        error: Exception | None = None,
+    ):
+        self._walk = walk if walk is not None else MietplanWalk(folders=[], warnings=[])
+        self._content = content
+        self._error = error
+        self.downloads: list[str] = []
+
+    def walk_tolerant(self) -> MietplanWalk:
+        return self._walk
+
+    def download_file(self, download_path: str) -> bytes:
+        self.downloads.append(download_path)
+        return self._content
+
+    def download(self, path: str, out_dir: str, force: bool):
+        if self._error is not None:
+            raise self._error
+        return download_to_dir(path, out_dir, force, self._walk, self.download_file)
+
+
+def _download_tree() -> MietplanWalk:
+    return _walk(
+        _folder(
+            "f1",
+            ["Nebenkostenabrechnung", "2024"],
+            [
+                _file(
+                    "März & Co (final).pdf",
+                    url="/auctores/Nebenkostenabrechnung/2024/März & Co (final).pdf",
+                )
+            ],
+        )
+    )
+
+
+def test_download_mirrors_the_folder_path_under_out_and_reports_the_file(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    portal_path = "Nebenkostenabrechnung/2024/März & Co (final).pdf"
+    service = _DownloadService(_download_tree(), content=b"%PDF-1.4 real bytes")
+
+    code = run(["download", portal_path, "--out", str(tmp_path / "out")], service)
+
+    assert code == 0
+    target = tmp_path / "out" / "Nebenkostenabrechnung" / "2024" / "März & Co (final).pdf"
+    assert target.read_bytes() == b"%PDF-1.4 real bytes"
+    assert service.downloads == [
+        "/auctores/Nebenkostenabrechnung/2024/März & Co (final).pdf"
+    ]
+    payload = _payload(capsys)
+    assert payload == {
+        "command": "download",
+        "path": portal_path,
+        "file": {"path": str(target.resolve()), "bytes": len(b"%PDF-1.4 real bytes")},
+    }

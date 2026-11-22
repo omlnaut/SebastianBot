@@ -28,3 +28,11 @@ class MietplanWalk(BaseModel):
 
     folders: list[MietplanFolder]
     warnings: list[MietplanWalkWarning]
+
+
+class WrittenMietplanFile(BaseModel):
+    """One webdepot file written to disk: its portal path, local path and size."""
+
+    portal_path: str
+    path: str
+    size: int

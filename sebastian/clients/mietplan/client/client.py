@@ -1,9 +1,14 @@
 from typing import Generator
 
 from sebastian.clients.shared.retry_session import create_retry_session
-from sebastian.domain.mietplan import MietplanFolder, MietplanWalk
+from sebastian.domain.mietplan import (
+    MietplanFolder,
+    MietplanWalk,
+    WrittenMietplanFile,
+)
 
 from ..credentials import MietplanCredentials
+from ..download import download_to_dir
 from . import _download_file, _login, _verify_session, _walk_from_top_folder
 
 
@@ -30,3 +35,11 @@ class MietplanClient:
 
     def download_file(self, download_path: str) -> bytes:
         return _download_file.download_file_to_ram(self._session, download_path)
+
+    def download(
+        self, path: str, out_dir: str, force: bool
+    ) -> WrittenMietplanFile:
+        """Re-walk the portal, resolve the path, and write the file below ``out_dir``."""
+        return download_to_dir(
+            path, out_dir, force, self.walk_tolerant(), self.download_file
+        )
