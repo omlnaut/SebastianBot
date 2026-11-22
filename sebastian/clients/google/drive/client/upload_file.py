@@ -5,6 +5,8 @@ from io import BytesIO
 
 from googleapiclient.http import MediaIoBaseUpload
 
+from ._deterministic import pick_oldest
+
 
 def find_or_create_folder(service, folder_name: str, parent_id: str) -> str:
     """Find a folder by name within a parent folder, or create it if it doesn't exist.
@@ -20,13 +22,18 @@ def find_or_create_folder(service, folder_name: str, parent_id: str) -> str:
     # Search for existing folder
     query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
     results = (
-        service.files().list(q=query, fields="files(id, name)").execute()  # type: ignore
+        service.files()
+        .list(q=query, fields="files(id, name, createdTime)")  # type: ignore
+        .execute()
     )
     items = results.get("files", [])
 
-    if items:
-        # Folder exists, return its ID
-        return items[0]["id"]
+    # Duplicate names exist because of the old always-create bug. Use the same
+    # deterministic candidate as find_file (see _deterministic.py) so the
+    # upload lands where the next lookup will look. Nothing gets deleted.
+    existing_folder_id = pick_oldest(items)
+    if existing_folder_id is not None:
+        return existing_folder_id
 
     # Folder doesn't exist, create it
     file_metadata = {
