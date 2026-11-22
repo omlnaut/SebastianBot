@@ -4,15 +4,25 @@ from typing import Generator
 from sebastian.domain.gdrive import UploadFileRequest, UploadFileResponse
 from sebastian.domain.mietplan import MietplanFile, MietplanFolder
 from sebastian.domain.side_effect import SendMessage, SideEffect
-from sebastian.usecases.features.mietplan.handler import Handler, Request
+from sebastian.usecases.features.mietplan.handler import (
+    Handler,
+    Request,
+    SyncFailure,
+)
 
 _GDRIVE_FOLDER_ID = "gdrive-folder-id"
 
 
 class _FakeMietplanClient:
-    def __init__(self, folders: list[MietplanFolder], contents: dict[str, bytes]):
+    def __init__(
+        self,
+        folders: list[MietplanFolder],
+        contents: dict[str, bytes],
+        fail_on: dict[str, Exception] | None = None,
+    ):
         self._folders = folders
         self._contents = contents
+        self._fail_on = fail_on or {}
         self.downloads: list[str] = []
 
     def walk_from_top_folder(self) -> Generator[MietplanFolder, None, None]:
@@ -20,12 +30,16 @@ class _FakeMietplanClient:
 
     def download_file(self, download_path: str) -> bytes:
         self.downloads.append(download_path)
+        if download_path in self._fail_on:
+            raise self._fail_on[download_path]
         return self._contents[download_path]
 
 
 class _FakeGoogleDriveClient:
     def __init__(self, existing: list[str] | None = None) -> None:
         self.uploads: list[UploadFileRequest] = []
+        # (filename_with_path, base_folder_id) per find_file call
+        self.lookups: list[tuple[str, str]] = []
         # (file_id, content, mime_type) per replace_file call
         self.replacements: list[tuple[str, bytes, str]] = []
         self.deleted: list[str] = []
@@ -36,6 +50,7 @@ class _FakeGoogleDriveClient:
         self._next_id = 0
 
     def find_file(self, filename_with_path: str, base_folder_id: str) -> str | None:
+        self.lookups.append((filename_with_path, base_folder_id))
         return self._ids.get(filename_with_path)
 
     def upload_file(self, request: UploadFileRequest) -> UploadFileResponse:
@@ -98,9 +113,13 @@ def _handle(
     contents: dict[str, bytes] | None = None,
     max_file_age: timedelta | None = timedelta(days=1),
     drive: _FakeGoogleDriveClient | None = None,
+    folder: str | None = None,
+    dry_run: bool = False,
 ) -> tuple[list[SideEffect], _FakeMietplanClient, _FakeGoogleDriveClient]:
     handler, mietplan, drive = _make_handler(folders, contents, max_file_age, drive)
-    result = handler.handle(Request(max_file_age=max_file_age))
+    result = handler.handle(
+        Request(max_file_age=max_file_age, folder=folder, dry_run=dry_run)
+    )
     return list(result), mietplan, drive
 
 
@@ -345,3 +364,180 @@ def test_a_none_max_file_age_includes_the_whole_webdepot():
     assert [upload.filename for upload in drive.uploads] == ["Archiv/old.pdf"]
     assert handler.report.uploaded == ["Archiv/old.pdf"]
     assert result == [SendMessage(message="Found new mietplan files:\n- Archiv/old.pdf")]
+
+
+_ARCHIV_TREE = [
+    _folder(["Archiv"], [_file("own.pdf", url="/a/own")], folder_id="folder-archiv"),
+    _folder(
+        ["Archiv", "2019"],
+        [_file("nested.pdf", url="/a/2019/nested")],
+        folder_id="folder-2019",
+    ),
+    _folder(
+        ["Archiv", "2019b"],
+        [_file("sibling.pdf", url="/a/2019b/sibling")],
+        folder_id="folder-2019b",
+    ),
+    _folder(["Archiv2"], [_file("other.pdf", url="/a2/other")], folder_id="f-a2"),
+]
+_ARCHIV_CONTENTS = {
+    "/a/own": b"own",
+    "/a/2019/nested": b"nested",
+    "/a/2019b/sibling": b"sibling",
+    "/a2/other": b"other",
+}
+
+
+def test_folder_scope_matches_whole_path_segments_not_prefixes_of_names():
+    _, mietplan, _ = _handle(
+        _ARCHIV_TREE, _ARCHIV_CONTENTS, max_file_age=None, folder="Archiv"
+    )
+
+    # "Archiv" selects the folder itself and its subfolders, never "Archiv2".
+    assert mietplan.downloads == ["/a/own", "/a/2019/nested", "/a/2019b/sibling"]
+
+
+def test_folder_scope_of_a_leaf_folder_includes_that_folder_s_own_files():
+    _, mietplan, _ = _handle(
+        _ARCHIV_TREE, _ARCHIV_CONTENTS, max_file_age=None, folder="Archiv/2019"
+    )
+
+    assert mietplan.downloads == ["/a/2019/nested"]
+
+
+def test_empty_folder_scope_covers_every_folder():
+    for folder in (None, "", "//"):
+        _, mietplan, _ = _handle(
+            _ARCHIV_TREE, _ARCHIV_CONTENTS, max_file_age=None, folder=folder
+        )
+
+        assert mietplan.downloads == [
+            "/a/own",
+            "/a/2019/nested",
+            "/a/2019b/sibling",
+            "/a2/other",
+        ], folder
+
+
+def test_dry_run_classifies_like_a_real_run_without_downloading_or_writing():
+    folders = [
+        _folder(
+            ["Miete"],
+            [_file("a.pdf", url="/u/a"), _file("b.pdf", url="/u/b")],
+        ),
+        _folder(["Konto"], [_file("c.pdf", url="/u/c")], folder_id="folder-konto"),
+    ]
+    contents = {"/u/a": b"a", "/u/b": b"b", "/u/c": b"c"}
+
+    real_handler, _, real_drive = _make_handler(
+        folders, contents, max_file_age=None, drive=_FakeGoogleDriveClient(["Miete/b.pdf"])
+    )
+    real_result = real_handler.handle(Request(max_file_age=None))
+
+    dry_handler, dry_mietplan, dry_drive = _make_handler(
+        folders, contents, max_file_age=None, drive=_FakeGoogleDriveClient(["Miete/b.pdf"])
+    )
+    dry_result = dry_handler.handle(Request(max_file_age=None, dry_run=True))
+
+    # Same classification, from the same Drive path lookups, in walk order.
+    assert dry_drive.lookups == real_drive.lookups
+    assert dry_handler.report.uploaded == real_handler.report.uploaded == [
+        "Miete/a.pdf",
+        "Konto/c.pdf",
+    ]
+    assert dry_handler.report.replaced == real_handler.report.replaced == ["Miete/b.pdf"]
+    assert dry_handler.report.failed == real_handler.report.failed == []
+
+    # ... but nothing crosses the wire: no download, no write, no Telegram.
+    assert dry_mietplan.downloads == []
+    assert dry_drive.uploads == []
+    assert dry_drive.replacements == []
+    assert dry_drive.contents == {}
+    assert dry_result == []
+    assert real_result == [
+        SendMessage(
+            message=(
+                "Found new mietplan files:\n"
+                "- Miete/a.pdf\n"
+                "- Miete/b.pdf\n"
+                "- Konto/c.pdf"
+            )
+        )
+    ]
+
+
+def test_a_failing_download_is_recorded_and_the_run_continues():
+    folders = [
+        _folder(
+            ["Miete"],
+            [
+                _file("a.pdf", url="/u/a"),
+                _file("broken.pdf", url="/u/broken"),
+                _file("c.pdf", url="/u/c"),
+            ],
+        )
+    ]
+    contents = {"/u/a": b"a", "/u/broken": b"broken", "/u/c": b"c"}
+    mietplan = _FakeMietplanClient(
+        folders, contents, fail_on={"/u/broken": TimeoutError("read timeout")}
+    )
+    drive = _FakeGoogleDriveClient()
+    handler = Handler(mietplan, drive, _GDRIVE_FOLDER_ID)
+
+    result = handler.handle(Request(max_file_age=None))
+
+    assert handler.report.uploaded == ["Miete/a.pdf", "Miete/c.pdf"]
+    assert handler.report.failed == [
+        SyncFailure(path="Miete/broken.pdf", error="read timeout")
+    ]
+    # The failure neither loses the remaining files nor hides them from the message.
+    assert [upload.filename for upload in drive.uploads] == [
+        "Miete/a.pdf",
+        "Miete/c.pdf",
+    ]
+    assert result == [
+        SendMessage(
+            message="Found new mietplan files:\n- Miete/a.pdf\n- Miete/c.pdf"
+        )
+    ]
+
+
+def test_a_failing_drive_lookup_is_recorded_and_the_run_continues():
+    class _FailingLookupDrive(_FakeGoogleDriveClient):
+        def find_file(self, filename_with_path: str, base_folder_id: str):
+            if filename_with_path == "Miete/a.pdf":
+                raise RuntimeError("drive unavailable")
+            return super().find_file(filename_with_path, base_folder_id)
+
+    folders = [
+        _folder(
+            ["Miete"],
+            [_file("a.pdf", url="/u/a"), _file("b.pdf", url="/u/b")],
+        )
+    ]
+    handler = Handler(
+        _FakeMietplanClient(folders, {"/u/a": b"a", "/u/b": b"b"}),
+        _FailingLookupDrive(),
+        _GDRIVE_FOLDER_ID,
+    )
+
+    handler.handle(Request(max_file_age=None))
+
+    assert handler.report.uploaded == ["Miete/b.pdf"]
+    assert handler.report.failed == [
+        SyncFailure(path="Miete/a.pdf", error="drive unavailable")
+    ]
+
+
+def test_scanned_folders_counts_every_folder_the_walk_visited():
+    folders = [
+        _folder(["Archiv"], [], folder_id="folder-empty"),
+        _folder(["Archiv", "2019"], [_file("a.pdf", url="/u/a")], folder_id="f-2019"),
+        _folder(["Konto"], [], folder_id="folder-konto"),
+    ]
+    handler, _, _ = _make_handler(folders, {"/u/a": b"a"})
+
+    handler.handle(Request(max_file_age=None, folder="Archiv"))
+
+    assert handler.report.scanned_folders == 3
+    assert handler.report.uploaded == ["Archiv/2019/a.pdf"]
