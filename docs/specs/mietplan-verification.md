@@ -80,6 +80,13 @@ and asserts repeated lookups return the same (oldest) id. Unit tests pin the rul
 itself with a fake service. The rule is still a choice this repository imposes; it is
 not a measured property of Google Drive.
 
+**Deliberate deviation from the literal wording of D17/#126:** "the existing upload
+path and its other caller are unchanged" is now contradicted in one narrow respect —
+`find_or_create_folder` uses the same `pick_oldest` candidate as `find_file`. Without
+a shared rule the lookup and the upload can land on different duplicates, which
+breaks the upsert. Upload metadata, `upload_file`'s signature and the `winsim` call
+site are otherwise unchanged.
+
 ## V5 — walk cost and the Functions timeout (estimated, recorded)
 
 **Assumed/estimated:** a whole-webdepot (`maxFileAge=all`) resync costs about `2F`
