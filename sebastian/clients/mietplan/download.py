@@ -8,6 +8,8 @@ from sebastian.domain.mietplan import (
     MietplanWalk,
     MietplanWalkWarning,
     WrittenMietplanFile,
+    is_path_prefix,
+    join_path,
 )
 
 from .errors import (
@@ -132,10 +134,10 @@ def _safe_segments(portal_path: str) -> tuple[list[str], list[str]]:
 def _find_file(
     walk: MietplanWalk, raw_segments: Sequence[str]
 ) -> MietplanFile | None:
-    wanted = "/".join(raw_segments)
+    wanted = join_path(raw_segments)
     for folder in walk.folders:
         for file in folder.files:
-            if "/".join([*folder.path, file.name]) == wanted:
+            if join_path([*folder.path, file.name]) == wanted:
                 return file
     return None
 
@@ -147,7 +149,7 @@ def _covering_warning(
     covering = [
         warning
         for warning in walk.warnings
-        if list(folder_segments[: len(warning.path)]) == warning.path
+        if is_path_prefix(folder_segments, warning.path)
     ]
     if not covering:
         return None

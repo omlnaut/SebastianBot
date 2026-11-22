@@ -4,7 +4,12 @@ from datetime import timedelta
 from typing import Sequence
 
 from sebastian.domain.gdrive import UploadFileRequest
-from sebastian.domain.mietplan import MietplanFile, MietplanFolder
+from sebastian.domain.mietplan import (
+    MietplanFile,
+    MietplanFolder,
+    is_path_prefix,
+    join_path,
+)
 from sebastian.domain.side_effect import SideEffect, SendMessage
 from sebastian.usecases.shared.dates import is_within_timedelta
 from sebastian.usecases.usecase_handler import UseCaseHandler
@@ -165,7 +170,7 @@ class Handler(UseCaseHandler[Request]):
         in_scope: list[tuple[MietplanFile, MietplanFolder]] = []
         for folder in self.mietplan_client.walk_from_top_folder():
             self.report.scanned_folders += 1
-            if prefix and folder.path[: len(prefix)] != prefix:
+            if prefix and not is_path_prefix(folder.path, prefix):
                 continue
             in_scope.extend(
                 (file, folder)
@@ -210,7 +215,7 @@ def _create_message(
 
 
 def _build_upload_path(file: MietplanFile, folder: MietplanFolder) -> str:
-    return f"{'/'.join(folder.path)}/{file.name}".strip("/")
+    return join_path([*folder.path, file.name]).strip("/")
 
 
 def _path_segments(prefix: str | None) -> list[str]:

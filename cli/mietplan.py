@@ -31,6 +31,8 @@ from sebastian.domain.mietplan import (
     MietplanFolder,
     MietplanWalk,
     WrittenMietplanFile,
+    is_path_prefix,
+    join_path,
 )
 
 DEFAULT_LIMIT = 50
@@ -211,7 +213,7 @@ def _search(args: argparse.Namespace, service: MietplanService) -> int:
             "warnings": [
                 {
                     "folderId": warning.folder_id,
-                    "path": _join(warning.path),
+                    "path": join_path(warning.path),
                     "error": warning.error,
                 }
                 for warning in walk.warnings
@@ -257,9 +259,9 @@ def _matches(
     before: date | None,
 ) -> bool:
     path = [*folder.path, file.name]
-    if needle is not None and needle not in _join(path).lower():
+    if needle is not None and needle not in join_path(path).lower():
         return False
-    if prefix and list(path[: len(prefix)]) != prefix:
+    if prefix and not is_path_prefix(path, prefix):
         return False
     created = file.creation_date.date()
     if after is not None and created < after:
@@ -275,16 +277,12 @@ def _path_segments(prefix: str) -> list[str]:
 
 def _file_json(folder: MietplanFolder, file: MietplanFile) -> dict[str, object]:
     return {
-        "path": _join([*folder.path, file.name]),
+        "path": join_path([*folder.path, file.name]),
         "folderId": folder.id,
         "name": file.name,
         "creationDate": file.creation_date.date().isoformat(),
         "url": file.url,
     }
-
-
-def _join(path: Sequence[str]) -> str:
-    return "/".join(path)
 
 
 def _iso(value: date | None) -> str | None:
