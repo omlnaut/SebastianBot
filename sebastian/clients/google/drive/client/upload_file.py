@@ -5,6 +5,8 @@ from io import BytesIO
 
 from googleapiclient.http import MediaIoBaseUpload
 
+from ._deterministic import pick_oldest
+
 
 def find_or_create_folder(service, folder_name: str, parent_id: str) -> str:
     """Find a folder by name within a parent folder, or create it if it doesn't exist.
@@ -20,13 +22,18 @@ def find_or_create_folder(service, folder_name: str, parent_id: str) -> str:
     # Search for existing folder
     query = f"name='{folder_name}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
     results = (
-        service.files().list(q=query, fields="files(id, name)").execute()  # type: ignore
+        service.files()
+        .list(q=query, fields="files(id, name, createdTime)")  # type: ignore
+        .execute()
     )
     items = results.get("files", [])
 
-    if items:
-        # Folder exists, return its ID
-        return items[0]["id"]
+    # Duplicate names exist because of the old always-create bug. Use the same
+    # deterministic candidate as find_file (see _deterministic.py) so the
+    # upload lands where the next lookup will look. Nothing gets deleted.
+    existing_folder_id = pick_oldest(items)
+    if existing_folder_id is not None:
+        return existing_folder_id
 
     # Folder doesn't exist, create it
     file_metadata = {
@@ -85,7 +92,12 @@ def _get_or_create_parent_folder_id(
 
 
 def _perform_upload(
-    service, filename: str, content: bytes, parent_folder_id: str, mime_type: str
+    service,
+    filename: str,
+    content: bytes,
+    parent_folder_id: str,
+    mime_type: str,
+    app_properties: dict[str, str] | None = None,
 ) -> str:
     """Upload the file content to the specified parent folder.
 
@@ -95,12 +107,15 @@ def _perform_upload(
         content: The file content as bytes
         parent_folder_id: The ID of the folder where the file will be uploaded
         mime_type: The MIME type of the file
+        app_properties: Optional app-defined properties to attach to the file
 
     Returns:
         The ID of the uploaded file
     """
     bytes_content = BytesIO(content)
     file_metadata = {"name": filename, "parents": [parent_folder_id]}
+    if app_properties is not None:
+        file_metadata["appProperties"] = app_properties
     media = MediaIoBaseUpload(bytes_content, mimetype=mime_type, resumable=True)
 
     uploaded_file = (
@@ -118,6 +133,7 @@ def upload_file_with_path(
     content: bytes,
     base_folder_id: str,
     mime_type: str,
+    app_properties: dict[str, str] | None = None,
 ) -> str:
     """Upload a file to Google Drive, creating nested folders as needed.
 
@@ -137,4 +153,6 @@ def upload_file_with_path(
 
     filename = os.path.basename(filename_with_path)
 
-    return _perform_upload(service, filename, content, parent_folder_id, mime_type)
+    return _perform_upload(
+        service, filename, content, parent_folder_id, mime_type, app_properties
+    )

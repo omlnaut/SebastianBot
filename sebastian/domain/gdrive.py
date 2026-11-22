@@ -8,6 +8,7 @@ class UploadFileRequest(BaseModel):
     content: bytes
     folder_id: str
     mime_type: str = "application/octet-stream"
+    app_properties: dict[str, str] | None = None
 
 
 class UploadFileResponse(BaseModel):

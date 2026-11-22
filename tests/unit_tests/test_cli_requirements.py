@@ -14,10 +14,11 @@ import sys
 import tomllib
 from importlib.metadata import packages_distributions
 from pathlib import Path
+from typing import Sequence
 
 ROOT = Path(__file__).parents[2]
 CLI_REQUIREMENTS = ROOT / "cli-requirements.txt"
-CLI_ENTRY = ROOT / "cli" / "mail.py"
+CLI_ENTRIES = (ROOT / "cli" / "mail.py", ROOT / "cli" / "mietplan.py")
 MANIFEST = ROOT / "pyproject.toml"
 LOCAL_ROOTS = ("cli", "sebastian")
 
@@ -93,11 +94,11 @@ def _imported_names(path: Path) -> list[str]:
     return names
 
 
-def _third_party_roots(entry: Path) -> set[str]:
-    """Top-level third-party import roots reachable from the CLI entry point."""
+def _third_party_roots(entries: Sequence[Path]) -> set[str]:
+    """Top-level third-party import roots reachable from the CLI entry points."""
     roots: set[str] = set()
     seen: set[Path] = set()
-    queue = [entry]
+    queue = list(entries)
     while queue:
         path = queue.pop()
         if path in seen:
@@ -145,13 +146,20 @@ def test_cli_dependencies_exclude_azure_and_framework_packages():
     assert [name for name in declared if name.split("-")[0] in forbidden] == []
 
 
+def test_the_project_has_the_two_cli_entry_points():
+    assert [path.name for path in CLI_ENTRIES if path.is_file()] == [
+        "mail.py",
+        "mietplan.py",
+    ]
+
+
 def test_every_third_party_import_of_the_cli_is_a_declared_dependency():
     providers = packages_distributions()
     declared = set(_declared_requirements())
 
     uncovered = {
         root: sorted({_normalize(dist) for dist in providers.get(root, [])})
-        for root in _third_party_roots(CLI_ENTRY)
+        for root in _third_party_roots(CLI_ENTRIES)
         if not {_normalize(dist) for dist in providers.get(root, [])} & declared
     }
 

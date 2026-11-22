@@ -27,10 +27,15 @@
 
 ## Mietplan
 
-| Term                 | Definition                                                                    | Aliases to avoid |
-| -------------------- | ----------------------------------------------------------------------------- | ---------------- |
-| **Mietplan Folder**  | A virtual directory in the Mietplan system containing rental-related files.   | Folder           |
-| **Mietplan File**    | A document (usually a PDF) found within a **Mietplan Folder**.               | File             |
+| Term                      | Definition                                                                                                                                                                                                                                                                       | Aliases to avoid |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Mietplan Folder**       | A virtual directory in the Mietplan system containing rental-related files.                                                                                                                                                                                                      | Folder           |
+| **Mietplan File**         | A document (usually a PDF) found within a **Mietplan Folder**.                                                                                                                                                                                                                    | File             |
+| **Webdepot**              | The Mietplan web portal whose folder tree holds the rental documents.                                                                                                                                                                                                             | Portal, site     |
+| **Walk (tolerant/strict)** | Reading the **Webdepot** folder tree depth-first. A **strict** walk aborts on the first unreadable folder; a **tolerant** walk records a warning and returns the rest.                                                                                                          | Crawl, scan      |
+| **Scope (folder prefix)** | The folder path prefix limiting a walk, search or sync, matched segment by segment (`Archiv` covers `Archiv/2019`, not `Archiv2`). An empty scope covers every folder.                                                                                                          | Filter, path     |
+| **Resync**                | A manual, parameterised run of the Mietplan → Drive sync over a chosen age window and **Scope**. It reports uploaded, replaced and failed paths and sends no Telegram message.                                                                                                    | Repair run       |
+| **Upsert / Replace**      | Writing a **Mietplan File** to Drive by replacing the content of the file at the same path in place (same id, parents and sharing), or creating it when absent. Never duplicates, never deletes.                                                                                 | Overwrite, sync  |
 
 ## System & Actions
 
@@ -51,6 +56,8 @@
 - A **Lending** is synchronized as a **Calendar Event** using a **Sync Tag**.
 - A **Delivery Notification** is parsed into **Pickup Data**, which triggers **Task Creation**.
 - **Tracking Number** is used to check if a parcel is ready to trigger **Task Completion**.
+- A **Resync** walks the **Webdepot** within a **Scope** and an age window, then **Upserts** each **Mietplan File** into Drive.
+- A **tolerant Walk** reports unreadable folders as warnings and returns partial results; the nightly sync's **strict Walk** aborts instead.
 
 ## Example dialogue
 
