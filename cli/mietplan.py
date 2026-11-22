@@ -244,14 +244,13 @@ def _effective_limit(limit: int) -> int:
 
 def _parse_date(raw: str) -> date:
     """An argparse type accepting exactly ``YYYY-MM-DD`` (no lenient forms)."""
+    message = f"invalid date: {raw} (expected YYYY-MM-DD)"
     try:
         parsed = datetime.strptime(raw, "%Y-%m-%d").date()
     except ValueError:
-        parsed = None
-    if parsed is None or parsed.isoformat() != raw:
-        raise argparse.ArgumentTypeError(
-            f"invalid date: {raw} (expected YYYY-MM-DD)"
-        )
+        raise argparse.ArgumentTypeError(message) from None
+    if parsed.isoformat() != raw:
+        raise argparse.ArgumentTypeError(message)
     return parsed
 
 
