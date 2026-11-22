@@ -54,6 +54,17 @@ def download_to_dir(
             f"could not create output directory {target.parent}: {error}"
         ) from error
 
+    try:
+        resolved_target = target.resolve()
+    except (OSError, RuntimeError) as error:
+        raise MietplanDownloadIoError(
+            f"could not resolve {target}: {error}"
+        ) from error
+    if not resolved_target.is_relative_to(output_root):
+        raise MietplanDownloadIoError(
+            f"refusing to write outside the output directory: {target}"
+        )
+
     if target.exists() and not force:
         raise MietplanDownloadIoError(
             f"refusing to overwrite existing file: {target} "

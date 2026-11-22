@@ -897,3 +897,34 @@ def test_a_successful_download_prints_one_json_line_on_stdout_only(
     assert captured.err == ""
     assert captured.out.count("\n") == 1
     assert json.loads(captured.out)["command"] == "download"
+
+
+def test_force_never_writes_through_a_symlink_outside_out(
+    capsys: pytest.CaptureFixture[str], tmp_path
+):
+    outside = tmp_path / "outside.pdf"
+    outside.write_bytes(b"untouched")
+    target = tmp_path / "out" / "Archiv" / "alt.pdf"
+    target.parent.mkdir(parents=True)
+    target.symlink_to(outside)
+    service = _DownloadService(
+        _walk(_folder("f1", ["Archiv"], [_file("alt.pdf", url="/auctores/alt.pdf")])),
+        content=b"new bytes",
+    )
+
+    code = run(
+        [
+            "download",
+            "Archiv/alt.pdf",
+            "--out",
+            str(tmp_path / "out"),
+            "--force",
+        ],
+        service,
+    )
+
+    assert code == 1
+    error = _error(capsys)
+    assert error["error"]["kind"] == "io"
+    assert outside.read_bytes() == b"untouched"
+    assert service.downloads == []
